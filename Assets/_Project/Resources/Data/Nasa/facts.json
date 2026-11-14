@@ -1,0 +1,79 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Short facts for kids 7-12 about astronaut health, based on NASA spaceflight research. Owner: role 06.",
+  "_status": "TO VERIFY: OSDR was not reachable from the build machine. For each fact open sourceUrl (OSDR search), pick the matching study and write its OSD-number into studyId, then set verified=true.",
+  "items": [
+    {
+      "id": "bone",
+      "topic": "bone",
+      "en": "In space bones get weaker because they do not have to hold up the body. Astronauts can lose about 1% of hip bone every month!",
+      "uk": "У космосі кістки слабшають, бо їм не треба тримати тіло. Астронавт може втрачати близько 1% кістки стегна щомісяця!",
+      "studyId": "",
+      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=bone%20loss",
+      "verified": false
+    },
+    {
+      "id": "muscle",
+      "topic": "muscle",
+      "en": "Without gravity muscles shrink, so astronauts exercise about 2 hours every day.",
+      "uk": "Без земного тяжіння м'язи меншають, тому астронавти тренуються близько 2 годин щодня.",
+      "studyId": "",
+      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=muscle%20atrophy",
+      "verified": false
+    },
+    {
+      "id": "sleep",
+      "topic": "sleep",
+      "en": "On the space station the Sun rises 16 times a day, so astronauts sleep with eye masks in sleeping bags.",
+      "uk": "На космічній станції Сонце сходить 16 разів на день, тому астронавти сплять у масках для очей у спальниках.",
+      "studyId": "",
+      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=sleep",
+      "verified": false
+    },
+    {
+      "id": "radiation",
+      "topic": "radiation",
+      "en": "Space has much more radiation than Earth. Astronauts wear small badges called dosimeters that count their dose.",
+      "uk": "У космосі набагато більше радіації, ніж на Землі. Астронавти носять маленькі значки-дозиметри, що рахують дозу.",
+      "studyId": "",
+      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=space%20radiation",
+      "verified": false
+    },
+    {
+      "id": "food",
+      "topic": "nutrition",
+      "en": "Astronauts need extra vitamin D, because there is no sunshine on their skin inside the station.",
+      "uk": "Астронавтам потрібно більше вітаміну D, бо всередині станції на шкіру не світить сонце.",
+      "studyId": "",
+      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=nutrition",
+      "verified": false
+    },
+    {
+      "id": "plants",
+      "topic": "plants",
+      "en": "Astronauts have grown lettuce in space and even eaten it!",
+      "uk": "Астронавти вирощували салат у космосі і навіть їли його!",
+      "studyId": "",
+      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=plant%20growth%20spaceflight",
+      "verified": false
+    },
+    {
+      "id": "fluids",
+      "topic": "fluids",
+      "en": "In space body fluids float up to the head, so astronauts' faces look puffy.",
+      "uk": "У космосі рідини в тілі піднімаються до голови, тому обличчя астронавтів трохи опухлі.",
+      "studyId": "",
+      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=fluid%20shift",
+      "verified": false
+    },
+    {
+      "id": "mice",
+      "topic": "immune",
+      "en": "Scientists send mice to the space station to learn how space changes the body's defence against illness.",
+      "uk": "Науковці відправляють мишей на космічну станцію, щоб дізнатися, як космос змінює захист організму від хвороб.",
+      "studyId": "",
+      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=rodent%20research%20immune",
+      "verified": false
+    }
+  ]
+}
