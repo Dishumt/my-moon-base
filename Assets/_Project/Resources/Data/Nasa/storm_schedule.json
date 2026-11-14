@@ -1,0 +1,40 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "When each real DONKI event (id from donki_storms.json) hits the base. day = day of the chapter (1 = first day), hour = 0..23 game hour when the storm starts. Warning comes radiation_balance.storm.warningHours earlier. Owner: role 06.",
+  "chapters": [
+    {
+      "chapter": 1,
+      "storms": []
+    },
+    {
+      "chapter": 2,
+      "storms": [
+        {
+          "day": 5,
+          "hour": 11,
+          "eventId": "flr-2024-10-09-x1.8"
+        }
+      ]
+    },
+    {
+      "chapter": 3,
+      "storms": [
+        {
+          "day": 3,
+          "hour": 10,
+          "eventId": "flr-2024-05-10-x3.9"
+        },
+        {
+          "day": 5,
+          "hour": 14,
+          "eventId": "sep-2024-05-11"
+        },
+        {
+          "day": 7,
+          "hour": 9,
+          "eventId": "flr-2024-05-14-x8.7"
+        }
+      ]
+    }
+  ]
+}

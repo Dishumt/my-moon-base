@@ -1,0 +1,57 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Balance numbers for radiation and health (role 06). Dose is in % of the career limit. Change numbers here, not in code.",
+  "doseFromChapter": 1,
+  "illnessFromChapter": 3,
+  "illnessFromChapter_note": "GAME.md: illness and medicine start in chapter 3.",
+  "timeCompression": 50,
+  "timeCompression_note": "Game dose = real ISS dose x 50. Picked so a player who keeps an astronaut outside half of every day reaches the yellow zone (50%) in about 4.8 days. Real dose builds up over months; we say so honestly in the game and in docs/NASA_DATA.md.",
+  "outsideMultiplier": 4.0,
+  "insideMultiplier": 1.0,
+  "regolithMultiplier": 0.5,
+  "yellowPercent": 50,
+  "redPercent": 100,
+  "storm": {
+    "warningHours": 6,
+    "warningHours_note": "How many game hours before the storm the warning comes.",
+    "minWarningHours": 2,
+    "durationHours": [
+      4,
+      6,
+      8
+    ],
+    "durationHours_note": "Storm length by strength 1/2/3.",
+    "shelterPowerNeeded": [
+      1,
+      2,
+      2
+    ],
+    "shelterPowerNeeded_note": "How many power blocks the shelter needs (Power.Shelter) to protect, by strength.",
+    "outsidePerHour": [
+      3.0,
+      5.0,
+      8.0
+    ],
+    "modulePerHour": [
+      0.8,
+      1.5,
+      2.5
+    ],
+    "shelterPerHour": [
+      0.1,
+      0.2,
+      0.3
+    ],
+    "perHour_note": "Dose in % of limit per game hour during a storm, by strength 1/2/3: outside / in another module / in a powered shelter."
+  },
+  "health": {
+    "sickChancePerHour": 0.004,
+    "sickChance_note": "Chance per hour for each healthy astronaut (about 9% a day).",
+    "riskMultiplier": 2.0,
+    "hungrySatietyBelow": 25,
+    "recoverHours": 6,
+    "severeRecoverHours": 12,
+    "sickToSevereHours": 24,
+    "sickToSevereHours_note": "A sick astronaut without medicine becomes Severe after this many hours (unless the medic is on Heal and the medbay has power)."
+  }
+}

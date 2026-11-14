@@ -1,0 +1,31 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Real radiation numbers the game is built on. Owner: role 06. Plain words: 1 mSv (millisievert) is a unit of how much radiation the body got. On Earth a person gets about 2-3 mSv in a WHOLE YEAR from nature. On the ISS an astronaut gets about 0.5 mSv EVERY DAY, so in ~5 days as much as on Earth in a year.",
+  "_status": "TO VERIFY: RadLab API (https://visualization.osdr.nasa.gov/radlab/gui/data-api/) was not reachable from the build machine. Numbers below come from NASA public reports; check them against RadLab ISS data (queries listed in radlabQueries) and update dates.",
+  "dailyDose_mSv": 0.5,
+  "dailyDose_note": "Typical ISS dose equivalent per day. NASA: ISS crew receive about 80-160 mSv in a 6-month stay = about 0.44-0.88 mSv per day; we use 0.5.",
+  "dailyDoseMin_mSv": 0.44,
+  "dailyDoseMax_mSv": 0.88,
+  "careerLimit_mSv": 600,
+  "careerLimit_note": "NASA-STD-3001 Vol. 1 (2022): career limit of 600 mSv for every astronaut. In the game Dose = % of this limit.",
+  "stormNote": "During a solar particle event the dose rate rises for hours to days. Inside the thick-walled parts of the ISS it rises only a little; on the open Moon surface it can be many times higher. That is why the game has a shelter.",
+  "periodQuiet": "2024-05-01..2024-05-07",
+  "periodStorm": "2024-05-10..2024-05-14",
+  "sources": [
+    {
+      "name": "NASA OSDR RadLab (ISS radiation data: TEPC, ISS-RAD)",
+      "url": "https://visualization.osdr.nasa.gov/radlab/gui/data-api/"
+    },
+    {
+      "name": "NASA-STD-3001 Vol.1 Rev B, space permissible exposure limit",
+      "url": "https://www.nasa.gov/ochmo/nasa-standard-3001/"
+    },
+    {
+      "name": "NASA Human Research Program: space radiation",
+      "url": "https://www.nasa.gov/hrp/"
+    }
+  ],
+  "radlabQueries": [
+    "https://visualization.osdr.nasa.gov/radlab/gui/data-api/  (pick ISS TEPC or ISS-RAD, dates 2024-05-01..2024-05-07 and 2024-05-10..2024-05-14)"
+  ]
+}
