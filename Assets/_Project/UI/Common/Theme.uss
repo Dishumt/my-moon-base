@@ -243,6 +243,20 @@
 .res__seg--food   { background-color: var(--color-food); }
 .res__seg--low    { background-color: var(--color-warn); }
 
+/* ---------- base grid (MAP tab, BuildGridView.cs) ---------- */
+.grid { flex-direction: column; }
+.grid-row { flex-direction: row; }
+.grid-cell {
+    width: 72px; height: 72px; margin: 0 4px 4px 0; padding: 2px;
+    background-color: var(--color-card);
+    border-width: 2px; border-color: var(--color-line); border-radius: 0;
+    color: var(--color-dim); font-size: 10px; white-space: normal; -unity-text-align: middle-center;
+}
+.grid-cell:hover { border-color: var(--color-accent); }
+.grid-cell--building { border-color: var(--color-energy); color: var(--color-energy); background-color: var(--color-energy-bg); }
+.grid-cell--built    { border-color: var(--color-line-hi); color: var(--color-text); background-color: var(--color-card-selected); }
+.grid-cell--sel      { border-color: var(--color-accent); border-width: 3px; }
+
 /* ---------- SPRITES (role 02) ----------
    When 02 delivers 9-slice frames, give them to .card, .btn, .tab, .opt like this
    (the cut corner and the glow live inside the sprite):

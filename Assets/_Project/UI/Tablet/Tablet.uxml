@@ -42,8 +42,18 @@
 
             <!-- tab contents: placeholders for now. Each tab becomes its own .uxml in the next steps -->
             <ui:VisualElement name="tbody" style="margin-top: 12px; height: 500px;">
-                <ui:VisualElement name="pane-map" class="panel" style="display: none; flex-grow: 1; align-items: center; justify-content: center;">
-                    <ui:Label name="pane-map-stub" class="t-label" />
+                <!-- MAP: base grid (squares are made by BuildGridView.cs) + side panel for the chosen square -->
+                <ui:VisualElement name="pane-map" class="panel" style="display: none; flex-grow: 1; flex-direction: row; padding: 12px;">
+                    <ui:VisualElement name="map-grid" class="grid" />
+                    <ui:VisualElement name="map-side" style="flex-grow: 1; margin-left: 16px;">
+                        <ui:Label name="map-slot-title" class="kv__key" />
+                        <ui:Label name="map-slot-state" class="mb-8" style="font-size: 20px;" />
+                        <ui:Label name="map-hint" class="msg mb-8" />
+                        <ui:ScrollView name="map-options-scroll" style="flex-grow: 1;">
+                            <ui:VisualElement name="map-options" />
+                        </ui:ScrollView>
+                        <ui:Label name="map-msg" class="msg" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="pane-power" class="panel" style="display: none; flex-grow: 1; align-items: center; justify-content: center;">
                     <ui:Label name="pane-power-stub" class="t-label" />
