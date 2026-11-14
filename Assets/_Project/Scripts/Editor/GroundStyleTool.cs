@@ -50,7 +50,7 @@ public static class GroundStyleTool
         rend.sharedMaterial = mat;
 
         // Unlit не реагує на світло, тож затемнення вулиці фарбує землю окремо
-        var dark = Object.FindFirstObjectByType<OutdoorDarkening>();
+        var dark = Object.FindAnyObjectByType<OutdoorDarkening>();
         if (dark != null)
         {
             var so = new SerializedObject(dark);
