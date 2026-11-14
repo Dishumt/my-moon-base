@@ -8,7 +8,8 @@ using UnityEngine;
 ///  - рахує висоту стрибка (парабола, як справжній політ) — спрайт піднімається, а тінь лишається на землі;
 ///  - малює м'яку тінь-пляму під ногами (як у Don't Starve Together) — по ній видно, що персонаж у повітрі;
 ///  - при приземленні трохи сплющує спрайт і здіймає пил, який ПОВІЛЬНО осідає (місячна гравітація);
-///  - каже, який кадр ходьби показувати (Steps).
+///  - кожен стрибок — поштовх з ОДНІЄЇ ноги: присів → відштовхнувся → летить → приземлився на ІНШУ ногу;
+///    каже, яка нога працює (Leg) і чи вона на землі (OnGround) — за цим EngineerController вибирає кадр.
 /// Ставить себе сам (EngineerController додає його). Згодом так само ходитимуть астронавти.
 /// </summary>
 public class MoonHop : MonoBehaviour
@@ -17,23 +18,30 @@ public class MoonHop : MonoBehaviour
     public const float MoonGravityScale = 1.62f / 9.81f;
 
     [Header("У скафандрі (надворі)")]
-    [SerializeField] float suitHopHeight = 0.32f;    // метрів
-    [SerializeField] float suitHopSeconds = 0.62f;   // скільки триває один стрибок
+    [SerializeField] float suitHopHeight = 0.32f;     // метрів
+    [SerializeField] float suitFlightSeconds = 0.55f; // скільки летить
+    [SerializeField] float suitPushSeconds = 0.16f;   // скільки стоїть на нозі: присів → відштовхнувся
     [Header("Без скафандра (у модулі)")]
     [SerializeField] float indoorHopHeight = 0.12f;
-    [SerializeField] float indoorHopSeconds = 0.4f;
+    [SerializeField] float indoorFlightSeconds = 0.32f;
+    [SerializeField] float indoorPushSeconds = 0.1f;
     [Header("Тінь")]
-    [SerializeField] float shadowSize = 0.9f;        // діаметр плями, метрів
+    [SerializeField] float shadowSize = 0.9f;         // діаметр плями, метрів
 
     /// <summary>Висота над землею зараз (метрів).</summary>
     public float Height { get; private set; }
-    /// <summary>Скільки стрибків зроблено (дробове) — для вибору кадру анімації.</summary>
-    public float Steps { get; private set; }
-    /// <summary>Чи зараз іде стрибок (у повітрі або щойно почав).</summary>
-    public bool IsHopping { get; private set; }
+    /// <summary>Чи персонаж зараз у русі стрибками (а не стоїть).</summary>
+    public bool IsHopping => phase != Phase.Idle;
+    /// <summary>Чи нога зараз на землі (поштовх або приземлення), а не в польоті.</summary>
+    public bool OnGround => phase != Phase.Flight;
+    /// <summary>Яка нога зараз працює: 0 або 1. Кожен стрибок — інша нога.</summary>
+    public int Leg { get; private set; }
 
-    float t;            // 0..1 — де ми в поточному стрибку
-    float squash;       // 0..1 — сплющення після приземлення
+    // Один стрибок:  Push (присів на нозі й відштовхнувся) → Flight (летить) → приземлився на ІНШУ ногу → Push ...
+    // Коли гравець відпустив клавіші: після польоту — Landing (присів, погасив удар) → Idle.
+    enum Phase { Idle, Push, Flight, Landing }
+    Phase phase = Phase.Idle;
+    float t;            // 0..1 — де ми в поточній фазі
     float maxHeight = 0.3f;
     Transform shadow;
     SpriteRenderer shadowRenderer;
@@ -53,35 +61,63 @@ public class MoonHop : MonoBehaviour
     public void Step(bool wantMove, bool suit, float dt)
     {
         maxHeight = suit ? suitHopHeight : indoorHopHeight;
-        float seconds = suit ? suitHopSeconds : indoorHopSeconds;
+        float flight = suit ? suitFlightSeconds : indoorFlightSeconds;
+        float push = suit ? suitPushSeconds : indoorPushSeconds;
 
-        if (!IsHopping && wantMove) { IsHopping = true; t = 0f; }
-        if (IsHopping)
+        switch (phase)
         {
-            t += dt / seconds;
-            Steps += dt / seconds;
-            if (t >= 1f) // приземлились
-            {
-                Land(suit);
-                if (wantMove) t -= 1f;               // одразу наступний стрибок
-                else { IsHopping = false; t = 0f; }  // зупинились
-            }
+            case Phase.Idle:
+                if (wantMove) { phase = Phase.Push; t = 0f; }
+                break;
+
+            case Phase.Push:
+                t += dt / push;
+                if (t >= 1f) { phase = Phase.Flight; t = 0f; Kick(suit, 3); } // відштовхнувся — трохи пилу з-під ноги
+                break;
+
+            case Phase.Flight:
+                t += dt / flight;
+                if (t >= 1f)
+                {
+                    Leg = 1 - Leg;      // приземляємось на іншу ногу
+                    Kick(suit, 8);
+                    phase = wantMove ? Phase.Push : Phase.Landing;
+                    t = 0f;
+                }
+                break;
+
+            case Phase.Landing:
+                if (wantMove) { phase = Phase.Push; break; } // з приземлення одразу в новий поштовх
+                t += dt / push;
+                if (t >= 1f) { phase = Phase.Idle; t = 0f; }
+                break;
         }
 
-        // Парабола: угору швидко, на вершині «зависає», униз — як справжній політ при малій гравітації
-        Height = IsHopping ? 4f * maxHeight * t * (1f - t) : 0f;
+        // Політ — парабола: угору, «зависання» на вершині, униз (так летить усе при малій гравітації)
+        Height = phase == Phase.Flight ? 4f * maxHeight * t * (1f - t) : 0f;
 
-        squash = Mathf.MoveTowards(squash, 0f, dt * 5f);
-        if (billboard != null) billboard.ExtraScale = new Vector2(1f + squash * 0.12f, 1f - squash * 0.12f);
-
+        if (billboard != null) billboard.ExtraScale = Pose();
         UpdateShadow();
     }
 
-    void Land(bool suit)
+    /// <summary>Стиснення/витягування тіла: присідає на нозі перед поштовхом, витягується на злеті.</summary>
+    Vector2 Pose()
     {
-        squash = 1f;
+        float crouch = 0f, stretch = 0f;
+        switch (phase)
+        {
+            case Phase.Push: crouch = Mathf.Sin(t * Mathf.PI); break;          // присів і випрямився
+            case Phase.Flight: stretch = Mathf.Clamp01(1f - t / 0.3f); break;  // на злеті витягнутий
+            case Phase.Landing: crouch = 1f - t; break;                        // гасить удар
+        }
+        return new Vector2(1f + crouch * 0.07f - stretch * 0.03f, 1f - crouch * 0.14f + stretch * 0.06f);
+    }
+
+    /// <summary>Пил з-під ноги (тільки надворі — у модулі пилу немає).</summary>
+    void Kick(bool suit, int amount)
+    {
         if (!dustTried) { dustTried = true; CreateDust(); }
-        if (suit && dust != null) dust.Emit(8); // у модулі пилу немає
+        if (suit && dust != null) dust.Emit(amount);
     }
 
     // ---------- Тінь ----------

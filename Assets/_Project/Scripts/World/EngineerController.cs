@@ -39,14 +39,16 @@ public class EngineerController : MonoBehaviour
     [Tooltip("Межа карти: інженер не відійде від центру далі, ніж на стільки метрів по X і Z")]
     [SerializeField] float mapHalfSize = 200f;
     [Tooltip("Розгін і гальмування в скафандрі, м/с² (менше = більше «ковзання»)")]
-    [SerializeField] float suitAccel = 7f, suitBrake = 3f;
+    [SerializeField] float suitAccel = 7f, suitStopAccel = 8f;
     [Tooltip("Розгін і гальмування без скафандра (у модулі)")]
-    [SerializeField] float indoorAccel = 16f, indoorBrake = 12f;
+    [SerializeField] float indoorAccel = 16f, indoorStopAccel = 14f;
 
     [Header("Спрайт")]
     [SerializeField] SpriteRenderer spriteRenderer;
-    [Tooltip("Скільки кадрів анімації на один місячний стрибок")]
-    [SerializeField] float framesPerHop = 2f;
+    [Tooltip("Кадр ходьби (0..3), коли нога на землі і відштовхується: [ліва нога, права нога]. Широкий крок.")]
+    [SerializeField] int[] pushFrames = { 1, 2 };
+    [Tooltip("Кадр ходьби (0..3) у польоті після поштовху: [після лівої, після правої]. Ноги разом.")]
+    [SerializeField] int[] airFrames = { 0, 3 };
     [Tooltip("У скафандрі (надворі)")]
     public SpriteSet suit = new SpriteSet();
     [Tooltip("Без скафандра (у модулях)")]
@@ -113,7 +115,7 @@ public class EngineerController : MonoBehaviour
 
         // Бажана швидкість і плавний розгін/гальмування до неї (інерція)
         Vector3 target = ScreenToGround(input) * speed;
-        float rate = wantMove ? (suitOn ? suitAccel : indoorAccel) : (suitOn ? suitBrake : indoorBrake);
+        float rate = wantMove ? (suitOn ? suitAccel : indoorAccel) : (suitOn ? suitStopAccel : indoorStopAccel);
         velocity = Vector3.MoveTowards(velocity, target, rate * dt);
         if (Locked) velocity = Vector3.zero;
 
@@ -125,7 +127,7 @@ public class EngineerController : MonoBehaviour
         if (wantMove) facing = input;
 
         IsMoving = wantMove || velocity.sqrMagnitude > 0.25f;
-        hop.Step(IsMoving && !Locked, suitOn, dt);
+        hop.Step(wantMove && !Locked, suitOn, dt); // стрибає, поки тиснуть клавіші; відпустив — доземлюється і ковзає
         RefreshSprite();
     }
 
@@ -216,7 +218,12 @@ public class EngineerController : MonoBehaviour
         Sprite frame = idle;
         bool hopping = hop != null && hop.IsHopping;
         if (hopping && !IsEmpty(walk))
-            frame = walk[(int)(hop.Steps * framesPerHop) % walk.Length]; // кадр рухається разом зі стрибками
+        {
+            // Нога на землі — кадр поштовху цієї ноги; у польоті — кадр «ноги разом». Кожен стрибок — інша нога.
+            int[] map = hop.OnGround ? pushFrames : airFrames;
+            int i = map != null && map.Length > hop.Leg ? map[hop.Leg] : 0;
+            frame = walk[Mathf.Clamp(i, 0, walk.Length - 1)];
+        }
 
         if (frame != null) spriteRenderer.sprite = frame;
         spriteRenderer.flipX = flip;
