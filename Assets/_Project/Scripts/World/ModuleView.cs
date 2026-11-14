@@ -160,7 +160,11 @@ public class ModuleView : MonoBehaviour
         go.transform.SetParent(visual.transform, false);
         go.transform.localPosition = localPos;
         go.transform.localScale = localScale;
-        if (mat != null) go.GetComponent<Renderer>().sharedMaterial = mat;
+        var rend = go.GetComponent<Renderer>();
+        if (mat != null) rend.sharedMaterial = mat;
+        // Модуль сам тіні від сонця не ПРИЙМАЄ: інакше без даху всередині видно рвані косі тіні стін.
+        // Тіні він і далі ВІДКИДАЄ на землю надворі.
+        rend.receiveShadows = false;
         if (!collider) Destroy(go.GetComponent<Collider>());
         return go;
     }
