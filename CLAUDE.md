@@ -87,11 +87,12 @@
        Task, TaskTarget (id точки або слота), AtTaskSite,
        InsideSlot (-1 = надворі), Satiety, Health (Ok/Sick/Severe),
        Dose, InsideOnly, GoingHome
-  Modules: List<ModuleState>   Type, SlotId, BuildHoursLeft, RegolithShield, EngineerNearby
+  Modules: List<ModuleState>   Type, SlotId (номер квадратика BaseGrid), BuildHoursLeft, RegolithShield, EngineerNearby
   Robots:  List<RobotState>    Task, TargetSlot, Working
   Pois:    List<PoiState>      Id, Type (Ice/Sample/Fact/LandingPad), Discovered, Amount
   Supply: SupplyState (04)   Comms: CommsState (04)   Radiation: RadiationState (06)
   ```
+- **`BaseGrid`** — сітка бази 6×6 квадратиків, один квадратик = один модуль, `SlotId` = номер квадратика (0 — лівий нижній). `BaseGrid.CanPlace(state, slotId)` повертає `null` або ключ тексту (`error.place_outside`, `error.place_taken`): його викликає `ConstructionSystem.Order` (03), а планшет (05) малює квадратики і передає вибраний у `Order`.
 - **`GameClock`** рахує ігровий час, пауза і швидкість. Щогодини гри він викликає `Tick` у всіх систем, а наприкінці дня — `OnDayEnd`.
 - **`ISimSystem`** має два методи:
   - `Tick(GameState s, float hours, DayReport r)` — що змінилося за цей шматок часу;

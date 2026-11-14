@@ -299,6 +299,8 @@
     { "key": "msg.2.text", "text": "Kai has a cold. Med kits will come with the next delivery." },
     { "key": "msg.3.from", "text": "SPACE WEATHER" },
     { "key": "msg.3.text", "text": "Solar storms are real. In May 2024 a very strong one reached Earth." },
-    { "key": "msg.archive", "text": "ARCHIVE" }
+    { "key": "msg.archive", "text": "ARCHIVE" },
+    { "key": "error.place_outside", "text": "This spot is outside the base" },
+    { "key": "error.place_taken", "text": "Something is already built here" }
   ]
 }

@@ -37,6 +37,7 @@ public class TabletController : MonoBehaviour
     readonly Dictionary<string, Button> tabButtons = new Dictionary<string, Button>();
     readonly Dictionary<string, VisualElement> panes = new Dictionary<string, VisualElement>();
     TabletBalance balance;
+    BuildGridView buildGrid;   // MAP tab: building on the base grid
 
     // ---------- start / stop ----------
 
@@ -94,6 +95,8 @@ public class TabletController : MonoBehaviour
         BuildSegments("water");
         BuildSegments("oxygen");
         BuildSegments("food");
+
+        if (panes.TryGetValue("map", out var mapPane)) buildGrid = new BuildGridView(mapPane);
 
         GameEvents.StateChanged += Refresh;
         Loc.LanguageChanged += ApplyTexts;
@@ -219,6 +222,8 @@ public class TabletController : MonoBehaviour
         SetBar("water", s.Res.Water, start.water, ls.waterAlarmPercent);
         SetBar("oxygen", s.Res.Oxygen, ls.oxygenTankMax, ls.oxygenAlarmPercent);
         SetBar("food", s.Res.Food, start.food, foodLowPercent);
+
+        buildGrid?.Refresh();
     }
 
     void BuildSegments(string kind)

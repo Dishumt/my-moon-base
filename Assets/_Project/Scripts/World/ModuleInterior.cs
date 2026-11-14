@@ -5,7 +5,7 @@ using UnityEngine;
 /// «Як у Project Zomboid»: коли інженер заходить у модуль, дах плавно зникає
 /// і вмикається світло всередині. Вулицю затемнює OutdoorDarkening (на Sun).
 /// Цей компонент додає ModuleView сам — руками ставити не треба.
-/// Замість фізичного тригера перевіряємо, чи інженер у прямокутнику слота:
+/// Замість фізичного тригера перевіряємо, чи інженер у прямокутнику модуля:
 /// так простіше і не потрібні Rigidbody.
 /// </summary>
 public class ModuleInterior : MonoBehaviour
@@ -16,7 +16,7 @@ public class ModuleInterior : MonoBehaviour
 
     static Transform engineer;
 
-    ModuleSlot slot;
+    ModuleView slot;
     Renderer roof;
     Light interiorLight;
     MaterialPropertyBlock block;
@@ -26,7 +26,7 @@ public class ModuleInterior : MonoBehaviour
 
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
-    public void Setup(ModuleSlot slot, Renderer roof, Light interiorLight)
+    public void Setup(ModuleView slot, Renderer roof, Light interiorLight)
     {
         this.slot = slot;
         this.roof = roof;

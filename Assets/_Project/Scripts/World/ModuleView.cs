@@ -2,8 +2,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Малює модуль у своєму слоті, читаючи GameState:
-///  - модуля немає → порожньо (тільки рамка в Scene);
+/// Малює один модуль у квадратику сітки бази, читаючи GameState.
+/// Створює його BaseView сам — руками в сцену не став.
+///  - модуля немає → порожньо;
 ///  - будується (BuildHoursLeft > 0) → напівпрозоре риштування, яке росте з прогресом;
 ///  - готовий → коробка: підлога, низькі стіни з дверима, дах окремим об'єктом.
 /// Коробку будує код із простих кубів, тож вручну її збирати не треба.
@@ -13,21 +14,37 @@ public class ModuleView : MonoBehaviour
 {
     enum Shown { Nothing, Building, Built }
 
-    ModuleSlot slot;
+    /// <summary>Номер квадратика (BaseGrid), який малює цей об'єкт.</summary>
+    public int SlotId { get; private set; } = -1;
+    Vector2 size;              // розмір модуля в метрах (з ModuleLook)
+
     Shown shown = Shown.Nothing;
     ModuleType shownType;
     GameObject visual;         // усе, що зараз намальовано
     Transform scaffold;        // риштування (тільки під час будови)
     float totalBuildHours;     // найбільше BuildHoursLeft, що ми бачили = 100% роботи
 
-    void Awake() => slot = GetComponent<ModuleSlot>();
+    /// <summary>Викликає BaseView одразу після створення.</summary>
+    public void Init(int slotId)
+    {
+        SlotId = slotId;
+        size = ModuleLook.Instance != null ? ModuleLook.Instance.moduleSize : new Vector2(6f, 6f);
+        transform.position = BaseGrid.ToWorld(slotId);
+    }
+
+    /// <summary>Чи точка світу всередині прямокутника модуля (не в проході).</summary>
+    public bool Contains(Vector3 worldPos)
+    {
+        Vector3 p = transform.InverseTransformPoint(worldPos);
+        return Mathf.Abs(p.x) < size.x * 0.5f && Mathf.Abs(p.z) < size.y * 0.5f;
+    }
 
     void Update()
     {
         var game = GameBootstrap.Instance;
-        if (game == null || game.State == null) return;
+        if (game == null || game.State == null || SlotId < 0) return;
 
-        var m = game.State.FindModule(slot.slotId);
+        var m = game.State.FindModule(SlotId);
         Shown want = m == null ? Shown.Nothing : (m.IsBuilt ? Shown.Built : Shown.Building);
 
         if (want != shown || (m != null && m.Type != shownType)) Rebuild(want, m);
@@ -72,7 +89,7 @@ public class ModuleView : MonoBehaviour
         float progress = totalBuildHours > 0f ? 1f - m.BuildHoursLeft / totalBuildHours : 0f;
 
         float h = Mathf.Lerp(0.1f, ModuleLook.Instance.wallHeight, progress);
-        scaffold.localScale = new Vector3(slot.size.x, h, slot.size.y);
+        scaffold.localScale = new Vector3(size.x, h, size.y);
         scaffold.localPosition = new Vector3(0f, h * 0.5f, 0f);
     }
 
@@ -80,7 +97,7 @@ public class ModuleView : MonoBehaviour
 
     void BuildModule(ModuleLook look)
     {
-        float w = slot.size.x, d = slot.size.y, h = look.wallHeight, t = look.wallThickness;
+        float w = size.x, d = size.y, h = look.wallHeight, t = look.wallThickness;
         var wall = look.wallMaterial;
 
         // Підлога (без колайдера: земля рівна, інженер ходить по висоті 0)
@@ -112,7 +129,7 @@ public class ModuleView : MonoBehaviour
         light.shadows = LightShadows.None;
 
         var interior = visual.AddComponent<ModuleInterior>();
-        interior.Setup(slot, roof.GetComponent<Renderer>(), light);
+        interior.Setup(this, roof.GetComponent<Renderer>(), light);
     }
 
     /// <summary>Створює куб-коробку всередині visual.</summary>

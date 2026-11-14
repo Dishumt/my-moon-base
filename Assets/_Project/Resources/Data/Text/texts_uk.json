@@ -299,6 +299,8 @@
     { "key": "msg.2.text", "text": "Кай застудився. Аптечки прилетять з наступною поставкою." },
     { "key": "msg.3.from", "text": "КОСМІЧНА ПОГОДА" },
     { "key": "msg.3.text", "text": "Сонячні бурі справжні. У травні 2024 року дуже сильна буря дійшла до Землі." },
-    { "key": "msg.archive", "text": "ARCHIVE" }
+    { "key": "msg.archive", "text": "ARCHIVE" },
+    { "key": "error.place_outside", "text": "Це місце поза базою" },
+    { "key": "error.place_taken", "text": "Тут уже щось збудовано" }
   ]
 }
