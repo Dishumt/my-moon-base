@@ -26,14 +26,13 @@ public class ModuleInterior : MonoBehaviour
 
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
-    public void Setup(ModuleView slot, Renderer roof, Light interiorLight)
+    public void Setup(ModuleView slot, Renderer roof, Light interiorLight, Color roofColor)
     {
+        this.roofColor = roofColor;
         this.slot = slot;
         this.roof = roof;
         this.interiorLight = interiorLight;
         block = new MaterialPropertyBlock();
-        if (roof.sharedMaterial != null && roof.sharedMaterial.HasProperty(BaseColor))
-            roofColor = roof.sharedMaterial.GetColor(BaseColor);
     }
 
     void Update()
@@ -68,7 +67,7 @@ public class ModuleInterior : MonoBehaviour
         if (roof == null) return;
         roof.enabled = roofAlpha > 0.01f; // зовсім прозорий дах просто вимикаємо
         var c = roofColor;
-        c.a = roofColor.a * roofAlpha;
+        c.a = roofAlpha;
         block.SetColor(BaseColor, c);
         roof.SetPropertyBlock(block);
     }
