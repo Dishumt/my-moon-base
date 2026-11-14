@@ -12,6 +12,44 @@
     { "key": "hud.oxygen", "text": "Oxygen" },
     { "key": "hud.food", "text": "Food" },
     { "key": "hud.battery", "text": "Battery" },
-    { "key": "error.not_implemented", "text": "This is not ready yet." }
+    { "key": "error.not_implemented", "text": "This is not ready yet." },
+
+    { "key": "hud.pause", "text": "Pause" },
+    { "key": "hud.speed1", "text": "x1" },
+    { "key": "hud.speed2", "text": "x2" },
+    { "key": "hud.power", "text": "Power" },
+    { "key": "hud.comms_on", "text": "Contact with Earth" },
+    { "key": "hud.comms_off", "text": "No contact with Earth" },
+    { "key": "hud.tablet", "text": "Tablet" },
+
+    { "key": "tablet.tab.map", "text": "Map" },
+    { "key": "tablet.tab.resources", "text": "Resources" },
+    { "key": "tablet.tab.crew", "text": "Crew" },
+    { "key": "tablet.tab.supply", "text": "Supply" },
+    { "key": "tablet.tab.comms", "text": "Comms" },
+    { "key": "tablet.close", "text": "Close" },
+
+    { "key": "res.free_blocks", "text": "Free power blocks: {0}" },
+    { "key": "res.no_free_blocks", "text": "No free blocks. Take one from another system." },
+    { "key": "res.lifesupport", "text": "Life support" },
+    { "key": "res.lifesupport.desc", "text": "Makes oxygen from water." },
+    { "key": "res.greenhouse", "text": "Greenhouse" },
+    { "key": "res.greenhouse.desc", "text": "Grows food. More power means a bigger harvest." },
+
+    { "key": "crew.satiety", "text": "Fullness" },
+    { "key": "crew.health", "text": "Health" },
+    { "key": "crew.dose", "text": "Radiation dose" },
+
+    { "key": "report.title", "text": "Evening report" },
+    { "key": "report.new_day", "text": "New day" },
+    { "key": "report.oxygen_low", "text": "Oxygen went down: life support had too little water. Send the geologist to look for ice." },
+    { "key": "report.sick", "text": "{0} caught a cold and works slower until medicine arrives." },
+
+    { "key": "storm.warning", "text": "Solar storm in {0} hours! This is a real event from NASA DONKI." },
+    { "key": "storm.all_inside", "text": "Everyone inside!" },
+
+    { "key": "term.dose", "text": "Radiation dose: how many harmful rays the body got." },
+    { "key": "term.regolith", "text": "Regolith: loose Moon dust and small rocks." },
+    { "key": "term.solar_storm", "text": "Solar storm: a burst of harmful rays from the Sun." }
   ]
 }

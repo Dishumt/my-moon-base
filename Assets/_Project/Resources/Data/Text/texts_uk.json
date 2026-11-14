@@ -12,6 +12,44 @@
     { "key": "hud.oxygen", "text": "Кисень" },
     { "key": "hud.food", "text": "Їжа" },
     { "key": "hud.battery", "text": "Батарея" },
-    { "key": "error.not_implemented", "text": "Це ще не готово." }
+    { "key": "error.not_implemented", "text": "Це ще не готово." },
+
+    { "key": "hud.pause", "text": "Пауза" },
+    { "key": "hud.speed1", "text": "x1" },
+    { "key": "hud.speed2", "text": "x2" },
+    { "key": "hud.power", "text": "Енергія" },
+    { "key": "hud.comms_on", "text": "Зв'язок із Землею є" },
+    { "key": "hud.comms_off", "text": "Зв'язку із Землею немає" },
+    { "key": "hud.tablet", "text": "Планшет" },
+
+    { "key": "tablet.tab.map", "text": "Мапа" },
+    { "key": "tablet.tab.resources", "text": "Ресурси" },
+    { "key": "tablet.tab.crew", "text": "Екіпаж" },
+    { "key": "tablet.tab.supply", "text": "Поставки" },
+    { "key": "tablet.tab.comms", "text": "Зв'язок" },
+    { "key": "tablet.close", "text": "Закрити" },
+
+    { "key": "res.free_blocks", "text": "Вільних блоків енергії: {0}" },
+    { "key": "res.no_free_blocks", "text": "Вільних блоків немає. Забери один в іншої системи." },
+    { "key": "res.lifesupport", "text": "Життєзабезпечення" },
+    { "key": "res.lifesupport.desc", "text": "Робить кисень із води." },
+    { "key": "res.greenhouse", "text": "Теплиця" },
+    { "key": "res.greenhouse.desc", "text": "Вирощує їжу. Більше енергії — більший урожай." },
+
+    { "key": "crew.satiety", "text": "Ситість" },
+    { "key": "crew.health", "text": "Здоров'я" },
+    { "key": "crew.dose", "text": "Доза радіації" },
+
+    { "key": "report.title", "text": "Вечірній звіт" },
+    { "key": "report.new_day", "text": "Новий день" },
+    { "key": "report.oxygen_low", "text": "Кисню стало менше: життєзабезпеченню бракувало води. Відправ геолога шукати лід." },
+    { "key": "report.sick", "text": "{0} застудився й працює повільніше, поки не прилетять ліки." },
+
+    { "key": "storm.warning", "text": "Сонячна буря через {0} год! Це справжня подія з NASA DONKI." },
+    { "key": "storm.all_inside", "text": "Всі в укриття!" },
+
+    { "key": "term.dose", "text": "Доза радіації — скільки шкідливих променів отримало тіло." },
+    { "key": "term.regolith", "text": "Реголіт — місячний пил і дрібне каміння." },
+    { "key": "term.solar_storm", "text": "Сонячна буря — викид шкідливих променів із Сонця." }
   ]
 }
