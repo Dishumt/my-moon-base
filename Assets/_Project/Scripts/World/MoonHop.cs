@@ -21,10 +21,9 @@ public class MoonHop : MonoBehaviour
     [SerializeField] float suitHopHeight = 0.32f;     // метрів
     [SerializeField] float suitFlightSeconds = 0.55f; // скільки летить
     [SerializeField] float suitPushSeconds = 0.16f;   // скільки стоїть на нозі: присів → відштовхнувся
-    [Header("Без скафандра (у модулі)")]
-    [SerializeField] float indoorHopHeight = 0.12f;
-    [SerializeField] float indoorFlightSeconds = 0.32f;
-    [SerializeField] float indoorPushSeconds = 0.1f;
+    [Header("Без скафандра (у модулі) — звичайний крок з легким погойдуванням")]
+    [SerializeField] float indoorBob = 0.05f;          // наскільки підстрибує на кожному кроці, метрів
+    [SerializeField] float indoorStepSeconds = 0.28f;  // скільки триває один крок (2 кадри анімації)
     [Header("Тінь")]
     [SerializeField] float shadowSize = 0.9f;         // діаметр плями, метрів
 
@@ -33,15 +32,21 @@ public class MoonHop : MonoBehaviour
     /// <summary>Чи персонаж зараз у русі стрибками (а не стоїть).</summary>
     public bool IsHopping => phase != Phase.Idle;
     /// <summary>Чи нога зараз на землі (поштовх або приземлення), а не в польоті.</summary>
-    public bool OnGround => phase != Phase.Flight;
+    public bool OnGround => phase != Phase.Flight; // у звичайній ході (Walk) теж true
     /// <summary>Яка нога зараз працює: 0 або 1. Кожен стрибок — інша нога.</summary>
     public int Leg { get; private set; }
+    /// <summary>true = звичайна хода (без скафандра): кадри йдуть по колу, номер кадру — WalkFrame.</summary>
+    public bool UseWalkCycle => phase == Phase.Walk;
+    /// <summary>Номер кадру ходьби (рахує безперервно, бери за модулем кількості кадрів).</summary>
+    public int WalkFrame { get; private set; }
 
     // Один стрибок:  Push (присів на нозі й відштовхнувся) → Flight (летить) → приземлився на ІНШУ ногу → Push ...
     // Коли гравець відпустив клавіші: після польоту — Landing (присів, погасив удар) → Idle.
-    enum Phase { Idle, Push, Flight, Landing }
+    enum Phase { Idle, Push, Flight, Landing, Walk }
     Phase phase = Phase.Idle;
     float t;            // 0..1 — де ми в поточній фазі
+    float walkTime;     // скільки секунд іде звичайним кроком
+    bool lastSuit = true;
     float maxHeight = 0.3f;
     Transform shadow;
     SpriteRenderer shadowRenderer;
@@ -60,9 +65,14 @@ public class MoonHop : MonoBehaviour
     /// <summary>Викликати щокадру: чи персонаж хоче йти, у скафандрі він чи ні.</summary>
     public void Step(bool wantMove, bool suit, float dt)
     {
-        maxHeight = suit ? suitHopHeight : indoorHopHeight;
-        float flight = suit ? suitFlightSeconds : indoorFlightSeconds;
-        float push = suit ? suitPushSeconds : indoorPushSeconds;
+        // Зняв або одягнув скафандр (у шлюзі) — починаємо з місця
+        if (suit != lastSuit) { lastSuit = suit; phase = Phase.Idle; t = 0f; walkTime = 0f; }
+
+        if (!suit) { StepWalk(wantMove, dt); return; }
+
+        maxHeight = suitHopHeight;
+        float flight = suitFlightSeconds;
+        float push = suitPushSeconds;
 
         switch (phase)
         {
@@ -97,6 +107,21 @@ public class MoonHop : MonoBehaviour
         Height = phase == Phase.Flight ? 4f * maxHeight * t * (1f - t) : 0f;
 
         if (billboard != null) billboard.ExtraScale = Pose();
+        UpdateShadow();
+    }
+
+    /// <summary>Без скафандра: звичайний крок, кадри по колу, легке погойдування на кожному кроці.</summary>
+    void StepWalk(bool wantMove, float dt)
+    {
+        maxHeight = indoorBob;
+        if (wantMove) { phase = Phase.Walk; walkTime += dt; }
+        else { phase = Phase.Idle; walkTime = 0f; }
+
+        float steps = walkTime / indoorStepSeconds;
+        WalkFrame = (int)(steps * 2f);                                  // 2 кадри на крок
+        Height = phase == Phase.Walk ? indoorBob * Mathf.Abs(Mathf.Sin(steps * Mathf.PI)) : 0f;
+
+        if (billboard != null) billboard.ExtraScale = Vector2.one;
         UpdateShadow();
     }
 

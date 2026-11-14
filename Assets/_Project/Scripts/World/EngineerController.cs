@@ -217,7 +217,9 @@ public class EngineerController : MonoBehaviour
 
         Sprite frame = idle;
         bool hopping = hop != null && hop.IsHopping;
-        if (hopping && !IsEmpty(walk))
+        if (hopping && !IsEmpty(walk) && hop.UseWalkCycle)
+            frame = walk[hop.WalkFrame % walk.Length]; // без скафандра — звичайний крок, усі кадри по колу
+        else if (hopping && !IsEmpty(walk))
         {
             // Нога на землі — кадр поштовху цієї ноги; у польоті — кадр «ноги разом». Кожен стрибок — інша нога.
             int[] map = hop.OnGround ? pushFrames : airFrames;
