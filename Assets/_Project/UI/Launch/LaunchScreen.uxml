@@ -2,7 +2,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="/Assets/_Project/UI/Common/Theme.uss" />
     <Style src="/Assets/_Project/UI/Launch/LaunchScreen.uss" />
-    <ui:VisualElement name="launch-stage" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;">
+    <ui:VisualElement name="launch-stage" class="launch-stage">
         <ui:VisualElement class="backdrop" />
         <ui:VisualElement name="launch" class="tablet tablet--open">
             <ui:VisualElement class="cb cb--tl" picking-mode="Ignore" />
@@ -12,21 +12,22 @@
 
             <ui:VisualElement class="thead">
                 <ui:Label text="BASE-OS V1.2" class="brand" />
-                <ui:Label text="// CARGO LIST · ORDER #2" style="margin-left: 16px;" />
+                <ui:Label name="title-label" text="// CARGO LIST" style="margin-left: 16px;" />
                 <ui:VisualElement class="grow" />
-                <ui:VisualElement class="led led--ok" />
-                <ui:Label text="LINK OK" />
+                <ui:VisualElement name="link-led" class="led led--ok" />
+                <ui:Label name="status-label" text="LINK OK" class="mr-16" />
+                <ui:Button name="close-button" text="X" class="btn btn--small" />
             </ui:VisualElement>
 
             <ui:VisualElement class="body">
 
                 <ui:VisualElement name="cargo-panel" class="panel pad cargo-panel mr-16">
-                    <ui:Label text="SELECT CARGO" class="t-label mb-12" />
+                    <ui:Label name="cargo-title" text="SELECT CARGO" class="t-label mb-12" />
                     <ui:VisualElement name="cargo-list" />
                 </ui:VisualElement>
 
                 <ui:VisualElement name="ship-panel" class="panel panel--side ship-panel">
-                    <ui:Label text="SHIP" class="t-label mb-8" />
+                    <ui:Label name="ship-title" text="SHIP" class="t-label mb-8" />
                     <ui:VisualElement class="ship-area">
                         <ui:VisualElement name="ship" class="ship">
                             <ui:VisualElement class="ship-nose-tip" />
@@ -41,6 +42,7 @@
                             <ui:VisualElement class="ship-flame-core" />
                         </ui:VisualElement>
                     </ui:VisualElement>
+                    <ui:Label name="seats-label" text="" class="t-body mb-4" />
                     <ui:Label name="mass-label" text="Mass: 1600 kg" class="t-body c-acc mb-8" />
                     <ui:VisualElement class="mass-bar">
                         <ui:VisualElement name="mass-crew" class="mass-crew" />
@@ -48,9 +50,9 @@
                     </ui:VisualElement>
                     <ui:VisualElement class="legend">
                         <ui:VisualElement class="legend-dot legend-crew" />
-                        <ui:Label text="CREW" class="t-label mr-16" />
+                        <ui:Label name="legend-crew" text="CREW" class="t-label mr-16" />
                         <ui:VisualElement class="legend-dot legend-cargo" />
-                        <ui:Label text="CARGO" class="t-label" />
+                        <ui:Label name="legend-cargo" text="CARGO" class="t-label" />
                     </ui:VisualElement>
                 </ui:VisualElement>
 
@@ -70,7 +72,8 @@
                 </ui:VisualElement>
 
                 <ui:VisualElement class="launch-box">
-                    <ui:Label name="risk-label" text="Risk: 0%" class="t-big mb-8" />
+                    <ui:Label name="risk-label" text="Risk: 0%" class="t-big mb-4" />
+                    <ui:Label name="hint-label" text="" class="t-body mb-8" />
                     <ui:Button name="launch-button" text="LAUNCH" class="btn btn--primary launch-btn" />
                 </ui:VisualElement>
             </ui:VisualElement>

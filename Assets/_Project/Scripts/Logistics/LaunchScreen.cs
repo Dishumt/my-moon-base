@@ -4,203 +4,361 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Екран запуску: вибір вантажу, палива, світлофор, ризик і політ ракети.
-/// Працює сам по собі (без GameState). Вішається на об'єкт з UIDocument.
+/// Екран запуску на UI Toolkit (розкладка UI/Launch/LaunchScreen.uxml).
+/// Зліва вантажі (− / +), справа корабель і смужка маси (екіпаж окремо), внизу паливо,
+/// світлофор, «Ризик: N%» і кнопка ЗАПУСК. Кожна зміна одразу перераховує світлофор.
+/// Поки екран відкритий — гра на паузі (Clock.PushModal / PopModal).
+/// Режими: перша місія (4 місця екіпажу, політ з анімацією) і поставка (замовлення йде у вікно зв'язку).
+/// Числа — з Launch/launch.json через SupplySystem, тексти — через Loc.Get.
 /// </summary>
 [RequireComponent(typeof(UIDocument))]
 public class LaunchScreen : MonoBehaviour
 {
-    // --- Тимчасові числа (потім підуть у launch.json) ---
-    const float EmptyShipKg = 1000f;   // маса порожнього корабля
-    const float FuelFactor = 1.5f;     // потрібне паливо = 1.5 * (вся маса)
-    const float PersonKg = 150f;       // маса однієї людини
-    const int CrewSeats = 4;           // місця екіпажу вже зайняті
-    const float GreenFrom = 1.1f;      // запас >= 1.1 -> зелений
-    const float RedBelow = 0.9f;       // запас < 0.9 -> червоний
-    const float ChanceAtRed = 30f;     // шанс успіху (%) при запасі 0.9
-    const float ChanceAtGreen = 95f;   // шанс успіху (%) при запасі 1.1
-    const float FlightSeconds = 3f;    // скільки триває політ
-    const float MaxPayloadKg = 3000f;  // для смужки маси
+    [Tooltip("Відкрити екран одразу після старту сцени")]
+    [SerializeField] bool openOnStart = true;
 
-    class Item
-    {
-        public string name;
-        public float massKg;
-        public int max;
-        public int count;
-        public Label countLabel;
-    }
+    [Tooltip("Картинка ракети (Art/Launch/rocket.png від ролі 02). Порожньо — ракета з прямокутників.")]
+    [SerializeField] Texture2D rocketTexture;
 
-    readonly Item[] items =
-    {
-        new Item { name = "Water",     massKg = 100, max = 10 },
-        new Item { name = "Food",      massKg = 50,  max = 10 },
-        new Item { name = "Materials", massKg = 150, max = 10 },
-        new Item { name = "Medkits",   massKg = 20,  max = 10 },
-    };
+    [Tooltip("Скільки секунд летить ракета")]
+    [SerializeField] float flightSeconds = 3f;
 
-    VisualElement ship, massCrew, massCargo, lightRed, lightYellow, lightGreen, cargoList;
-    Label massLabel, fuelLabel, riskLabel, resultLabel;
+    public bool IsOpen { get; private set; }
+    public bool IsFirstMission { get; private set; }
+
+    VisualElement stage, cargoList, ship, massBar, massCrew, massCargo, lightRed, lightYellow, lightGreen, linkLed;
+    Label titleLabel, statusLabel, cargoTitle, shipTitle, legendCrew, legendCargo;
+    Label seatsLabel, massLabel, fuelLabel, riskLabel, hintLabel, resultLabel;
     Slider fuelSlider;
-    Button launchButton;
+    Button launchButton, closeButton;
+    bool animating, modalPushed, ready;
 
-    float chancePercent;
+    GameState State => GameBootstrap.Instance != null ? GameBootstrap.Instance.State : null;
+    SupplySystem Supply => GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<SupplySystem>() : null;
+    CommsSystem Comms => GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<CommsSystem>() : null;
 
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
-
-        cargoList = root.Q<VisualElement>("cargo-list");
-        ship = root.Q<VisualElement>("ship");
-        massCrew = root.Q<VisualElement>("mass-crew");
-        massCargo = root.Q<VisualElement>("mass-cargo");
-        lightRed = root.Q<VisualElement>("light-red");
-        lightYellow = root.Q<VisualElement>("light-yellow");
-        lightGreen = root.Q<VisualElement>("light-green");
+        stage = root.Q("launch-stage");
+        cargoList = root.Q("cargo-list");
+        ship = root.Q("ship");
+        massBar = root.Q(className: "mass-bar");
+        massCrew = root.Q("mass-crew");
+        massCargo = root.Q("mass-cargo");
+        lightRed = root.Q("light-red");
+        lightYellow = root.Q("light-yellow");
+        lightGreen = root.Q("light-green");
+        linkLed = root.Q("link-led");
+        titleLabel = root.Q<Label>("title-label");
+        statusLabel = root.Q<Label>("status-label");
+        cargoTitle = root.Q<Label>("cargo-title");
+        shipTitle = root.Q<Label>("ship-title");
+        legendCrew = root.Q<Label>("legend-crew");
+        legendCargo = root.Q<Label>("legend-cargo");
+        seatsLabel = root.Q<Label>("seats-label");
         massLabel = root.Q<Label>("mass-label");
         fuelLabel = root.Q<Label>("fuel-label");
         riskLabel = root.Q<Label>("risk-label");
+        hintLabel = root.Q<Label>("hint-label");
         resultLabel = root.Q<Label>("result-label");
         fuelSlider = root.Q<Slider>("fuel-slider");
         launchButton = root.Q<Button>("launch-button");
+        closeButton = root.Q<Button>("close-button");
 
-        if (cargoList == null || ship == null || fuelSlider == null || launchButton == null)
+        ready = stage != null && cargoList != null && ship != null && fuelSlider != null && launchButton != null;
+        if (!ready)
         {
             Debug.LogError("LaunchScreen: не знайдено елементи. Перевір, що в UIDocument вказано LaunchScreen.uxml.");
             return;
         }
 
-        BuildCargoRows();
-        fuelSlider.RegisterValueChangedCallback(evt => Recalc());
+        if (rocketTexture != null)
+        {
+            ship.style.backgroundImage = new StyleBackground(rocketTexture);
+            ship.AddToClassList("ship--image");
+        }
+
+        fuelSlider.RegisterValueChangedCallback(OnFuelChanged);
         launchButton.clicked += OnLaunchClicked;
-        Recalc();
+        if (closeButton != null) closeButton.clicked += Close;
+        Loc.LanguageChanged += Refresh;
+        GameEvents.StateChanged += Refresh;
+
+        SetVisible(false);
     }
 
     void OnDisable()
     {
-        if (launchButton != null) launchButton.clicked -= OnLaunchClicked;
+        if (!ready) return;
+        fuelSlider.UnregisterValueChangedCallback(OnFuelChanged);
+        launchButton.clicked -= OnLaunchClicked;
+        if (closeButton != null) closeButton.clicked -= Close;
+        Loc.LanguageChanged -= Refresh;
+        GameEvents.StateChanged -= Refresh;
+        PopModal();
     }
+
+    void Start()
+    {
+        if (openOnStart) Open();
+    }
+
+    // ---------- Відкрити / закрити ----------
+
+    /// <summary>Відкрити: перша місія, якщо вона ще не долетіла, інакше — замовлення поставки.</summary>
+    public void Open()
+    {
+        if (!ready) return;
+        if (State == null || Supply == null)
+        {
+            Debug.LogError("LaunchScreen: у сцені немає GameBootstrap (об'єкт Game).");
+            return;
+        }
+        IsFirstMission = !State.Supply.FirstMissionDone;
+        IsOpen = true;
+        if (!modalPushed) { GameBootstrap.Instance.Clock.PushModal(); modalPushed = true; }
+        SetVisible(true);
+        SetResult(null);
+        PlaceShip(0f, false);
+        BuildCargoRows();
+        Refresh();
+    }
+
+    public void Close()
+    {
+        if (animating) return;
+        // першу місію не можна просто закрити: спершу треба долетіти
+        if (IsFirstMission && State != null && !State.Supply.FirstMissionDone)
+        {
+            SetResult("launch.must_launch");
+            return;
+        }
+        IsOpen = false;
+        SetVisible(false);
+        PopModal();
+    }
+
+    void PopModal()
+    {
+        if (!modalPushed) return;
+        modalPushed = false;
+        if (GameBootstrap.Instance != null && GameBootstrap.Instance.Clock != null) GameBootstrap.Instance.Clock.PopModal();
+    }
+
+    void SetVisible(bool visible) => stage.EnableInClassList("launch-stage--hidden", !visible);
+
+    void SetResult(string key) { if (resultLabel != null) resultLabel.text = string.IsNullOrEmpty(key) ? "" : Loc.Get(key); }
+
+    static void SetText(Label l, string text) { if (l != null) l.text = text; }
+
+    // ---------- Вантажі ----------
 
     void BuildCargoRows()
     {
         cargoList.Clear();
-        foreach (var item in items)
+        foreach (var item in Supply.Catalog.items)
         {
-            var row = new VisualElement();
+            if (item.crewSeats > 0) continue; // місця людей показуємо на кораблі окремо
+            string id = item.id;
+
+            var row = new VisualElement { userData = item };
             row.AddToClassList("cargo-row");
 
-            var nameLabel = new Label(item.name);
+            var nameLabel = new Label { name = "name" };
             nameLabel.AddToClassList("cargo-name");
-
-            var minus = new Button(() => Change(item, -1)) { text = "-" };
+            var massText = new Label { name = "mass" };
+            massText.AddToClassList("cargo-mass");
+            var minus = new Button(() => ChangeCargo(id, -1)) { text = "−" };
             minus.AddToClassList("small-btn");
-
-            item.countLabel = new Label(item.count.ToString());
-            item.countLabel.AddToClassList("cargo-count");
-
-            var plus = new Button(() => Change(item, +1)) { text = "+" };
+            var count = new Label { name = "count" };
+            count.AddToClassList("cargo-count");
+            var plus = new Button(() => ChangeCargo(id, +1)) { text = "+" };
             plus.AddToClassList("small-btn");
 
-            row.Add(nameLabel);
-            row.Add(minus);
-            row.Add(item.countLabel);
-            row.Add(plus);
+            row.Add(nameLabel); row.Add(massText); row.Add(minus); row.Add(count); row.Add(plus);
             cargoList.Add(row);
         }
     }
 
-    void Change(Item item, int delta)
+    void ChangeCargo(string id, int delta)
     {
-        item.count = Mathf.Clamp(item.count + delta, 0, item.max);
-        item.countLabel.text = item.count.ToString();
-        Recalc();
+        if (animating) return;
+        SetResult(Supply.ChangeCargo(State, id, delta));
+        Refresh();
     }
 
-    // Рахує масу, паливо, колір світлофора і ризик
-    void Recalc()
+    void OnFuelChanged(ChangeEvent<float> e)
     {
-        float cargoKg = 0f;
-        foreach (var item in items) cargoKg += item.count * item.massKg;
+        if (animating || State == null || Supply == null) return;
+        SetResult(Supply.SetFuel(State, Mathf.Round(e.newValue / 50f) * 50f));
+        Refresh();
+    }
 
-        float peopleKg = CrewSeats * PersonKg;
-        float totalKg = EmptyShipKg + cargoKg + peopleKg;
-        float neededFuel = FuelFactor * totalKg;
-        float fuel = Mathf.Round(fuelSlider.value / 10f) * 10f;
-        float reserve = fuel / neededFuel;
+    // ---------- Перерахунок ----------
 
-        string color;
-        if (reserve >= GreenFrom) { color = "green"; chancePercent = 100f; }
-        else if (reserve < RedBelow) { color = "red"; chancePercent = 0f; }
-        else
+    void Refresh()
+    {
+        if (!ready || !IsOpen || State == null || Supply == null) return;
+        var s = State;
+        var data = Supply.Data;
+        var r = Supply.Evaluate(s, IsFirstMission);
+        bool editable = !animating && Supply.CanEdit(s, IsFirstMission);
+
+        // заголовки
+        SetText(titleLabel, Loc.Get(IsFirstMission ? "launch.title_first" : "launch.title_supply"));
+        SetText(cargoTitle, Loc.Get("launch.cargo"));
+        SetText(shipTitle, Loc.Get("launch.ship"));
+        SetText(legendCrew, Loc.Get("launch.legend_crew"));
+        SetText(legendCargo, Loc.Get("launch.legend_cargo"));
+        launchButton.text = Loc.Get(IsFirstMission ? "launch.go" : "launch.send");
+        launchButton.SetEnabled(editable);
+        fuelSlider.SetEnabled(editable);
+
+        // зв'язок (для поставки)
+        bool link = IsFirstMission || (Comms != null && Comms.IsOpen(s));
+        if (linkLed != null)
         {
-            color = "yellow";
-            float k = (reserve - RedBelow) / (GreenFrom - RedBelow);
-            chancePercent = Mathf.Lerp(ChanceAtRed, ChanceAtGreen, k);
+            linkLed.EnableInClassList("led--ok", link);
+            linkLed.EnableInClassList("led--bad", !link);
+        }
+        SetText(statusLabel, IsFirstMission
+            ? Loc.Get("launch.link_ok")
+            : Loc.Get("launch.status." + s.Supply.Status) + " · " + Loc.Get(link ? "launch.link_ok" : "launch.link_off"));
+
+        // вантажі
+        foreach (var row in cargoList.Children())
+        {
+            if (!(row.userData is CargoItemData item)) continue;
+            row.Q<Label>("name").text = Loc.Get(item.nameKey);
+            row.Q<Label>("mass").text = Loc.Get("launch.kg", item.massKg.ToString("0"));
+            row.Q<Label>("count").text = s.Supply.Count(item.id).ToString();
+            row.SetEnabled(editable);
         }
 
-        massLabel.text = "Mass: " + totalKg + " kg";
-        fuelLabel.text = "Fuel: " + fuel + " kg (needed: " + Mathf.Round(neededFuel) + " kg)";
-        riskLabel.text = "Risk: " + Mathf.Round(100f - chancePercent) + "%";
-        resultLabel.text = "";
+        // паливо
+        fuelSlider.lowValue = 0f;
+        fuelSlider.highValue = data.maxFuelKg;
+        fuelSlider.SetValueWithoutNotify(r.FuelKg);
+        SetText(fuelLabel, Loc.Get("launch.fuel_value", r.FuelKg.ToString("0"), r.FuelNeededKg.ToString("0")));
 
-        float crewPct = Mathf.Clamp01(peopleKg / MaxPayloadKg) * 100f;
-        float cargoPct = Mathf.Clamp(cargoKg / MaxPayloadKg * 100f, 0f, 100f - crewPct);
-        massCrew.style.width = Length.Percent(crewPct);
-        massCargo.style.width = Length.Percent(cargoPct);
+        // смужка маси: шкала = найбільша маса, яку повний бак ще піднімає (жовта межа)
+        float scaleKg = data.maxFuelKg / (data.fuelPerKg * data.redMargin) - data.emptyShipMassKg;
+        float crewPct = Mathf.Clamp01(r.PeopleKg / scaleKg) * 100f;
+        float cargoPct = Mathf.Clamp(r.CargoKg / scaleKg * 100f, 0f, 100f - crewPct);
+        if (massCrew != null) massCrew.style.width = Length.Percent(crewPct);
+        if (massCargo != null) massCargo.style.width = Length.Percent(cargoPct);
+        massBar?.EnableInClassList("mass-bar--over", r.PeopleKg + r.CargoKg > scaleKg);
+        SetText(seatsLabel, Loc.Get("launch.seats", Supply.People(s, IsFirstMission), data.personMassKg.ToString("0")));
+        SetText(massLabel, Loc.Get("launch.mass", r.TotalMassKg.ToString("0"), r.CargoKg.ToString("0")));
 
-        SetLight(lightRed, color == "red", new Color(0.9f, 0.24f, 0.24f), new Color(0.3f, 0.12f, 0.12f));
-        SetLight(lightYellow, color == "yellow", new Color(0.95f, 0.8f, 0.2f), new Color(0.3f, 0.27f, 0.1f));
-        SetLight(lightGreen, color == "green", new Color(0.2f, 0.85f, 0.4f), new Color(0.1f, 0.27f, 0.14f));
+        // світлофор
+        lightRed?.EnableInClassList("light--red-on", r.Light == LaunchLight.Red);
+        lightYellow?.EnableInClassList("light--yellow-on", r.Light == LaunchLight.Yellow);
+        lightGreen?.EnableInClassList("light--green-on", r.Light == LaunchLight.Green);
+        SetText(riskLabel, Loc.Get("launch.risk", r.RiskPercent));
+        if (riskLabel != null)
+        {
+            riskLabel.EnableInClassList("c-ok", r.Light == LaunchLight.Green);
+            riskLabel.EnableInClassList("c-warn", r.Light == LaunchLight.Yellow);
+            riskLabel.EnableInClassList("c-bad", r.Light == LaunchLight.Red);
+        }
+        SetText(hintLabel, Loc.Get("launch.hint." + r.Light));
     }
 
-    void SetLight(VisualElement light, bool on, Color onColor, Color offColor)
-    {
-        light.style.backgroundColor = on ? onColor : offColor;
-    }
+    // ---------- Кнопка ЗАПУСК ----------
 
     void OnLaunchClicked()
     {
-        bool success = Random.value * 100f < chancePercent;
-        StartCoroutine(Fly(success));
+        if (animating || State == null) return;
+        if (IsFirstMission)
+        {
+            bool ok = Supply.LaunchFirstMission(State); // розрахунок і «кубик» — у SupplySystem
+            StartCoroutine(Fly(ok));
+        }
+        else
+        {
+            SetResult(Supply.Send(State) ?? "launch.order_sent");
+            Refresh();
+        }
     }
 
-    // Політ: ракета летить по дузі за FlightSeconds. Невдача: до середини і назад.
+    // ---------- Анімація польоту ----------
+
+    /// <summary>Ракета летить по дузі (крива Безьє). Невдача: долітає до середини, розвертається і повертається.</summary>
     IEnumerator Fly(bool success)
     {
-        launchButton.SetEnabled(false);
-        cargoList.SetEnabled(false);
-        fuelSlider.SetEnabled(false);
-        resultLabel.text = "Flying...";
+        animating = true;
+        Refresh();
+        SetResult("launch.flying");
 
-        float elapsed = 0f;
-        while (elapsed < FlightSeconds)
+        float endT = success ? 1f : 0.5f;
+        float duration = flightSeconds * endT;
+        for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
         {
-            elapsed += Time.unscaledDeltaTime;
-            float p = Mathf.Clamp01(elapsed / FlightSeconds);
-            float t = success ? p : 0.5f * (1f - Mathf.Abs(2f * p - 1f));
-            PlaceShip(t);
+            PlaceShip(time / flightSeconds, false);
             yield return null;
         }
+        PlaceShip(endT, false);
 
-        resultLabel.text = success
-            ? "Launch successful!"
-            : "Not enough fuel. The rocket turned back. Try again!";
+        if (!success)
+        {
+            SetResult("launch.turning_back");
+            const float turnSeconds = 0.5f;
+            for (float a = 0f; a < turnSeconds; a += Time.unscaledDeltaTime)
+            {
+                ship.style.rotate = new Rotate(new Angle(TangentDeg(endT) + 180f * (a / turnSeconds)));
+                yield return null;
+            }
+            for (float time = duration; time > 0f; time -= Time.unscaledDeltaTime)
+            {
+                PlaceShip(time / flightSeconds, true);
+                yield return null;
+            }
+            PlaceShip(0f, true);
+        }
 
-        yield return new WaitForSecondsRealtime(1.2f);
+        yield return new WaitForSecondsRealtime(1f);
+        animating = false;
+        GameEvents.RaiseLaunchFinished(success);
 
-        PlaceShip(0f);
-        launchButton.SetEnabled(true);
-        cargoList.SetEnabled(true);
-        fuelSlider.SetEnabled(true);
+        if (success)
+        {
+            Close();          // долетіли — екран закривається, гра продовжується
+        }
+        else
+        {
+            PlaceShip(0f, false);
+            SetResult("launch.failed_repack");
+            Refresh();
+        }
     }
 
-    // Крива Безьє: старт, точка згину, фініш (у пікселях відносно старту)
-    void PlaceShip(float t)
+    // Точки кривої Безьє у пікселях відносно старту: старт, точка згину, фініш
+    static readonly Vector2 P0 = new Vector2(0f, 0f);
+    static readonly Vector2 P1 = new Vector2(180f, -220f);
+    static readonly Vector2 P2 = new Vector2(60f, -520f);
+
+    static Vector2 Bezier(float t)
     {
-        Vector2 p0 = new Vector2(0f, 0f);
-        Vector2 p1 = new Vector2(180f, -220f);
-        Vector2 p2 = new Vector2(60f, -520f);
-        Vector2 pos = (1f - t) * (1f - t) * p0 + 2f * (1f - t) * t * p1 + t * t * p2;
-        ship.style.translate = new StyleTranslate(new Translate(pos.x, pos.y));
+        float u = 1f - t;
+        return u * u * P0 + 2f * u * t * P1 + t * t * P2;
     }
-}   
+
+    /// <summary>Кут дотичної до кривої, щоб ніс ракети дивився туди, куди вона летить.</summary>
+    static float TangentDeg(float t)
+    {
+        Vector2 d = 2f * (1f - t) * (P1 - P0) + 2f * t * (P2 - P1);
+        return Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg + 90f; // ракета намальована носом угору
+    }
+
+    void PlaceShip(float t, bool backwards)
+    {
+        t = Mathf.Clamp01(t);
+        Vector2 pos = Bezier(t);
+        ship.style.translate = new StyleTranslate(new Translate(pos.x, pos.y));
+        ship.style.rotate = t <= 0f && !backwards
+            ? new Rotate(new Angle(0f))
+            : new Rotate(new Angle(TangentDeg(t) + (backwards ? 180f : 0f)));
+    }
+}
