@@ -9,7 +9,8 @@ using System.Collections.Generic;
 ///  ShieldWithRegolith(state, slotId)     — окреме замовлення: засипати збудований модуль реголітом.
 ///
 /// Обидва методи повертають null, якщо все гаразд, або КЛЮЧ ТЕКСТУ з причиною відмови
-/// (наприклад "build.err.no_materials"); інтерфейс (роль 05) показує його через Loc.Get.
+/// (наприклад "error.no_materials"); інтерфейс (роль 05) показує його через Loc.Get.
+/// Чи вільний квадратик сітки, перевіряє BaseGrid.CanPlace (ключі "error.place_outside" / "error.place_taken").
 ///
 /// Щогодини (Tick) кожен робот, якому дали енергію (PowerSystem.Granted.Robots) і в якого є завдання,
 /// зменшує BuildHoursLeft на 1 годину роботи (×2, якщо біля модуля EngineerNearby).
@@ -59,13 +60,16 @@ public class ConstructionSystem : ISimSystem
     public string Order(GameState s, ModuleType type, int slotId)
     {
         if (IsUnlocked != null && !IsUnlocked(type)) return "build.err.locked";
-        if (s.FindModule(slotId) != null) return "build.err.slot_busy";
+
+        // Слот має бути всередині сітки бази й вільний (правило ядра, CLAUDE.md → BaseGrid).
+        string placeError = BaseGrid.CanPlace(s, slotId);
+        if (placeError != null) return placeError;
 
         BuildCost cost;
-        if (!_costs.TryGet(type, out cost)) return "build.err.unknown_module";
+        if (!_costs.TryGet(type, out cost)) return "error.unknown_module";
 
         if (s.Robots.Count == 0) return "build.err.no_robots";
-        if (s.Res.Materials + Eps < cost.Materials) return "build.err.no_materials";
+        if (s.Res.Materials + Eps < cost.Materials) return "error.no_materials";
 
         s.Res.Materials -= cost.Materials;
         s.Modules.Add(new ModuleState
@@ -88,7 +92,7 @@ public class ConstructionSystem : ISimSystem
         if (m.RegolithShield) return "build.err.already_shielded";
         if (_shieldHoursLeft.ContainsKey(slotId)) return "build.err.shield_in_progress";
         if (s.Robots.Count == 0) return "build.err.no_robots";
-        if (s.Res.Materials + Eps < _costs.Regolith.Materials) return "build.err.no_materials";
+        if (s.Res.Materials + Eps < _costs.Regolith.Materials) return "error.no_materials";
 
         s.Res.Materials -= _costs.Regolith.Materials;
         _shieldHoursLeft[slotId] = _costs.Regolith.BuildHours;
