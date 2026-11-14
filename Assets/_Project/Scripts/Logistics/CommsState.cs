@@ -3,11 +3,11 @@ using System;
 
 /// <summary>
 /// Стан зв'язку: вікна зв'язку.
-/// Лежить у GameState. Власник: роль 04 — додавай сюди public-поля.
-/// Тільки поля, які JsonUtility вміє зберегти: числа, рядки, bool, enum, List, інші [Serializable] класи.
+/// Лежить у GameState. Власник: роль 04.
 /// </summary>
 [Serializable]
 public class CommsState
 {
-    // TODO (04): поля стану
+    public bool IsOpen;          // чи відкрите вікно зараз (оновлює CommsSystem щогодини)
+    public int ExtraOpenHours;   // на скільки годин довше вікно (ретранслятор, розділ 4)
 }

@@ -1,0 +1,13 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Вантажі для екрана запуску (роль 04). massKg — маса одного місця вантажу. Решта полів — що він дає базі після прибуття.",
+  "items": [
+    { "id": "water",           "nameKey": "cargo.water",       "massKg": 100, "water": 20 },
+    { "id": "food",            "nameKey": "cargo.food",        "massKg": 50,  "food": 10 },
+    { "id": "materials",       "nameKey": "cargo.materials",   "massKg": 200, "materials": 20 },
+    { "id": "medkits",         "nameKey": "cargo.medkits",     "massKg": 20,  "medKits": 1 },
+    { "id": "solar_panel_kit", "nameKey": "cargo.solar_panel", "massKg": 300, "solarPanelKits": 1 },
+    { "id": "battery_kit",     "nameKey": "cargo.battery",     "massKg": 250, "batteryKits": 1 },
+    { "id": "crew_seat",       "nameKey": "cargo.crew_seat",   "massKg": 150, "crewSeats": 1 }
+  ]
+}
