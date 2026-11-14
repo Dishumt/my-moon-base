@@ -1,159 +1,102 @@
 /* AI-assisted: written with Claude. See docs/AI_USE.md */
-.screen {
-    flex-grow: 1;
-    padding: 20px 28px;
-    background-color: rgb(8, 12, 28);
-}
+/* Власні класи екрана запуску. Усе спільне (.tablet, .panel, .btn, .t-label...) береться з Theme.uss */
 
-.header {
-    font-size: 34px;
-    color: rgb(120, 210, 255);
-    -unity-font-style: bold;
-    letter-spacing: 6px;
-    -unity-text-align: middle-center;
-    margin-bottom: 8px;
-}
+.body { flex-direction: row; flex-grow: 1; margin-top: 14px; }
+.pad { padding: 16px 20px; }
+.cargo-panel { width: 520px; }
+.ship-panel { flex-grow: 1; }
 
-.top { flex-direction: row; flex-grow: 1; }
-
-.panel {
-    background-color: rgb(20, 30, 56);
-    border-radius: 16px;
-    border-width: 2px;
-    border-color: rgb(55, 85, 140);
-    padding: 18px;
-    margin: 8px;
-}
-
-.cargo-panel { width: 42%; }
-.ship-panel { flex-grow: 1; align-items: center; }
-
-.title {
-    font-size: 30px;
-    color: white;
-    -unity-font-style: bold;
-    margin-bottom: 14px;
-}
-.info { font-size: 22px; color: rgb(190, 205, 235); margin: 6px; }
-
-/* --- Вантаж --- */
+/* --- рядки вантажу (їх створює код: cargo-row, cargo-name, cargo-count, small-btn) --- */
 .cargo-row {
     flex-direction: row;
     align-items: center;
-    background-color: rgb(30, 44, 78);
-    border-radius: 10px;
-    padding: 8px 12px;
-    margin-bottom: 10px;
+    min-height: 72px;
+    margin-bottom: 8px;
+    padding: 4px 12px;
+    background-color: var(--color-card);
+    border-width: 2px;
+    border-color: var(--color-line);
+    border-radius: 0;
 }
-.cargo-name { font-size: 24px; color: white; width: 170px; }
+.cargo-row:hover { border-color: var(--color-accent); }
+.cargo-name {
+    flex-grow: 1;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--color-text);
+}
 .cargo-count {
-    font-size: 26px;
-    color: rgb(120, 210, 255);
+    width: 72px;
+    font-size: 28px;
     -unity-font-style: bold;
-    width: 64px;
     -unity-text-align: middle-center;
+    color: var(--color-energy);
 }
 .small-btn {
-    width: 48px; height: 48px;
-    font-size: 28px;
-    color: white;
-    background-color: rgb(60, 100, 170);
-    border-width: 0;
-    border-radius: 24px;
+    width: 64px;
+    height: 64px;
+    margin: 0 0 0 6px;
+    font-size: 34px;
+    color: var(--color-accent);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 2px;
+    border-color: var(--color-accent);
+    border-radius: 0;
 }
-.small-btn:hover { background-color: rgb(90, 140, 220); }
-.small-btn:active { background-color: rgb(40, 70, 130); }
+.small-btn:hover { background-color: rgba(95, 212, 244, 0.12); }
+.small-btn:active { scale: 0.95 0.95; }
 
-/* --- Ракета з частин --- */
-.ship-area { width: 100%; height: 280px; align-items: center; justify-content: center; }
-.ship { width: 140px; height: 250px; }
-.ship-body {
-    position: absolute; left: 30px; top: 60px;
-    width: 80px; height: 150px;
-    background-color: rgb(225, 230, 245);
-    border-radius: 12px;
-}
-.ship-nose {
-    position: absolute; left: 30px; top: 6px;
-    width: 80px; height: 100px;
-    background-color: rgb(225, 80, 70);
-    border-top-left-radius: 40px;
-    border-top-right-radius: 40px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-}
+/* --- ракета з прямокутників --- */
+.ship-area { height: 230px; align-items: center; justify-content: center; }
+.ship { width: 120px; height: 210px; }
+.ship-nose-tip { position: absolute; left: 50px; top: 0px; width: 20px; height: 14px; background-color: var(--color-accent); }
+.ship-nose-mid { position: absolute; left: 40px; top: 14px; width: 40px; height: 18px; background-color: var(--color-accent); }
+.ship-body { position: absolute; left: 30px; top: 32px; width: 60px; height: 130px; background-color: var(--color-soft); }
+.ship-stripe { position: absolute; left: 30px; top: 112px; width: 60px; height: 10px; background-color: var(--color-accent); }
 .ship-window {
-    position: absolute; left: 52px; top: 100px;
-    width: 36px; height: 36px;
-    background-color: rgb(90, 190, 255);
-    border-radius: 18px;
-    border-width: 4px;
-    border-color: rgb(120, 130, 160);
+    position: absolute; left: 46px; top: 58px; width: 28px; height: 28px;
+    background-color: var(--color-card);
+    border-width: 3px; border-color: var(--color-accent);
 }
-.ship-fin {
-    position: absolute; top: 150px;
-    width: 32px; height: 80px;
-    background-color: rgb(225, 80, 70);
-}
-.ship-fin-left { left: 0px; border-top-left-radius: 24px; border-bottom-left-radius: 6px; }
-.ship-fin-right { left: 108px; border-top-right-radius: 24px; border-bottom-right-radius: 6px; }
-.ship-flame {
-    position: absolute; left: 48px; top: 205px;
-    width: 44px; height: 44px;
-    background-color: rgb(255, 170, 50);
-    border-bottom-left-radius: 22px;
-    border-bottom-right-radius: 22px;
-}
+.ship-fin { position: absolute; top: 118px; width: 24px; height: 54px; background-color: var(--color-accent); }
+.ship-fin-left { left: 6px; }
+.ship-fin-right { left: 90px; }
+.ship-nozzle { position: absolute; left: 44px; top: 162px; width: 32px; height: 12px; background-color: var(--color-line-hi); }
+.ship-flame { position: absolute; left: 48px; top: 174px; width: 24px; height: 30px; background-color: var(--color-warn); }
+.ship-flame-core { position: absolute; left: 54px; top: 174px; width: 12px; height: 18px; background-color: var(--color-energy); }
 
-/* --- Смужка маси --- */
+/* --- смужка маси: екіпаж блакитний, вантаж жовтий --- */
 .mass-bar {
     flex-direction: row;
-    width: 100%; height: 26px;
-    background-color: rgb(40, 52, 88);
-    border-radius: 13px;
+    height: 20px;
+    background-color: var(--color-card);
+    border-width: 2px;
+    border-color: var(--color-line);
     overflow: hidden;
 }
-.mass-crew { width: 25%; background-color: rgb(255, 170, 60); }
-.mass-cargo { width: 35%; background-color: rgb(90, 170, 255); }
+.mass-crew { width: 25%; background-color: var(--color-accent); }
+.mass-cargo { width: 35%; background-color: var(--color-energy); }
+.legend { flex-direction: row; align-items: center; margin-top: 10px; }
+.legend-dot { width: 14px; height: 14px; margin-right: 6px; }
+.legend-crew { background-color: var(--color-accent); }
+.legend-cargo { background-color: var(--color-energy); }
 
-.legend { flex-direction: row; align-items: center; margin-top: 8px; }
-.legend-dot { width: 16px; height: 16px; border-radius: 8px; margin-right: 6px; }
-.legend-crew { background-color: rgb(255, 170, 60); }
-.legend-cargo { background-color: rgb(90, 170, 255); margin-left: 16px; }
-.legend-text { font-size: 18px; color: rgb(190, 205, 235); }
+/* --- низ: паливо, світлофор, запуск --- */
+.bottom-row { flex-direction: row; align-items: center; margin-top: 14px; }
+.fuel-box { flex-grow: 1; margin-right: 24px; }
 
-/* --- Низ: паливо, світлофор, запуск --- */
-.bottom { flex-direction: row; align-items: center; justify-content: space-between; }
-.fuel-box { flex-grow: 1; margin-right: 28px; }
-
-.unity-base-slider__tracker { background-color: rgb(60, 80, 125); }
-.unity-base-slider__dragger { background-color: rgb(120, 210, 255); }
+.unity-base-slider__tracker { background-color: var(--color-line); border-radius: 0; }
+.unity-base-slider__dragger { background-color: var(--color-accent); border-radius: 0; border-width: 0; }
 
 .traffic-light {
     flex-direction: row;
-    padding: 12px;
-    background-color: rgb(6, 8, 16);
-    border-radius: 22px;
-    border-width: 3px;
-    border-color: rgb(55, 85, 140);
-    margin-right: 28px;
+    padding: 8px;
+    margin-right: 24px;
+    background-color: var(--color-void);
+    border-width: 2px;
+    border-color: var(--color-line);
 }
-.light { width: 66px; height: 66px; border-radius: 33px; margin: 5px; }
-.light-red { background-color: rgb(120, 40, 40); }
-.light-yellow { background-color: rgb(140, 120, 40); }
-.light-green { background-color: rgb(40, 190, 80); }
+.light { width: 56px; height: 56px; margin: 4px; border-radius: 28px; }
 
-.launch-box { align-items: center; width: 280px; }
-.risk { font-size: 28px; color: white; -unity-font-style: bold; margin-bottom: 10px; }
-.launch-btn {
-    font-size: 32px;
-    -unity-font-style: bold;
-    width: 260px; height: 70px;
-    color: white;
-    background-color: rgb(225, 80, 60);
-    border-width: 0;
-    border-radius: 35px;
-}
-.launch-btn:hover { background-color: rgb(250, 110, 80); }
-.launch-btn:active { background-color: rgb(180, 55, 40); }
-.result { font-size: 20px; color: rgb(255, 220, 120); margin-top: 8px; -unity-text-align: middle-center; white-space: normal; }
+.launch-box { width: 300px; }
+.launch-btn { flex-grow: 0; width: 100%; }
