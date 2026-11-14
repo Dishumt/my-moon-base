@@ -123,6 +123,24 @@
 - Тексти для гравця беремо тільки за ключами: `Loc.Get("report.oxygen_low")`. Ніякого тексту прямо в коді.
 - Числа балансу зберігаються тільки в JSON (`Resources/Data/Balance/`), а не в коді.
 
+## Як користуватися ядром (Core)
+
+- **Доступ до гри:** `GameBootstrap.Instance.State` (стан), `.Clock` (час), `.GetSystem<CrewSystem>()` (система). `GameBootstrap` стоїть на об'єкті `Game` у кожній сцені.
+- **Час:** `Clock.Pause()`, `Resume()`, `SetSpeed(2f)`. Вікно, яке ставить гру на паузу (планшет, звіт, екран запуску): `Clock.PushModal()` під час відкриття і **обов'язково** `Clock.PopModal()` під час закриття.
+- **Звіт:** `r.Add("report.oxygen_low", -8f, arg: "", important: true)` — ключ тексту, зміна, слово для `{0}`, тривога.
+- **Дії гравця** повертають `null`, якщо все добре, або ключ тексту з причиною: `string err = construction.Order(ModuleType.Greenhouse, 3);`.
+- **Свої поля стану:** 04 додає їх у `SupplyState`/`CommsState`, 06 — у `RadiationState`. Поля в `GameState` та інших класах `Core` змінює тільки техлід.
+- **Нове значення enum** (`Scripts/Core/Enums.cs`) додаємо тільки в кінець списку і тільки через техліда.
+- **Події:** підписуйся в `OnEnable` (`GameEvents.DayEnded += F;`), відписуйся в `OnDisable`.
+- **Свої кнопки в DebugPanel:** зі свого скрипта в Sandbox-сцені `DebugPanel.ExtraGUI += MyButtons;` (у `MyButtons` пиши `GUILayout.Button`).
+- **Формати JSON:**
+  - тексти — `{"items":[{"key":"hud.oxygen","text":"Oxygen"}]}`, у тексті `{0}` замінюється словом: `Loc.Get("report.sick", name)`;
+  - `balance.json` — ядро читає з нього тільки `realSecondsPerDay`, решту полів додає 03;
+  - `chapter_NN.json` — ядро читає стартові поля з `Core/ChapterStartData.cs`, а цілі розділу додає 03; enum у JSON пишемо текстом (`"role": "Medic"`);
+  - кожен клас для JSON — `[Serializable]`, з `public`-полями, назви полів = ключі в JSON;
+  - читаємо так: `DataLoader.Load<MyData>("Balance/balance")` (шлях без `.json`).
+- **Сцени:** меню Unity **Moon → Створити сцени (Main + Sandbox)** створює сцени, яких ще немає (готові не перезаписує).
+
 ## Золоті правила
 
 1. Працюй **тільки в зоні свого користувача**. Якщо треба змінити чужу зону, напиши текст повідомлення для її власника, а сам нічого там не правь.
