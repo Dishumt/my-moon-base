@@ -20,7 +20,7 @@
    - **GitHub Desktop:**
      1. New branch `02-art/<що-зробив>`.
      2. Галочки на нових файлах **разом з `.meta`**.
-     3. Commit → Push → Create Pull Request.
+     3. Commit → Push → Create Pull Request → злий сам (див. `docs/GIT_HOWTO.md`).
    - **Claude Code:**
      > Я роль 02. Створи гілку 02-art/<що-зробив>, закоміть нові та змінені файли з Assets/_Project/Art разом з .meta, запуш і створи Pull Request.
 6. Пишеш у чат команди, що додав.
