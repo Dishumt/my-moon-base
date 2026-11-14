@@ -46,12 +46,12 @@ public static class EngineerSetupTool
             walkLeft = Frames(SuitDir, "walk_left_"),
             walkRight = Frames(SuitDir, "walk_right_"),
         };
-        // Без скафандра: engineer_front_128, engineer_back_128, engineer_front_walk_.., engineer_back_walk_..,
+        // Без скафандра: engineer_front, engineer_back (або старі *_128), engineer_front_walk_.., engineer_back_walk_..,
         // engineer_left_profile_walk_.. (вправо — дзеркально)
         ctrl.indoor = new EngineerController.SpriteSet
         {
-            idleFront = Load(IndoorDir, "engineer_front_128"),
-            idleBack = Load(IndoorDir, "engineer_back_128"),
+            idleFront = Load(IndoorDir, "engineer_front") ?? Load(IndoorDir, "engineer_front_128"),
+            idleBack = Load(IndoorDir, "engineer_back") ?? Load(IndoorDir, "engineer_back_128"),
             walkFront = Frames(IndoorDir, "engineer_front_walk_"),
             walkBack = Frames(IndoorDir, "engineer_back_walk_"),
             walkLeft = Frames(IndoorDir, "engineer_left_profile_walk_"),
@@ -77,7 +77,8 @@ public static class EngineerSetupTool
             var settings = new TextureImporterSettings();
             imp.ReadTextureSettings(settings);
             bool already = imp.textureType == TextureImporterType.Sprite && settings.spriteAlignment == (int)SpriteAlignment.Custom
-                           && Mathf.Approximately(imp.spritePixelsPerUnit, PixelsPerUnit);
+                           && Mathf.Approximately(imp.spritePixelsPerUnit, PixelsPerUnit)
+                           && imp.wrapMode == TextureWrapMode.Clamp && imp.filterMode == FilterMode.Point;
             if (already) continue;
 
             imp.textureType = TextureImporterType.Sprite;
@@ -85,9 +86,13 @@ public static class EngineerSetupTool
             imp.spritePixelsPerUnit = PixelsPerUnit;
             imp.alphaIsTransparency = true;
             imp.mipmapEnabled = false;
+            imp.wrapMode = TextureWrapMode.Clamp;      // край картинки не «перетікає» на протилежний бік
+            imp.filterMode = FilterMode.Point;         // піксель-арт без розмиття
+            imp.textureCompression = TextureImporterCompression.Uncompressed; // без бруду від стиснення
             imp.ReadTextureSettings(settings);
             settings.spriteAlignment = (int)SpriteAlignment.Custom;
             settings.spritePivot = Pivot;
+            settings.spriteMeshType = SpriteMeshType.FullRect;
             imp.SetTextureSettings(settings);
             imp.SaveAndReimport();
         }

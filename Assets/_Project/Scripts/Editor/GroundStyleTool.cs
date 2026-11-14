@@ -15,7 +15,8 @@ using UnityEngine;
 /// </summary>
 public static class GroundStyleTool
 {
-    const string TexPath = "Assets/_Project/Settings/MoonGroundTile.png";
+    const string TexPath = "Assets/_Project/Settings/MoonGroundTile.png";   // заглушка, якщо арту ще немає
+    const string ArtTexPath = "Assets/_Project/Art/Environment/Seamless Gray-Purple Lunar Soil Texture.png"; // текстура від 02
     const string MatPath = "Assets/_Project/Settings/MoonGround2D.mat";
     const int Size = 512;           // пікселів у текстурі
     const float MetersPerTile = 10f; // одна копія текстури = 10×10 м
@@ -26,7 +27,10 @@ public static class GroundStyleTool
         var ground = GameObject.Find("Ground");
         if (ground == null) { Debug.LogError("GroundStyleTool: немає об'єкта Ground."); return; }
 
-        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(TexPath);
+        // Спершу текстура від арту (02); якщо її немає — генеруємо заглушку
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(ArtTexPath);
+        if (tex != null) MakeTileable(ArtTexPath);
+        else tex = AssetDatabase.LoadAssetAtPath<Texture2D>(TexPath);
         if (tex == null) tex = CreateTexture();
 
         var mat = AssetDatabase.LoadAssetAtPath<Material>(MatPath);
@@ -35,10 +39,10 @@ public static class GroundStyleTool
             var shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) { Debug.LogError("GroundStyleTool: немає шейдера URP Unlit."); return; }
             mat = new Material(shader);
-            mat.SetTexture("_BaseMap", tex);
             mat.SetColor("_BaseColor", Color.white);
             AssetDatabase.CreateAsset(mat, MatPath);
         }
+        mat.SetTexture("_BaseMap", tex);
 
         // Скільки разів повторити текстуру: Plane має 10 м × scale
         float meters = 10f * ground.transform.localScale.x;
@@ -69,6 +73,18 @@ public static class GroundStyleTool
         AssetDatabase.SaveAssets();
         EditorSceneManager.MarkSceneDirty(ground.scene);
         Debug.Log("GroundStyleTool: готово! Збережи сцену (Ctrl+S).");
+    }
+
+    /// <summary>Текстура повторюється (Repeat), з mipmap — щоб вдалині не мерехтіла.</summary>
+    static void MakeTileable(string path)
+    {
+        var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+        if (imp == null || (imp.wrapMode == TextureWrapMode.Repeat && imp.mipmapEnabled)) return;
+        imp.textureType = TextureImporterType.Default;
+        imp.wrapMode = TextureWrapMode.Repeat;
+        imp.mipmapEnabled = true;
+        imp.anisoLevel = 4;
+        imp.SaveAndReimport();
     }
 
     // ---------- Текстура-заглушка ----------
