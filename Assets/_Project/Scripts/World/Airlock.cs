@@ -186,7 +186,7 @@ public class Airlock : MonoBehaviour
         main.startSpeed = 3f;
         main.startSize = 0.12f;
         main.startColor = new Color(0.75f, 0.72f, 0.68f, 0.8f); // сірий місячний пил
-        main.gravityModifier = 0.3f;
+        main.gravityModifier = MoonHop.MoonGravityScale; // місячна гравітація: пил осідає повільно
 
         var emission = ps.emission;
         emission.rateOverTime = 80f;

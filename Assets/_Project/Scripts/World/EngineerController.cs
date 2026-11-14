@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Інженер (персонаж гравця): ходить на WASD або стрілках, 2D-спрайт з анімацією ходьби.
+/// Рух місячний: стрибки «зайчиком» (MoonHop), розгін і гальмування з інерцією — у скафандрі
+/// зчеплення з пилом слабке, тож інженер трохи проковзує, коли зупиняється.
 /// «Вперед» (W) — це вгору по екрану, тобто туди, куди дивиться камера.
 /// Поки гра на паузі (відкритий планшет) або йде шлюз (Locked), інженер стоїть.
 /// Два набори картинок: у скафандрі (надворі) і без нього (у модулях). Перемикає шлюз через SuitOn.
@@ -36,11 +38,15 @@ public class EngineerController : MonoBehaviour
     [SerializeField] float speed = 5f;
     [Tooltip("Межа карти: інженер не відійде від центру далі, ніж на стільки метрів по X і Z")]
     [SerializeField] float mapHalfSize = 200f;
+    [Tooltip("Розгін і гальмування в скафандрі, м/с² (менше = більше «ковзання»)")]
+    [SerializeField] float suitAccel = 7f, suitBrake = 3f;
+    [Tooltip("Розгін і гальмування без скафандра (у модулі)")]
+    [SerializeField] float indoorAccel = 16f, indoorBrake = 12f;
 
     [Header("Спрайт")]
     [SerializeField] SpriteRenderer spriteRenderer;
-    [Tooltip("Кадрів анімації ходьби за секунду")]
-    [SerializeField] float walkFps = 8f;
+    [Tooltip("Скільки кадрів анімації на один місячний стрибок")]
+    [SerializeField] float framesPerHop = 2f;
     [Tooltip("У скафандрі (надворі)")]
     public SpriteSet suit = new SpriteSet();
     [Tooltip("Без скафандра (у модулях)")]
@@ -51,7 +57,8 @@ public class EngineerController : MonoBehaviour
     CharacterController controller;
     Transform cam;
     Vector2 facing = new Vector2(0f, -1f); // куди дивиться: спочатку обличчям до камери
-    float animTime;
+    Vector3 velocity;                      // швидкість зараз (м/с) — з інерцією
+    MoonHop hop;
     bool suitOn = true;
     Vector3 spriteBasePos;
 
@@ -79,6 +86,8 @@ public class EngineerController : MonoBehaviour
         Instance = this;
         controller = GetComponent<CharacterController>();
         if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        hop = GetComponent<MoonHop>();
+        if (hop == null) hop = gameObject.AddComponent<MoonHop>(); // після пошуку спрайта: MoonHop додає свій спрайт-тінь
         if (IsEmpty(suit))
             Debug.LogWarning("EngineerController: немає картинок інженера. Запусти меню Moon → Налаштувати інженера (спрайти й анімація) і збережи сцену.");
         else
@@ -97,31 +106,41 @@ public class EngineerController : MonoBehaviour
 
     void Update()
     {
-        Vector2 input = Locked ? Vector2.zero : ReadInput();
-        IsMoving = input.sqrMagnitude > 0.01f && !IsGamePaused();
+        bool paused = IsGamePaused();
+        float dt = paused ? 0f : Time.deltaTime;
+        Vector2 input = Locked || paused ? Vector2.zero : ReadInput();
+        bool wantMove = input.sqrMagnitude > 0.01f;
 
-        if (IsMoving)
+        // Бажана швидкість і плавний розгін/гальмування до неї (інерція)
+        Vector3 target = ScreenToGround(input) * speed;
+        float rate = wantMove ? (suitOn ? suitAccel : indoorAccel) : (suitOn ? suitBrake : indoorBrake);
+        velocity = Vector3.MoveTowards(velocity, target, rate * dt);
+        if (Locked) velocity = Vector3.zero;
+
+        if (velocity.sqrMagnitude > 0.0001f)
         {
-            Move(input);
-            facing = input;
-            animTime += Time.deltaTime;
+            controller.Move(velocity * dt);
+            ClampToMap();
         }
-        else animTime = 0f;
+        if (wantMove) facing = input;
 
+        IsMoving = wantMove || velocity.sqrMagnitude > 0.25f;
+        hop.Step(IsMoving && !Locked, suitOn, dt);
         RefreshSprite();
     }
 
     void LateUpdate()
     {
         if (spriteRenderer == null) return;
-        // Трясіння у шлюзі: спрайт трохи смикається вліво-вправо
+        // Стрибок піднімає спрайт; трясіння у шлюзі смикає його вліво-вправо
         float dx = Shake > 0f ? Mathf.Sin(Time.time * 60f) * Shake : 0f;
-        spriteRenderer.transform.localPosition = spriteBasePos + new Vector3(dx, 0f, 0f);
+        float dy = hop != null ? hop.Height : 0f;
+        spriteRenderer.transform.localPosition = spriteBasePos + new Vector3(dx, dy, 0f);
     }
 
-    void Move(Vector2 input)
+    /// <summary>Напрямок «на екрані» (WASD) → напрямок на землі з урахуванням повороту камери.</summary>
+    Vector3 ScreenToGround(Vector2 input)
     {
-        // Перетворюємо напрямок «на екрані» у напрямок на землі з урахуванням повороту камери.
         Vector3 forward = Vector3.forward, right = Vector3.right;
         if (cam == null && Camera.main != null) cam = Camera.main.transform;
         if (cam != null)
@@ -129,11 +148,9 @@ public class EngineerController : MonoBehaviour
             forward = Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized;
             right = Vector3.ProjectOnPlane(cam.right, Vector3.up).normalized;
         }
-
-        Vector3 move = (forward * input.y + right * input.x) * speed * Time.deltaTime;
-        move.y = 0f; // земля рівна, тож висоту не змінюємо
-        controller.Move(move);
-        ClampToMap();
+        Vector3 dir = forward * input.y + right * input.x;
+        dir.y = 0f; // земля рівна, тож висоту не змінюємо
+        return dir;
     }
 
     /// <summary>WASD або стрілки → вектор від (-1,-1) до (1,1).</summary>
@@ -197,8 +214,9 @@ public class EngineerController : MonoBehaviour
         else { walk = set.walkFront; idle = set.idleFront; }
 
         Sprite frame = idle;
-        if (IsMoving && !IsEmpty(walk))
-            frame = walk[(int)(animTime * walkFps) % walk.Length];
+        bool hopping = hop != null && hop.IsHopping;
+        if (hopping && !IsEmpty(walk))
+            frame = walk[(int)(hop.Steps * framesPerHop) % walk.Length]; // кадр рухається разом зі стрибками
 
         if (frame != null) spriteRenderer.sprite = frame;
         spriteRenderer.flipX = flip;

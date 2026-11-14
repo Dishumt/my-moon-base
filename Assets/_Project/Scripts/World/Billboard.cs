@@ -18,6 +18,9 @@ public class Billboard : MonoBehaviour
 
     [SerializeField] Mode mode = Mode.Upright;
 
+    /// <summary>Додатковий масштаб (сплющення при приземленні — ставить MoonHop). 1,1 = без змін.</summary>
+    public Vector2 ExtraScale { get; set; } = Vector2.one;
+
     Transform cam;
     Vector3 baseScale;
 
@@ -34,7 +37,7 @@ public class Billboard : MonoBehaviour
         if (mode == Mode.FaceCamera)
         {
             transform.rotation = cam.rotation;
-            transform.localScale = baseScale;
+            transform.localScale = new Vector3(baseScale.x * ExtraScale.x, baseScale.y * ExtraScale.y, baseScale.z);
             return;
         }
 
@@ -47,6 +50,6 @@ public class Billboard : MonoBehaviour
 
         // Камера під кутом бачить вертикальну фігурку коротшою в cos(кута) разів — компенсуємо.
         float stretch = Mathf.Min(1f / flat, 2f);
-        transform.localScale = new Vector3(baseScale.x, baseScale.y * stretch, baseScale.z);
+        transform.localScale = new Vector3(baseScale.x * ExtraScale.x, baseScale.y * stretch * ExtraScale.y, baseScale.z);
     }
 }
