@@ -50,6 +50,26 @@ public class ModuleView : MonoBehaviour
         if (want != shown || (m != null && m.Type != shownType)) Rebuild(want, m);
 
         if (want == Shown.Building) UpdateScaffold(m);
+        if (m != null) m.EngineerNearby = want == Shown.Building && EngineerIsNear();
+    }
+
+    static Transform engineer;
+
+    /// <summary>
+    /// Чи інженер стоїть біля будови (у її квадратику сітки, разом із проходом).
+    /// Світ пише це в ModuleState.EngineerNearby — тоді роботи будують швидше (рахує 03).
+    /// </summary>
+    bool EngineerIsNear()
+    {
+        if (engineer == null)
+        {
+            var go = GameObject.FindGameObjectWithTag("Player");
+            if (go == null) return false;
+            engineer = go.transform;
+        }
+        Vector3 d = engineer.position - transform.position;
+        float half = BaseGrid.CellSize * 0.5f + 1f; // квадратик + 1 м навколо
+        return Mathf.Abs(d.x) < half && Mathf.Abs(d.z) < half;
     }
 
     void Rebuild(Shown want, ModuleState m)
