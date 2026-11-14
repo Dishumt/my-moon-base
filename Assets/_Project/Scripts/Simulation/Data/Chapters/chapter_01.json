@@ -1,0 +1,59 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Розділ 1 «Перша висадка». Числа тут стартові або цільові (не «на день»). Назви модулів — з enum ModuleType. Типи цілей: SurviveDays, BuildModule, WaterAtLeast, ScienceAtLeast.",
+  "chapter": 1,
+  "titleKey": "chapter.1.title",
+  "descriptionKey": "chapter.1.description",
+  "start": {
+    "_note": "Що є на базі на початку розділу (для нової гри або повтору розділу).",
+    "water": 60,
+    "water_note": "Вода із Землі.",
+    "food": 40,
+    "food_note": "Порцій їжі із Землі.",
+    "oxygen": 100,
+    "oxygen_note": "Повний бак кисню.",
+    "battery": 10,
+    "battery_note": "Заряд батареї, блоко-годин.",
+    "materials": 40,
+    "materials_note": "Будматеріали: вистачає на житловий модуль (20), панель (10) і трохи про запас.",
+    "medKits": 0,
+    "medKits_note": "Аптечки: у першому розділі хвороб ще немає.",
+    "science": 0,
+    "science_note": "Очки науки."
+  },
+  "startModules": [
+    { "type": "Solar", "slot": 0 },
+    { "type": "Solar", "slot": 1 }
+  ],
+  "startModules_note": "Модулі, які вже стоять на початку. Номери слотів підігнати під сцену. Якщо слот уже зайнятий, пропускається.",
+  "unlockedModules": ["Habitat", "Solar"],
+  "unlockedModules_note": "Які модулі можна замовляти в цьому розділі.",
+  "unlockedSystems": ["Launch", "Power", "LifeSupport", "Food", "Construction", "Exploration"],
+  "unlockedSystems_note": "Які системи гри працюють у цьому розділі.",
+  "goals": [
+    {
+      "id": "survive",
+      "type": "SurviveDays",
+      "target": 5,
+      "target_note": "Скільки днів треба прожити в цьому розділі.",
+      "module": "",
+      "titleKey": "goal.survive_days"
+    },
+    {
+      "id": "habitat",
+      "type": "BuildModule",
+      "target": 1,
+      "target_note": "Скільки готових житлових модулів має стояти на базі.",
+      "module": "Habitat",
+      "titleKey": "goal.build_module"
+    },
+    {
+      "id": "panels",
+      "type": "BuildModule",
+      "target": 3,
+      "target_note": "Скільки готових сонячних панелей має стояти разом зі стартовими.",
+      "module": "Solar",
+      "titleKey": "goal.build_module"
+    }
+  ]
+}

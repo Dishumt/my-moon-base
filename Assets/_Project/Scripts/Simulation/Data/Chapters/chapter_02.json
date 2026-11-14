@@ -1,0 +1,69 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Розділ 2 «Лід і зелень». Числа тут стартові або цільові (не «на день»). Назви модулів — з enum ModuleType. Типи цілей: SurviveDays, BuildModule, WaterAtLeast, ScienceAtLeast.",
+  "chapter": 2,
+  "titleKey": "chapter.2.title",
+  "descriptionKey": "chapter.2.description",
+  "start": {
+    "_note": "Що є на базі на початку розділу (для нової гри з розділу 2 або повтору).",
+    "water": 30,
+    "water_note": "Води мало: власну доведеться добувати з льоду.",
+    "food": 30,
+    "food_note": "Порцій їжі: на кілька днів, далі потрібна теплиця.",
+    "oxygen": 100,
+    "oxygen_note": "Повний бак кисню.",
+    "battery": 10,
+    "battery_note": "Заряд батареї, блоко-годин.",
+    "materials": 30,
+    "materials_note": "Будматеріали: вистачає на теплицю (15) і ще один модуль.",
+    "medKits": 0,
+    "medKits_note": "Аптечки: хвороби з'являться в розділі 3.",
+    "science": 0,
+    "science_note": "Очки науки."
+  },
+  "startModules": [
+    { "type": "Solar", "slot": 0 },
+    { "type": "Solar", "slot": 1 },
+    { "type": "Solar", "slot": 2 },
+    { "type": "Habitat", "slot": 3 }
+  ],
+  "startModules_note": "База після розділу 1. Номери слотів підігнати під сцену. Якщо слот уже зайнятий, пропускається.",
+  "unlockedModules": ["Habitat", "Solar", "Battery", "Greenhouse", "Antenna", "Lab"],
+  "unlockedModules_note": "Які модулі можна замовляти в цьому розділі.",
+  "unlockedSystems": ["Launch", "Power", "LifeSupport", "Food", "Construction", "Exploration", "IceMining", "Greenhouse", "Supply", "Comms"],
+  "unlockedSystems_note": "Які системи гри працюють у цьому розділі.",
+  "goals": [
+    {
+      "id": "survive",
+      "type": "SurviveDays",
+      "target": 7,
+      "target_note": "Скільки днів треба прожити в цьому розділі.",
+      "module": "",
+      "titleKey": "goal.survive_days"
+    },
+    {
+      "id": "greenhouse",
+      "type": "BuildModule",
+      "target": 1,
+      "target_note": "Скільки готових теплиць має стояти на базі.",
+      "module": "Greenhouse",
+      "titleKey": "goal.build_module"
+    },
+    {
+      "id": "water",
+      "type": "WaterAtLeast",
+      "target": 45,
+      "target_note": "Води на базі має стати стільки: вище за стартову, тож без видобутку льоду не вийде.",
+      "module": "",
+      "titleKey": "goal.water"
+    },
+    {
+      "id": "science",
+      "type": "ScienceAtLeast",
+      "target": 10,
+      "target_note": "Скільки очок науки треба набрати.",
+      "module": "",
+      "titleKey": "goal.science"
+    }
+  ]
+}
