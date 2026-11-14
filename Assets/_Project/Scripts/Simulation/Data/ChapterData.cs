@@ -11,7 +11,7 @@ public class ChapterData
     public int chapter;
     public string titleKey;            // ключ тексту назви розділу
     public string descriptionKey;      // ключ тексту опису розділу
-    public ChapterStartData start;     // стартові ресурси
+    public ChapterStartValues start;     // стартові ресурси
     public ChapterStartModule[] startModules; // модулі, що стоять на початку
     public string[] unlockedModules;   // назви з enum ModuleType, які можна замовляти
     public string[] unlockedSystems;   // назви систем, що працюють у розділі
@@ -19,7 +19,7 @@ public class ChapterData
 }
 
 [Serializable]
-public class ChapterStartData
+public class ChapterStartValues
 {
     public float water;
     public float food;

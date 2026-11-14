@@ -68,7 +68,7 @@ public class ChapterSystemTests
             chapter = 1,
             titleKey = "chapter.1.title",
             descriptionKey = "chapter.1.description",
-            start = new ChapterStartData
+            start = new ChapterStartValues
             {
                 water = 60f, food = 40f, oxygen = 100f, battery = 10f,
                 materials = 40f, medKits = 0, science = 0f
