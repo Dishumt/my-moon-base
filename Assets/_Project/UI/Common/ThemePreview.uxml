@@ -1,0 +1,198 @@
+<!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
+<!--
+  ThemePreview.uxml (role 05): a test screen that shows every main style from Theme.uss.
+  Not used in the game. Open it in UI Builder or put it on a UI Document in Sandbox/05-UI.unity.
+  Texts here are only for the preview, so they are written directly (in the game: Loc.Get).
+-->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <Style src="Theme.uss" />
+
+    <ui:VisualElement name="preview-root" style="flex-grow: 1; background-color: rgb(2, 7, 13);">
+        <ui:VisualElement class="backdrop" />
+
+        <!-- tablet shell: .tablet--open makes it visible (without it opacity is 0) -->
+        <ui:VisualElement name="tablet" class="tablet tablet--open">
+            <ui:VisualElement class="cb cb--tl" />
+            <ui:VisualElement class="cb cb--tr" />
+            <ui:VisualElement class="cb cb--bl" />
+            <ui:VisualElement class="cb cb--br" />
+
+            <!-- header -->
+            <ui:VisualElement class="thead">
+                <ui:VisualElement class="led led--ok" />
+                <ui:Label text="MOON BASE // ENGINEER CONSOLE" class="brand grow" />
+                <ui:Label text="DAY 3 · 14:00" class="t-label" />
+            </ui:VisualElement>
+
+            <!-- tabs -->
+            <ui:VisualElement class="tabs">
+                <ui:Button text="POWER" class="tab tab--on" />
+                <ui:Button text="CREW" class="tab" />
+                <ui:Button text="BUILD" class="tab" />
+                <ui:Button text="MAP" class="tab tab--alert" />
+                <ui:Button text="X" class="tab-close" />
+            </ui:VisualElement>
+
+            <!-- main area: 3 columns -->
+            <ui:VisualElement class="row grow mt-12" style="align-items: stretch;">
+
+                <!-- left: power cards + battery (.card and .battery are absolute in the theme, here we make them relative) -->
+                <ui:VisualElement style="width: 250px;" class="mr-16">
+                    <ui:VisualElement class="card card--on" style="position: relative; margin-bottom: 8px;">
+                        <ui:VisualElement class="card__icon" style="background-color: rgb(95, 212, 244);" />
+                        <ui:VisualElement>
+                            <ui:Label text="LIFE SUPPORT" class="card__name" />
+                            <ui:VisualElement class="pips">
+                                <ui:VisualElement class="pip pip--on" />
+                                <ui:VisualElement class="pip pip--on" />
+                                <ui:VisualElement class="pip" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="led led--ok card__led" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="card card--sel" style="position: relative; margin-bottom: 8px;">
+                        <ui:VisualElement class="card__icon" style="background-color: rgb(88, 196, 106);" />
+                        <ui:VisualElement>
+                            <ui:Label text="GREENHOUSE" class="card__name" />
+                            <ui:VisualElement class="pips">
+                                <ui:VisualElement class="pip pip--on" />
+                                <ui:VisualElement class="pip" />
+                                <ui:VisualElement class="pip" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="led led--warn card__led" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="card card--warn" style="position: relative; margin-bottom: 16px;">
+                        <ui:VisualElement class="card__icon" style="background-color: rgb(61, 88, 112);" />
+                        <ui:VisualElement>
+                            <ui:Label text="COMMS" class="card__name" />
+                            <ui:VisualElement class="pips">
+                                <ui:VisualElement class="pip" />
+                                <ui:VisualElement class="pip" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="led led--bad card__led" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="battery" style="position: relative;">
+                        <ui:VisualElement class="row">
+                            <ui:VisualElement class="cell"><ui:VisualElement class="cell__fill" style="height: 100%;" /></ui:VisualElement>
+                            <ui:VisualElement class="cell"><ui:VisualElement class="cell__fill" style="height: 100%;" /></ui:VisualElement>
+                            <ui:VisualElement class="cell"><ui:VisualElement class="cell__fill" style="height: 60%;" /></ui:VisualElement>
+                            <ui:VisualElement class="cell"><ui:VisualElement class="cell__fill" style="height: 0%;" /></ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:Label text="BATTERY 65%" class="t-label c-en mt-8" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- middle: titles, text, notes, selectable rows, messages -->
+                <ui:VisualElement class="grow mr-16">
+                    <ui:Label text="POWER GRID" class="t-title mb-8" />
+                    <ui:Label text="Give energy blocks to the systems. Every block costs battery." class="t-body mb-8" />
+                    <ui:Label text="Tip: the greenhouse makes food and oxygen." class="note mb-8" />
+                    <ui:Label text="Storm in 6 hours! Move the crew inside." class="note note--warn mb-8" />
+                    <ui:Label text="NASA fact: a day on the Moon lasts about 29 Earth days." class="note note--fact mb-12" />
+
+                    <ui:Button text="Greenhouse — slot 3" class="opt opt--sel" />
+                    <ui:Button text="Lab — now building" class="opt opt--cur" />
+                    <ui:Button text="Medbay — not enough materials" class="opt opt--disabled" />
+
+                    <ui:Label text="Not enough materials: need 4 more." class="msg msg--err mt-8" />
+                    <ui:Label text="Order sent!" class="msg msg--good" />
+                </ui:VisualElement>
+
+                <!-- right: side panel -->
+                <ui:VisualElement class="panel--side" style="width: 340px;">
+                    <ui:Label text="FREE ENERGY" class="t-label mb-8" />
+                    <ui:VisualElement class="segs mb-12">
+                        <ui:VisualElement class="seg seg--on" />
+                        <ui:VisualElement class="seg seg--on" />
+                        <ui:VisualElement class="seg" />
+                        <ui:VisualElement class="seg" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="row mb-8" style="flex-wrap: wrap;">
+                        <ui:Label text="OK" class="chip chip--ok" />
+                        <ui:Label text="LOW" class="chip chip--warn" />
+                        <ui:Label text="+2 ⚡" class="chip chip--en" />
+                        <ui:Label text="SICK" class="chip chip--bad" />
+                        <ui:Label text="NEW" class="chip chip--acc" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="kv mb-4">
+                        <ui:Label text="USE" class="kv__key" />
+                        <ui:Label text="5 / 7" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="kv mb-12">
+                        <ui:Label text="SUN" class="kv__key" />
+                        <ui:Label text="+3" class="c-en" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="row mb-8">
+                        <ui:Button text="−" class="btn btn--pm mr-8" />
+                        <ui:Button text="+" class="btn btn--pm" />
+                    </ui:VisualElement>
+                    <ui:Button text="CONFIRM" class="btn btn--primary mb-8" style="flex-grow: 0;" />
+                    <ui:VisualElement class="row">
+                        <ui:Button text="DETAILS" class="btn btn--small mr-8" />
+                        <ui:Button text="LOCKED" class="btn btn--small btn--disabled" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- resource strip -->
+            <ui:VisualElement class="bars">
+                <ui:VisualElement class="res res--water">
+                    <ui:Label text="H2O" class="res__label" />
+                    <ui:VisualElement class="res__segs">
+                        <ui:VisualElement class="res__seg res__seg--water" />
+                        <ui:VisualElement class="res__seg res__seg--water" />
+                        <ui:VisualElement class="res__seg res__seg--water" />
+                        <ui:VisualElement class="res__seg res__seg--water" />
+                        <ui:VisualElement class="res__seg res__seg--water" />
+                        <ui:VisualElement class="res__seg res__seg--water" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                    </ui:VisualElement>
+                    <ui:Label text="60" />
+                </ui:VisualElement>
+                <ui:VisualElement class="res res--oxygen">
+                    <ui:Label text="O2" class="res__label" />
+                    <ui:VisualElement class="res__segs">
+                        <ui:VisualElement class="res__seg res__seg--oxygen" />
+                        <ui:VisualElement class="res__seg res__seg--oxygen" />
+                        <ui:VisualElement class="res__seg res__seg--oxygen" />
+                        <ui:VisualElement class="res__seg res__seg--oxygen" />
+                        <ui:VisualElement class="res__seg res__seg--oxygen" />
+                        <ui:VisualElement class="res__seg res__seg--oxygen" />
+                        <ui:VisualElement class="res__seg res__seg--oxygen" />
+                        <ui:VisualElement class="res__seg res__seg--oxygen" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                    </ui:VisualElement>
+                    <ui:Label text="80" />
+                </ui:VisualElement>
+                <ui:VisualElement class="res res--low">
+                    <ui:Label text="FOOD" class="res__label" />
+                    <ui:VisualElement class="res__segs">
+                        <ui:VisualElement class="res__seg res__seg--low" />
+                        <ui:VisualElement class="res__seg res__seg--low" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                        <ui:VisualElement class="res__seg" />
+                    </ui:VisualElement>
+                    <ui:Label text="20" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
