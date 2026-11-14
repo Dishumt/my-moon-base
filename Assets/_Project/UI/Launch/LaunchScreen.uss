@@ -100,3 +100,14 @@
 
 .launch-box { width: 300px; }
 .launch-btn { flex-grow: 0; width: 100%; }
+/* --- додано роллю 04: показ/схов, вимкнений стан, картинка ракети --- */
+.launch-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.launch-stage--hidden { display: none; }
+.ship--image { background-color: rgba(0, 0, 0, 0); -unity-background-scale-mode: scale-to-fit; }
+.ship--image > * { display: none; }
+.mass-bar--over { border-color: var(--color-alarm); }
+.light { background-color: var(--color-card); }
+.light--red-on    { background-color: var(--color-alarm); }
+.light--yellow-on { background-color: var(--color-energy); }
+.light--green-on  { background-color: var(--color-ok); }
+.cargo-mass { width: 80px; font-size: 14px; color: var(--color-muted); -unity-text-align: middle-right; margin-right: 6px; }
