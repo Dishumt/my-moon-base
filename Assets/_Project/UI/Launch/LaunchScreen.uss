@@ -1,62 +1,159 @@
 /* AI-assisted: written with Claude. See docs/AI_USE.md */
 .screen {
     flex-grow: 1;
-    padding: 24px;
-    background-color: rgb(15, 20, 35);
+    padding: 20px 28px;
+    background-color: rgb(8, 12, 28);
+}
+
+.header {
+    font-size: 34px;
+    color: rgb(120, 210, 255);
+    -unity-font-style: bold;
+    letter-spacing: 6px;
+    -unity-text-align: middle-center;
+    margin-bottom: 8px;
 }
 
 .top { flex-direction: row; flex-grow: 1; }
 
 .panel {
-    background-color: rgb(30, 40, 65);
-    border-radius: 12px;
-    padding: 16px;
+    background-color: rgb(20, 30, 56);
+    border-radius: 16px;
+    border-width: 2px;
+    border-color: rgb(55, 85, 140);
+    padding: 18px;
     margin: 8px;
 }
 
-.cargo-panel { width: 40%; }
+.cargo-panel { width: 42%; }
 .ship-panel { flex-grow: 1; align-items: center; }
 
-.title { font-size: 28px; color: white; margin-bottom: 12px; -unity-font-style: bold; }
-.info { font-size: 20px; color: rgb(200, 210, 230); margin: 6px; }
+.title {
+    font-size: 30px;
+    color: white;
+    -unity-font-style: bold;
+    margin-bottom: 14px;
+}
+.info { font-size: 22px; color: rgb(190, 205, 235); margin: 6px; }
 
-.cargo-row { flex-direction: row; align-items: center; margin-bottom: 8px; }
-.cargo-name { font-size: 20px; color: white; width: 140px; }
-.cargo-count { font-size: 20px; color: white; width: 50px; -unity-text-align: middle-center; }
-.small-btn { width: 40px; height: 40px; font-size: 22px; }
+/* --- Вантаж --- */
+.cargo-row {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgb(30, 44, 78);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+}
+.cargo-name { font-size: 24px; color: white; width: 170px; }
+.cargo-count {
+    font-size: 26px;
+    color: rgb(120, 210, 255);
+    -unity-font-style: bold;
+    width: 64px;
+    -unity-text-align: middle-center;
+}
+.small-btn {
+    width: 48px; height: 48px;
+    font-size: 28px;
+    color: white;
+    background-color: rgb(60, 100, 170);
+    border-width: 0;
+    border-radius: 24px;
+}
+.small-btn:hover { background-color: rgb(90, 140, 220); }
+.small-btn:active { background-color: rgb(40, 70, 130); }
 
-.ship {
-    width: 120px; height: 200px;
-    background-color: rgb(220, 225, 240);
-    border-radius: 20px;
-    margin: 12px;
+/* --- Ракета з частин --- */
+.ship-area { width: 100%; height: 280px; align-items: center; justify-content: center; }
+.ship { width: 140px; height: 250px; }
+.ship-body {
+    position: absolute; left: 30px; top: 60px;
+    width: 80px; height: 150px;
+    background-color: rgb(225, 230, 245);
+    border-radius: 12px;
+}
+.ship-nose {
+    position: absolute; left: 30px; top: 6px;
+    width: 80px; height: 100px;
+    background-color: rgb(225, 80, 70);
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+.ship-window {
+    position: absolute; left: 52px; top: 100px;
+    width: 36px; height: 36px;
+    background-color: rgb(90, 190, 255);
+    border-radius: 18px;
+    border-width: 4px;
+    border-color: rgb(120, 130, 160);
+}
+.ship-fin {
+    position: absolute; top: 150px;
+    width: 32px; height: 80px;
+    background-color: rgb(225, 80, 70);
+}
+.ship-fin-left { left: 0px; border-top-left-radius: 24px; border-bottom-left-radius: 6px; }
+.ship-fin-right { left: 108px; border-top-right-radius: 24px; border-bottom-right-radius: 6px; }
+.ship-flame {
+    position: absolute; left: 48px; top: 205px;
+    width: 44px; height: 44px;
+    background-color: rgb(255, 170, 50);
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
 }
 
+/* --- Смужка маси --- */
 .mass-bar {
     flex-direction: row;
-    width: 100%; height: 24px;
-    background-color: rgb(50, 60, 90);
-    border-radius: 6px;
+    width: 100%; height: 26px;
+    background-color: rgb(40, 52, 88);
+    border-radius: 13px;
     overflow: hidden;
 }
 .mass-crew { width: 25%; background-color: rgb(255, 170, 60); }
 .mass-cargo { width: 35%; background-color: rgb(90, 170, 255); }
 
+.legend { flex-direction: row; align-items: center; margin-top: 8px; }
+.legend-dot { width: 16px; height: 16px; border-radius: 8px; margin-right: 6px; }
+.legend-crew { background-color: rgb(255, 170, 60); }
+.legend-cargo { background-color: rgb(90, 170, 255); margin-left: 16px; }
+.legend-text { font-size: 18px; color: rgb(190, 205, 235); }
+
+/* --- Низ: паливо, світлофор, запуск --- */
 .bottom { flex-direction: row; align-items: center; justify-content: space-between; }
-.fuel-box { flex-grow: 1; margin-right: 24px; }
+.fuel-box { flex-grow: 1; margin-right: 28px; }
+
+.unity-base-slider__tracker { background-color: rgb(60, 80, 125); }
+.unity-base-slider__dragger { background-color: rgb(120, 210, 255); }
 
 .traffic-light {
     flex-direction: row;
-    padding: 10px;
-    background-color: rgb(10, 12, 20);
-    border-radius: 16px;
-    margin-right: 24px;
+    padding: 12px;
+    background-color: rgb(6, 8, 16);
+    border-radius: 22px;
+    border-width: 3px;
+    border-color: rgb(55, 85, 140);
+    margin-right: 28px;
 }
-.light { width: 60px; height: 60px; border-radius: 30px; margin: 4px; }
+.light { width: 66px; height: 66px; border-radius: 33px; margin: 5px; }
 .light-red { background-color: rgb(120, 40, 40); }
 .light-yellow { background-color: rgb(140, 120, 40); }
 .light-green { background-color: rgb(40, 190, 80); }
 
-.launch-box { align-items: center; }
-.risk { font-size: 24px; color: white; margin-bottom: 8px; }
-.launch-btn { font-size: 28px; width: 200px; height: 60px; background-color: rgb(220, 70, 60); color: white; }
+.launch-box { align-items: center; width: 280px; }
+.risk { font-size: 28px; color: white; -unity-font-style: bold; margin-bottom: 10px; }
+.launch-btn {
+    font-size: 32px;
+    -unity-font-style: bold;
+    width: 260px; height: 70px;
+    color: white;
+    background-color: rgb(225, 80, 60);
+    border-width: 0;
+    border-radius: 35px;
+}
+.launch-btn:hover { background-color: rgb(250, 110, 80); }
+.launch-btn:active { background-color: rgb(180, 55, 40); }
+.result { font-size: 20px; color: rgb(255, 220, 120); margin-top: 8px; -unity-text-align: middle-center; white-space: normal; }

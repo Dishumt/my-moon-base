@@ -3,6 +3,8 @@
     <Style src="LaunchScreen.uss" />
     <ui:VisualElement name="root" class="screen">
 
+        <ui:Label text="MISSION: MOON BASE" class="header" />
+
         <ui:VisualElement name="top" class="top">
 
             <ui:VisualElement name="cargo-panel" class="panel cargo-panel">
@@ -12,11 +14,26 @@
 
             <ui:VisualElement name="ship-panel" class="panel ship-panel">
                 <ui:Label text="Ship" class="title" />
-                <ui:VisualElement name="ship" class="ship" />
+                <ui:VisualElement class="ship-area">
+                    <ui:VisualElement name="ship" class="ship">
+                        <ui:VisualElement class="ship-fin ship-fin-left" />
+                        <ui:VisualElement class="ship-fin ship-fin-right" />
+                        <ui:VisualElement class="ship-body" />
+                        <ui:VisualElement class="ship-nose" />
+                        <ui:VisualElement class="ship-window" />
+                        <ui:VisualElement class="ship-flame" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
                 <ui:Label name="mass-label" text="Mass: 1600 kg" class="info" />
                 <ui:VisualElement class="mass-bar">
                     <ui:VisualElement name="mass-crew" class="mass-crew" />
                     <ui:VisualElement name="mass-cargo" class="mass-cargo" />
+                </ui:VisualElement>
+                <ui:VisualElement class="legend">
+                    <ui:VisualElement class="legend-dot legend-crew" />
+                    <ui:Label text="Crew" class="legend-text" />
+                    <ui:VisualElement class="legend-dot legend-cargo" />
+                    <ui:Label text="Cargo" class="legend-text" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
@@ -37,7 +54,7 @@
             <ui:VisualElement class="launch-box">
                 <ui:Label name="risk-label" text="Risk: 0%" class="risk" />
                 <ui:Button name="launch-button" text="LAUNCH" class="launch-btn" />
-                <ui:Label name="result-label" text="" class="info" />
+                <ui:Label name="result-label" text="" class="result" />
             </ui:VisualElement>
         </ui:VisualElement>
 
