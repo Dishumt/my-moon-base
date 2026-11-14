@@ -119,8 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
-<<<<<<< Updated upstream
-=======
 --- !u!1 &139970967
 GameObject:
   m_ObjectHideFlags: 0
@@ -285,7 +283,6 @@ Transform:
   - {fileID: 983541457}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
->>>>>>> Stashed changes
 --- !u!1 &220731060
 GameObject:
   m_ObjectHideFlags: 0
@@ -391,10 +388,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd5e2e8ad6a846b3ae12c215432a46a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game::Billboard
-<<<<<<< Updated upstream
   mode: 0
-=======
-  keepUpright: 0
 --- !u!1 &277531705
 GameObject:
   m_ObjectHideFlags: 0
@@ -444,7 +438,6 @@ MonoBehaviour:
   type: 3
   discoverRadius: 8
   showWhenDiscovered: {fileID: 0}
->>>>>>> Stashed changes
 --- !u!1 &314050168
 GameObject:
   m_ObjectHideFlags: 0
@@ -665,16 +658,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game::EngineerController
   speed: 5
   mapHalfSize: 200
-<<<<<<< Updated upstream
   suitAccel: 7
   suitStopAccel: 8
   indoorAccel: 16
   indoorStopAccel: 14
   spriteRenderer: {fileID: 220731062}
-=======
-  spriteRenderer: {fileID: 220731062}
-  walkFps: 8
->>>>>>> Stashed changes
   suit:
     idleFront: {fileID: 21300000, guid: fc1d560fe3b8bec41bcad039a35ddf88, type: 3}
     idleBack: {fileID: 21300000, guid: 9d6c4fad46b271245a242739ff31b1f7, type: 3}
@@ -698,17 +686,11 @@ MonoBehaviour:
     - {fileID: 21300000, guid: ae32e1ba1fc49274db5cfc2025e5e5bf, type: 3}
     - {fileID: 21300000, guid: dbedeae83582979489a1d2da71f49f51, type: 3}
     - {fileID: 21300000, guid: 315c151f5da58c14489b32aed1555658, type: 3}
-<<<<<<< Updated upstream
     pushFrames: 0100000002000000i
     airFrames: 0000000003000000i
   indoor:
     idleFront: {fileID: 21300000, guid: 7f47dc8901f2cb344946f72125674762, type: 3}
     idleBack: {fileID: 21300000, guid: 89666db51d666904cbde0edd9da650fd, type: 3}
-=======
-  indoor:
-    idleFront: {fileID: 21300000, guid: f8d748a2652cdb64ba6845c8a95c223c, type: 3}
-    idleBack: {fileID: 21300000, guid: d2589a838af1d3048a0048938e873172, type: 3}
->>>>>>> Stashed changes
     walkFront:
     - {fileID: 21300000, guid: 83683201cfecd4e439a1698abfb3b753, type: 3}
     - {fileID: 21300000, guid: 301ea0de1773e48419b807ec572d23d2, type: 3}
@@ -725,11 +707,8 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 38e11686ce5ba58408c79cd7378da256, type: 3}
     - {fileID: 21300000, guid: d0f9ae2898efc87438f89462b259fa17, type: 3}
     walkRight: []
-<<<<<<< Updated upstream
     pushFrames: 0100000002000000i
     airFrames: 0000000003000000i
-=======
->>>>>>> Stashed changes
   noIndoorSpritesTint: {r: 0.7, g: 0.85, b: 1, a: 1}
 --- !u!143 &377434389
 CharacterController:
@@ -898,11 +877,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game::OutdoorDarkening
   insideBrightness: 0.25
   fadeSeconds: 0.4
-<<<<<<< Updated upstream
   alsoDarken:
   - {fileID: 314050169}
-=======
-  alsoDarken: []
 --- !u!1 &470598918
 GameObject:
   m_ObjectHideFlags: 0
@@ -1083,7 +1059,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 652242468}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
->>>>>>> Stashed changes
 --- !u!1 &653552249
 GameObject:
   m_ObjectHideFlags: 0
@@ -1378,13 +1353,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22bb973cc31b451b97232c6c5e124f43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game::ModuleLook
-<<<<<<< Updated upstream
   wallMaterial: {fileID: 2100000, guid: bb26a264b608ac743babb0b2e1f1a4f3, type: 2}
   roofMaterial: {fileID: 2100000, guid: 0df667e4feef7af4c995167901406d32, type: 2}
-=======
-  wallMaterial: {fileID: 2100000, guid: 980d1bb7fed2a984b90a7656f45cdace, type: 2}
-  roofMaterial: {fileID: 2100000, guid: 22cf07e37dac9354b865fed5f081a2ea, type: 2}
->>>>>>> Stashed changes
   dustMaterial: {fileID: 0}
   moduleSize: {x: 6, y: 6}
   wallHeight: 2.2
@@ -1435,8 +1405,6 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &808986981
 MonoBehaviour:
-<<<<<<< Updated upstream
-=======
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1449,19 +1417,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game::BaseView
 --- !u!1 &893256002
 GameObject:
->>>>>>> Stashed changes
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-<<<<<<< Updated upstream
-  m_GameObject: {fileID: 808986978}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8c0a095570b4c7a828b1832b3c168dd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game::BaseView
-=======
   serializedVersion: 6
   m_Component:
   - component: {fileID: 893256003}
@@ -1835,7 +1794,6 @@ MonoBehaviour:
   type: 1
   discoverRadius: 6
   showWhenDiscovered: {fileID: 0}
->>>>>>> Stashed changes
 --- !u!1 &1194292670
 GameObject:
   m_ObjectHideFlags: 0
@@ -1913,8 +1871,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game::WorldDebugButtons
   testType: 0
   testBuildHours: 6
-<<<<<<< Updated upstream
-=======
 --- !u!1 &1276539703
 GameObject:
   m_ObjectHideFlags: 0
@@ -2275,7 +2231,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2137222851}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
->>>>>>> Stashed changes
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2287,7 +2242,4 @@ SceneRoots:
   - {fileID: 1194292673}
   - {fileID: 653552251}
   - {fileID: 808986980}
-<<<<<<< Updated upstream
-=======
   - {fileID: 211877418}
->>>>>>> Stashed changes
