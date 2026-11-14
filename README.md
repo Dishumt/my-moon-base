@@ -90,7 +90,7 @@
   4. **Push origin** → **Create Pull Request**.
 - **У Claude Code:** «створи гілку…», «закоміть», «запуш і створи Pull Request».
 
-**Крок 4. Техлід зливає** Pull Request-и приблизно кожні 2 години. Після кожного злиття всі оновлюються:
+**Крок 4. Автор сам зливає свій Pull Request** (Merge pull request → Confirm merge), якщо в Unity немає червоних помилок. PR зі сценами, префабами чи `Core` зливає техлід. Покроково — [docs/GIT_HOWTO.md](docs/GIT_HOWTO.md). Після кожного злиття всі оновлюються:
 - у GitHub Desktop: «Fetch origin», потім Branch → **Update from main**;
 - або `/sync` у Claude Code.
 
