@@ -1,0 +1,391 @@
+<!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
+# Стиль планшета: інструкція для Claude без доступу до репозиторію
+
+> **Як користуватися:** скопіюй ВЕСЬ цей файл у новий чат claude.ai і допиши знизу своє завдання, наприклад:
+> «Я роль 04. Зроби екран запуску: UI/Launch/LaunchScreen.uxml + LaunchScreen.uss + Scripts/Logistics/LaunchScreen.cs».
+
+---
+
+## Привіт, Claude. Ось контекст
+
+**Проєкт:** браузерна 2.5D-гра для дітей 7–12 років (NASA Space Apps 2026). Гравець — інженер бази на південному полюсі Місяця. Unity 6.6 (URP), C#, збірка WebGL. Команда — новачки: відповідай українською, простими словами, кожен термін пояснюй одним реченням.
+
+**Інтерфейс — тільки UI Toolkit:** `.uxml` (що на екрані) + `.uss` (як виглядає) + `.cs` (логіка). Елементи шукаємо за `name`: `root.Q<Label>("launch-title")`.
+
+**Вже є спільний стиль `Assets/_Project/UI/Common/Theme.uss`** (його повний текст нижче). Планшет гри зроблено в ньому. **Будь-який новий екран має виглядати так само:** темно-синя «консоль інженера», тонкі блакитні рамки, кутові скоби, великі літери, моноширинний шрифт.
+
+### Правила, яких треба дотримуватись
+
+1. **Підключи Theme.uss** першим рядком у кожному `.uxml`:
+   `<Style src="/Assets/_Project/UI/Common/Theme.uss" />`
+2. **Theme.uss не змінюй** (це зона ролі 05). Потрібні нові класи → клади їх у свій окремий `.uss` (наприклад `UI/Launch/LaunchScreen.uss`) і підключай другим `<Style>`.
+3. **Кольори тільки через змінні** `var(--color-…)` з Theme.uss, свої hex-коди не вигадуй. Кольори ресурсів фіксовані: енергія жовта, вода синя, кисень блакитний, їжа зелена, радіація фіолетова.
+4. **Розміри — для екрана 1280×720** (PanelSettings: Scale With Screen Size, 1280×720, Match 0.5). Кнопки ≥ 64px заввишки, бо гра для дітей.
+5. **USS не вміє:** `box-shadow`, `gap`, `text-transform`, `clip-path`, dashed-рамки, `@keyframes`. Замість `gap` — класи `.mr-8`, `.mb-8` тощо; великі літери — `ToUpperInvariant()` у C#; миготіння — вмикати/вимикати клас з C# корутиною.
+6. **Тексти тільки через ключі:** `Loc.Get("sup.title")`, `Loc.Get("sup.ok", 31)` (`{0}` замінюється аргументом). Ніякого тексту прямо в `.cs` чи `.uxml`. Нові ключі додавай в обидва файли `Resources/Data/Text/texts_en.json` і `texts_uk.json`, формат `{"items":[{"key":"…","text":"…"}]}`. Англійська — основна мова.
+7. **WebGL:** ніяких `Thread`, `Task.Run`, `await Task.Delay` (лише корутини), ніякого `System.IO`.
+8. **Пауза:** вікно, що ставить гру на паузу, викликає `GameBootstrap.Instance.Clock.PushModal()` під час відкриття і **обов'язково** `PopModal()` під час закриття (і в `OnDisable`).
+9. **Кожен новий файл** починай рядком `// AI-assisted: written with Claude. See docs/AI_USE.md` (в `.uxml`/`.uss` — у вигляді коментаря цього формату).
+10. Ім'я MonoBehaviour-класу = ім'я файлу. Кожен файл видавай **повністю**, з точним шляхом над ним.
+
+### Як побудований планшет (зразок розкладки)
+
+```
+.tablet  (рамка 2px --color-line, фон --color-panel, padding 18px)
+ ├─ 4 × .cb .cb--tl/--tr/--bl/--br   ← блакитні кутові скоби, picking-mode="Ignore"
+ ├─ .thead  ← рядок 36px: .brand "BASE-OS v1.2" · назва · .grow · день · .led + "SIM PAUSED" · .led + "LINK OK"
+ ├─ .tabs   ← вкладки .tab / .tab--on (заливка --color-accent) / .tab--alert, справа .tab-close "X" (червона)
+ ├─ тіло: .panel  (зліва контент, справа .panel--side зі списками .opt і кнопкою .btn--primary)
+ └─ .bars   ← смужки ресурсів: .res .res--water › .res__label · .res__segs (20 × .res__seg) · число
+```
+
+Мінімальний каркас нового екрана:
+
+```xml
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="/Assets/_Project/UI/Common/Theme.uss" />
+    <Style src="/Assets/_Project/UI/Launch/LaunchScreen.uss" />
+    <ui:VisualElement name="launch-stage" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;">
+        <ui:VisualElement class="backdrop" />
+        <ui:VisualElement name="launch" class="tablet tablet--open">
+            <ui:VisualElement class="cb cb--tl" picking-mode="Ignore" />
+            <ui:VisualElement class="cb cb--tr" picking-mode="Ignore" />
+            <ui:VisualElement class="cb cb--bl" picking-mode="Ignore" />
+            <ui:VisualElement class="cb cb--br" picking-mode="Ignore" />
+            <ui:VisualElement class="thead">
+                <ui:Label name="launch-brand" class="brand" />
+                <ui:Label name="launch-title" style="margin-left: 16px;" />
+                <ui:VisualElement class="grow" />
+                <ui:Button name="launch-close" class="tab-close" text="X" />
+            </ui:VisualElement>
+            <!-- контент -->
+            <ui:Button name="launch-go" class="btn btn--primary" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
+```
+
+### Довідник класів (коротко)
+
+| Що | Класи |
+|---|---|
+| Текст | `.t-title` (26px, акцент), `.t-big`, `.t-label` (14px, сірий, розрядка), `.t-body`, кольори `.c-ok .c-warn .c-bad .c-mute .c-acc .c-en` |
+| Розкладка | `.row`, `.row-between`, `.grow`, відступи `.mr-4/8/12/16`, `.mb-4/8/12/16`, `.mt-8/12` |
+| Панелі | `.panel`, `.panel--side`, `.tablet`, `.backdrop`, `.cb--*`, `.thead`, `.brand` |
+| Кнопки | `.btn` (рамка), `.btn--primary` (заливка), `.btn--pm` (± великий шрифт), `.btn--small`, `.btn--disabled` (клас, а не disabled — щоб кнопка могла сказати ЧОМУ не можна) |
+| Вкладки | `.tabs`, `.tab`, `.tab--on`, `.tab--alert`, `.tab-close` |
+| Вогники | `.led` + `.led--ok/--warn/--bad`, `.led--blink` |
+| Чіпи | `.chip` + `.chip--ok/--warn/--en/--bad/--acc` |
+| Рядок «назва : значення» | `.kv` › `.kv__key` + значення |
+| Повідомлення | `.msg`, `.msg--err`, `.msg--good`; підказки `.note`, `.note--warn`, `.note--fact` |
+| Рядки вибору | `.opt`, `.opt--sel`, `.opt--cur`, `.opt--disabled` |
+| Блоки/смужки | `.segs` › `.seg` / `.seg--on` / `.seg--small` / `.seg--pop`; `.pips` › `.pip--on`; ресурси `.res*` |
+| Батарея | `.battery`, `.battery--drain`, `.cell` › `.cell__fill` (висота в % з C#) |
+
+### Тексти, які вже є для екрана запуску (texts_en.json)
+
+```
+sup.title = // CARGO LIST · ORDER #2      sup.cap = SHIP HOLDS {0} kg
+item.water = WATER        item.water.desc = +20 H₂O each
+item.food = FOOD          item.food.desc = +10 food each
+item.medkits = MED KITS   item.medkits.desc = one kit cures one sick astronaut
+item.materials = MATERIALS  item.materials.desc = for building modules
+item.astronaut = ASTRONAUT  item.astronaut.desc = {0} replaces {1}
+sup.each = {0} kg each    sup.mass = CARGO MASS
+sup.ok = Room left: {0} kg.   sup.tight = Almost full: {0} kg left.   sup.over = Too heavy! Remove {0} kg.
+sup.fuel = Heavier cargo needs more fuel at launch.
+sup.err_full = No room left. Remove something first.   sup.err_heavy = Too heavy to launch. Remove some cargo.
+sup.next = NEXT DELIVERY   sup.in = in {0} d {1} h   sup.prepare = PREPARE LAUNCH →
+step.list = MAKE THE LIST   step.send = SEND IN A COMMS WINDOW   step.launch = LAUNCH FROM EARTH
+step.flight = FLIGHT · 3 DAYS   step.land = LANDS ON THE PAD   step.now = now
+```
+
+### Що вже є в коді (можна викликати)
+
+- `GameBootstrap.Instance.State` — стан гри; `.Clock` — час (`PushModal()`, `PopModal()`, `Pause()`, `Resume()`, `SetSpeed(2f)`); `.GetSystem<SupplySystem>()`.
+- `GameEvents.StateChanged`, `GameEvents.LaunchFinished(bool)`, `GameEvents.SupplyArrived` — підписка в `OnEnable`, відписка в `OnDisable`.
+- `SupplyState` поки порожній (роль 04 додає поля сама).
+
+### Як виглядає стиль (щоб уявити)
+
+Фон за вікном майже чорний `#02070D`, вікно `#04101A`, картки `#07182A`. Рамки 2px `#2B5675`, акцент блакитний `#5FD4F4` (кутові скоби, активна вкладка, головна кнопка із заливкою і темним текстом). Текст `#D8F3FF`, приглушений `#6F93AD`. Усі написи ВЕЛИКИМИ літерами з розрядкою 2–3px, кути прямі (border-radius 0, тільки сам планшет 6px). Помилки червоні `#FF4D5E`, увага помаранчева `#FF9A5C`, енергія/вантаж/паливо жовті `#FFC83D`.
+
+---
+
+## Повний текст `Assets/_Project/UI/Common/Theme.uss`
+
+```css
+/* AI-assisted: written with Claude. See docs/AI_USE.md */
+/*
+  Theme.uss: shared look of the "engineer console" (role 05).
+  Reference screen: 1280x720. In PanelSettings use Scale With Screen Size, Reference Resolution 1280x720, Match 0.5,
+  so on Full HD all sizes below grow 1.5x (text 16px -> 24px, button 64px -> 96px).
+
+  What USS cannot do, so it is NOT here: box-shadow, clip-path (cut corners), skew, dashed borders, text-transform.
+  - cut corners and glow  -> 9-slice sprites from role 02 (see the "SPRITES" block at the bottom)
+  - UPPERCASE labels      -> done in C#: label.text = text.ToUpperInvariant()
+  - dashed wires and the map -> Painter2D in custom elements (PowerGridElement, MapElement, SkyElement)
+  - gaps between children -> USS has no "gap", so use the spacing helpers (.mr-8, .mb-8 ...)
+*/
+
+:root {
+    /* base */
+    --color-void: #02070D;
+    --color-panel: #04101A;
+    --color-card: #07182A;
+    --color-card-selected: #0C2A42;
+    --color-line: #2B5675;
+    --color-line-hi: #3F7AA0;
+    --color-dim: #3D5870;
+    --color-accent: #5FD4F4;
+    --color-text: #D8F3FF;
+    --color-soft: #B8D6E8;
+    --color-muted: #6F93AD;
+    /* resources and states (do not change) */
+    --color-energy: #FFC83D;
+    --color-energy-bg: #1A1400;
+    --color-water: #3D8BFF;
+    --color-oxygen: #5FD4F4;
+    --color-food: #58C46A;
+    --color-radiation: #A569E8;
+    --color-regolith: #9A8F7C;
+    --color-ok: #58C46A;
+    --color-warn: #FF9A5C;
+    --color-alarm: #FF4D5E;
+}
+
+/* ---------- font ----------
+   Role 02 puts JetBrains Mono (OFL) in Art/Fonts and makes a Font Asset from it.
+   Then uncomment and fix the path:
+.tablet { -unity-font-definition: url("project:///Assets/_Project/Art/Fonts/JetBrainsMono-Regular SDF.asset"); }
+*/
+
+/* ---------- text ---------- */
+.t-body   { font-size: 16px; color: var(--color-soft); white-space: normal; }
+.t-say    { font-size: 17px; color: var(--color-soft); white-space: normal; }
+.t-label  { font-size: 14px; letter-spacing: 3px; color: var(--color-muted); }
+.t-title  { font-size: 26px; letter-spacing: 2px; -unity-font-style: bold; color: var(--color-accent); }
+.t-title--long { font-size: 20px; letter-spacing: 1px; }
+.t-big    { font-size: 24px; letter-spacing: 2px; -unity-font-style: bold; color: var(--color-accent); }
+.c-ok     { color: var(--color-ok); }
+.c-warn   { color: var(--color-warn); }
+.c-bad    { color: var(--color-alarm); }
+.c-mute   { color: var(--color-muted); }
+.c-acc    { color: var(--color-accent); }
+.c-en     { color: var(--color-energy); }
+
+/* ---------- layout helpers ---------- */
+.row      { flex-direction: row; align-items: center; }
+.row-between { flex-direction: row; align-items: center; justify-content: space-between; }
+.grow     { flex-grow: 1; }
+.mr-4 { margin-right: 4px; }   .mr-8 { margin-right: 8px; }   .mr-12 { margin-right: 12px; }  .mr-16 { margin-right: 16px; }
+.mb-4 { margin-bottom: 4px; }  .mb-8 { margin-bottom: 8px; }  .mb-12 { margin-bottom: 12px; } .mb-16 { margin-bottom: 16px; }
+.mt-8 { margin-top: 8px; }     .mt-12 { margin-top: 12px; }
+
+/* ---------- panels ---------- */
+.panel {
+    background-color: var(--color-panel);
+    border-width: 2px;
+    border-color: var(--color-line);
+    border-radius: 0;
+}
+.panel--side {
+    background-color: rgba(95, 212, 244, 0.04);
+    border-width: 1px;
+    border-color: var(--color-line);
+    padding: 16px 20px;
+}
+
+/* ---------- tablet shell ---------- */
+.tablet {
+    position: absolute;
+    left: 24px; top: 16px; width: 1232px; height: 688px;
+    padding: 18px;
+    background-color: var(--color-panel);
+    border-width: 2px;
+    border-color: var(--color-line);
+    border-radius: 6px;
+    opacity: 0;
+    scale: 0.96 0.96;
+    transition-property: opacity, scale;
+    transition-duration: 0.28s;
+    transition-timing-function: ease-out;
+}
+.tablet--open { opacity: 1; scale: 1 1; }   /* in C#: also set pickingMode = Ignore while closed */
+.backdrop { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(2, 7, 13, 0.75); }
+
+/* corner brackets: 4 small empty VisualElements with .cb + one of the variants */
+.cb { position: absolute; width: 26px; height: 26px; border-color: var(--color-accent);
+      border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; }
+.cb--tl { left: -2px; top: -2px; border-top-width: 3px; border-left-width: 3px; }
+.cb--tr { right: -2px; top: -2px; border-top-width: 3px; border-right-width: 3px; }
+.cb--bl { left: -2px; bottom: -2px; border-bottom-width: 3px; border-left-width: 3px; }
+.cb--br { right: -2px; bottom: -2px; border-bottom-width: 3px; border-right-width: 3px; }
+
+.thead { height: 36px; flex-direction: row; align-items: center; font-size: 15px; letter-spacing: 2px; color: var(--color-muted); }
+.brand { font-size: 20px; letter-spacing: 2px; -unity-font-style: bold; color: var(--color-accent); }
+
+/* ---------- LED (status light) ---------- */
+.led { width: 10px; height: 10px; border-radius: 5px; background-color: var(--color-muted); margin-right: 8px; }
+.led--ok   { background-color: var(--color-ok); }
+.led--warn { background-color: var(--color-energy); }
+.led--bad  { background-color: var(--color-alarm); }
+.led--blink { opacity: 0.25; transition-property: opacity; transition-duration: 0.6s; }   /* toggled every 600 ms from C# */
+
+/* ---------- tabs ---------- */
+.tabs { height: 48px; margin-top: 10px; flex-direction: row; border-bottom-width: 2px; border-color: var(--color-line); }
+.tab {
+    height: 48px; margin: 0 8px 0 0; padding: 0 22px;
+    flex-direction: row; align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 2px; border-bottom-width: 0; border-color: var(--color-line); border-radius: 0;
+    font-size: 18px; letter-spacing: 3px; color: var(--color-muted);
+    transition-property: background-color, color; transition-duration: 0.2s;
+}
+.tab:hover { color: var(--color-text); }
+.tab--on { background-color: var(--color-accent); border-color: var(--color-accent); color: var(--color-panel); -unity-font-style: bold; }
+.tab--alert { border-color: var(--color-warn); }   /* tab has something that needs attention */
+.tab-close {
+    width: 44px; height: 44px; margin: 0 0 0 auto; align-self: center;
+    background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-alarm); border-radius: 0;
+    color: var(--color-alarm); font-size: 20px;
+}
+.tab-close:hover { background-color: rgba(255, 77, 94, 0.15); }
+
+/* ---------- buttons (min height 64 on the 1280x720 reference) ---------- */
+.btn {
+    flex-grow: 1; height: 64px; margin: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 2px; border-color: var(--color-accent); border-radius: 0;
+    color: var(--color-accent); font-size: 20px; letter-spacing: 2px;
+    transition-property: background-color, scale; transition-duration: 0.15s;
+}
+.btn:hover { background-color: rgba(95, 212, 244, 0.12); }
+.btn:active { scale: 0.97 0.97; }
+.btn--primary { background-color: var(--color-accent); color: var(--color-panel); -unity-font-style: bold; }
+.btn--primary:hover { background-color: #8BE3FA; }
+.btn--pm { font-size: 34px; }
+.btn--small { height: 40px; flex-grow: 0; padding: 0 14px; font-size: 13px; letter-spacing: 1px; }
+.btn--disabled, .opt--disabled, .step--disabled { opacity: 0.4; }   /* class, not :disabled, so the button can still show WHY */
+
+/* ---------- power cards (POWER tab) ---------- */
+.card {
+    position: absolute; width: 240px; height: 64px; margin: 0; padding: 0 12px;
+    flex-direction: row; align-items: center;
+    background-color: var(--color-card);
+    border-width: 2px; border-color: var(--color-line); border-radius: 0;
+    transition-property: border-color, background-color; transition-duration: 0.25s;
+}
+.card:hover { border-color: var(--color-accent); }
+.card--on   { border-color: var(--color-line-hi); }
+.card--warn { border-color: var(--color-energy); }
+.card--sel  { border-color: var(--color-accent); background-color: var(--color-card-selected); }
+.card__icon { width: 34px; height: 34px; margin-right: 12px; -unity-background-image-tint-color: var(--color-dim); }
+.card--on .card__icon, .card--sel .card__icon { -unity-background-image-tint-color: var(--color-accent); }
+.card__name { font-size: 16px; letter-spacing: 1px; color: var(--color-muted); margin-bottom: 8px; }
+.card--on .card__name { color: var(--color-text); }
+.card__name--long { font-size: 14px; letter-spacing: 0; }
+.card__led { position: absolute; right: 12px; top: 10px; margin: 0; }
+
+/* little power blocks on cards, and big ones on the side panel */
+.pips { flex-direction: row; }
+.pip { width: 20px; height: 10px; margin-right: 5px; border-width: 1.5px; border-color: var(--color-dim); }
+.pip--on { background-color: var(--color-energy); border-color: var(--color-energy); }
+.segs { flex-direction: row; padding: 0 6px; }
+.seg { flex-grow: 1; height: 36px; margin-right: 8px; border-width: 2px; border-color: var(--color-line);
+       transition-property: background-color, border-color, scale; transition-duration: 0.2s; }
+.seg--on { background-color: var(--color-energy); border-color: var(--color-energy); }
+.seg--small { height: 26px; }
+.seg--pop { scale: 1.25 1.25; }   /* add for one frame, then remove: it animates back to 1 */
+
+/* battery */
+.battery { position: absolute; width: 140px; height: 100px; align-items: center; justify-content: center;
+           background-color: var(--color-energy-bg); border-width: 3px; border-color: var(--color-energy); }
+.battery--drain { border-color: var(--color-warn); }
+.cell { width: 20px; height: 34px; margin-right: 5px; border-width: 2px; border-color: var(--color-energy); justify-content: flex-end; }
+.cell__fill { background-color: var(--color-energy); width: 100%; }   /* set style.height in % from C# */
+
+/* ---------- chips, rows, messages ---------- */
+.chip { margin: 0 6px 6px 0; padding: 3px 8px; font-size: 12px; letter-spacing: 1px; border-width: 1.5px; border-color: var(--color-muted); color: var(--color-muted); }
+.chip--ok   { color: var(--color-ok);     border-color: var(--color-ok); }
+.chip--warn { color: var(--color-warn);   border-color: var(--color-warn); }
+.chip--en   { color: var(--color-energy); border-color: var(--color-energy); }
+.chip--bad  { color: var(--color-alarm);  border-color: var(--color-alarm); }
+.chip--acc  { color: var(--color-accent); border-color: var(--color-accent); }
+
+.kv { flex-direction: row; justify-content: space-between; align-items: center; font-size: 14px; letter-spacing: 1px; color: var(--color-text); }
+.kv__key { color: var(--color-muted); letter-spacing: 2px; }
+
+.msg { min-height: 20px; font-size: 14px; color: var(--color-muted); white-space: normal; }
+.msg--err  { color: var(--color-alarm); font-size: 15px; }
+.msg--good { color: var(--color-ok);    font-size: 15px; }
+.note { padding: 8px 14px; border-left-width: 3px; border-color: var(--color-accent); background-color: rgba(95, 212, 244, 0.07); font-size: 17px; color: var(--color-soft); white-space: normal; }
+.note--warn { border-color: var(--color-warn); background-color: rgba(255, 154, 92, 0.08); }
+.note--fact { border-color: var(--color-energy); background-color: rgba(255, 200, 61, 0.06); }
+
+/* ---------- selectable rows (modules, tasks, astronauts) ---------- */
+.opt {
+    flex-direction: row; align-items: center; min-height: 40px; margin: 0 0 5px 0; padding: 5px 12px;
+    background-color: var(--color-card);
+    border-width: 2px; border-color: var(--color-line); border-radius: 0;
+    -unity-text-align: middle-left; font-size: 15px; letter-spacing: 1px; color: var(--color-text);
+}
+.opt:hover { border-color: var(--color-accent); }
+.opt--sel { border-color: var(--color-accent); background-color: var(--color-card-selected); }
+.opt--cur { border-color: var(--color-energy); }
+.opt--disabled:hover { border-color: var(--color-alarm); }
+
+/* ---------- crew cards ---------- */
+.crew-card { width: 384px; height: 212px; margin: 0 16px 16px 0; padding: 14px; flex-direction: row; align-items: flex-start;
+             background-color: var(--color-card); border-width: 2px; border-color: var(--color-line); border-radius: 0; }
+.crew-card:hover { border-color: var(--color-accent); }
+.crew-card--warn { border-color: var(--color-warn); }
+.crew-card--sel  { border-color: var(--color-accent); background-color: var(--color-card-selected); }
+.portrait { width: 96px; height: 112px; margin-right: 14px; border-width: 2px; border-color: var(--color-line); background-color: var(--color-panel); }
+.meter { flex-direction: row; height: 10px; margin-bottom: 6px; }
+.meter__seg { flex-grow: 1; margin-right: 2px; background-color: rgba(255, 255, 255, 0.08); }
+
+/* ---------- resource strip at the bottom (20 segments each) ---------- */
+.bars { height: 34px; margin-top: 12px; flex-direction: row; align-items: center; }
+.res { flex-grow: 1; flex-basis: 0; flex-direction: row; align-items: center; margin-right: 20px; font-size: 15px; letter-spacing: 1px; -unity-font-style: bold; }
+.res__label { width: 46px; }
+.res__segs { flex-grow: 1; flex-direction: row; margin-right: 10px; }
+.res__seg { flex-grow: 1; height: 16px; margin-right: 2px; background-color: rgba(255, 255, 255, 0.07); }
+.res--water  { color: var(--color-water); }
+.res--oxygen { color: var(--color-oxygen); }
+.res--food   { color: var(--color-food); }
+.res--low    { color: var(--color-warn); }                     /* paint the filled segments with this colour too */
+.res__seg--water  { background-color: var(--color-water); }
+.res__seg--oxygen { background-color: var(--color-oxygen); }
+.res__seg--food   { background-color: var(--color-food); }
+.res__seg--low    { background-color: var(--color-warn); }
+
+/* ---------- base grid (BUILD tab, BuildGridView.cs) ---------- */
+.grid { flex-direction: column; }
+.grid-row { flex-direction: row; }
+.grid-cell {
+    width: 72px; height: 72px; margin: 0 4px 4px 0; padding: 2px;
+    background-color: var(--color-card);
+    border-width: 2px; border-color: var(--color-line); border-radius: 0;
+    color: var(--color-dim); font-size: 10px; white-space: normal; -unity-text-align: middle-center;
+}
+.grid-cell:hover { border-color: var(--color-accent); }
+.grid-cell--building { border-color: var(--color-energy); color: var(--color-energy); background-color: var(--color-energy-bg); }
+.grid-cell--built    { border-color: var(--color-line-hi); color: var(--color-text); background-color: var(--color-card-selected); }
+.grid-cell--sel      { border-color: var(--color-accent); border-width: 3px; }
+
+/* ---------- SPRITES (role 02) ----------
+   When 02 delivers 9-slice frames, give them to .card, .btn, .tab, .opt like this
+   (the cut corner and the glow live inside the sprite):
+
+.card { background-image: url("project:///Assets/_Project/Art/UI/card_frame.png");
+        -unity-slice-left: 14; -unity-slice-right: 14; -unity-slice-top: 14; -unity-slice-bottom: 14;
+        background-color: rgba(0,0,0,0); border-width: 0; }
+*/
+```
+
+---
+
+## Моє завдання
+
+(допиши сюди)
