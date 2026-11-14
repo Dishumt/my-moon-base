@@ -1,36 +1,153 @@
 {
   "_ai": "AI-assisted (Claude)",
-  "_note": "Розділ 2 «Лід і зелень». Числа тут стартові або цільові (не «на день»). Назви модулів — з enum ModuleType. Типи цілей: SurviveDays, BuildModule, WaterAtLeast, ScienceAtLeast.",
+  "_note": "Розділ 2 «Лід і зелень». Цей файл читають ДВА класи: ChapterStartData (ядро, ролі 01/04: поля chapter, titleKey, startHour, resources, power, crew, reserve, robots, pois) і ChapterData (роль 03: решта полів). Назви полів у resources і power пишуться з великої літери, як у класах. Типи цілей: SurviveDays, BuildModule, WaterAtLeast, ScienceAtLeast. Назви модулів і ролей — з enums.",
   "chapter": 2,
   "titleKey": "chapter.2.title",
   "descriptionKey": "chapter.2.description",
-  "start": {
-    "_note": "Що є на базі на початку розділу (для нової гри з розділу 2 або повтору).",
-    "water": 30,
-    "water_note": "Води мало: власну доведеться добувати з льоду.",
-    "food": 30,
-    "food_note": "Порцій їжі: на кілька днів, далі потрібна теплиця.",
-    "oxygen": 100,
-    "oxygen_note": "Повний бак кисню.",
-    "battery": 10,
-    "battery_note": "Заряд батареї, блоко-годин.",
-    "materials": 30,
-    "materials_note": "Будматеріали: вистачає на теплицю (15) і ще один модуль.",
-    "medKits": 0,
-    "medKits_note": "Аптечки: хвороби з'являться в розділі 3.",
-    "science": 0,
-    "science_note": "Очки науки."
+  "startHour": 6,
+  "startHour_note": "О котрій годині починається перший день (перший день через це коротший на 6 годин).",
+  "resources": {
+    "Battery": 10,
+    "Water": 30,
+    "Oxygen": 100,
+    "Food": 16,
+    "Materials": 30,
+    "MedKits": 0
   },
-  "startModules": [
-    { "type": "Solar", "slot": 0 },
-    { "type": "Solar", "slot": 1 },
-    { "type": "Solar", "slot": 2 },
-    { "type": "Habitat", "slot": 3 }
+  "resources_note": "Запаси на початку розділу: Battery у блоко-годинах, Food у порціях, Oxygen бак із 100.",
+  "power": {
+    "LifeSupport": 3,
+    "Greenhouse": 0,
+    "Comms": 0,
+    "Shelter": 0,
+    "Lab": 0,
+    "Medbay": 0,
+    "Robots": 2
+  },
+  "power_note": "Початковий розподіл блоків енергії: гравець може змінити його в планшеті.",
+  "crew": [
+    {
+      "name": "Alex",
+      "role": "Engineer"
+    },
+    {
+      "name": "Maya",
+      "role": "Medic"
+    },
+    {
+      "name": "Leo",
+      "role": "Botanist"
+    },
+    {
+      "name": "Nora",
+      "role": "Geologist"
+    }
   ],
-  "startModules_note": "База після розділу 1. Номери слотів підігнати під сцену. Якщо слот уже зайнятий, пропускається.",
-  "unlockedModules": ["Habitat", "Solar", "Battery", "Greenhouse", "Antenna", "Lab"],
+  "crew_note": "ПРИПУЩЕННЯ: імена вигадані. Якщо екіпаж у вашому проєкті вже заданий, залиште свій блок crew.",
+  "reserve": [
+    {
+      "name": "Ira",
+      "role": "Engineer"
+    },
+    {
+      "name": "Max",
+      "role": "Medic"
+    }
+  ],
+  "robots": 2,
+  "pois": [
+    {
+      "id": "pad_01",
+      "type": "LandingPad",
+      "amount": 0
+    },
+    {
+      "id": "ice_01",
+      "type": "Ice",
+      "amount": 60
+    },
+    {
+      "id": "sample_01",
+      "type": "Sample",
+      "amount": 6
+    },
+    {
+      "id": "sample_02",
+      "type": "Sample",
+      "amount": 6
+    },
+    {
+      "id": "fact_01",
+      "type": "Fact",
+      "amount": 0
+    },
+    {
+      "id": "ice_02",
+      "type": "Ice",
+      "amount": 90
+    },
+    {
+      "id": "sample_03",
+      "type": "Sample",
+      "amount": 8
+    },
+    {
+      "id": "fact_02",
+      "type": "Fact",
+      "amount": 0
+    }
+  ],
+  "pois_note": "ПРИПУЩЕННЯ: id і кількість точок вигадані. id мають збігатися з точками в сцені. Якщо pois у вашому проєкті вже заданий, залиште свій блок. amount: для льоду скільки води всього, для зразків скільки науки.",
+  "start": {
+    "water": 30,
+    "food": 16,
+    "oxygen": 100,
+    "battery": 10,
+    "materials": 30,
+    "medKits": 0,
+    "science": 0
+  },
+  "start_note": "Ті самі числа, що в resources (+ наука). ChapterSystem ставить їх, коли розділ починається заново. Міняєш resources — поміняй і тут (це перевіряє тест).",
+  "startModules": [
+    {
+      "type": "Solar",
+      "slot": 0
+    },
+    {
+      "type": "Solar",
+      "slot": 1
+    },
+    {
+      "type": "Solar",
+      "slot": 2
+    },
+    {
+      "type": "Habitat",
+      "slot": 3
+    }
+  ],
+  "startModules_note": "Модулі, які вже стоять на початку. Номери слотів підігнати під сцену. Зайняті слоти пропускаються.",
+  "unlockedModules": [
+    "Habitat",
+    "Solar",
+    "Battery",
+    "Greenhouse",
+    "Antenna",
+    "Lab"
+  ],
   "unlockedModules_note": "Які модулі можна замовляти в цьому розділі.",
-  "unlockedSystems": ["Launch", "Power", "LifeSupport", "Food", "Construction", "Exploration", "IceMining", "Greenhouse", "Supply", "Comms"],
+  "unlockedSystems": [
+    "Launch",
+    "Power",
+    "LifeSupport",
+    "Food",
+    "Construction",
+    "Exploration",
+    "IceMining",
+    "Greenhouse",
+    "Supply",
+    "Comms"
+  ],
   "unlockedSystems_note": "Які системи гри працюють у цьому розділі.",
   "goals": [
     {
@@ -53,7 +170,7 @@
       "id": "water",
       "type": "WaterAtLeast",
       "target": 45,
-      "target_note": "Води на базі має стати стільки: вище за стартову, тож без видобутку льоду не вийде.",
+      "target_note": "Води на базі має стати стільки. Поставка (+20) сама цього не дасть, потрібен видобуток льоду: геолог разом з ще одним астронавтом дають приблизно 10 води на день.",
       "module": "",
       "titleKey": "goal.water"
     },
@@ -61,7 +178,7 @@
       "id": "science",
       "type": "ScienceAtLeast",
       "target": 10,
-      "target_note": "Скільки очок науки треба набрати.",
+      "target_note": "Скільки очок науки треба набрати: це близько половини того, що геолог міг би зібрати за 7 днів (3 на день).",
       "module": "",
       "titleKey": "goal.science"
     }

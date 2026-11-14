@@ -40,8 +40,8 @@ public class CrewLook : MonoBehaviour
     [Header("Де чекати без завдання")]
     [Tooltip("Екіпаж без завдання і без житлового модуля стоїть тут (центр бази — перехрестя проходів)")]
     public Vector3 crewIdleSpot = new Vector3(0f, 0f, 0f);
-    [Tooltip("Роботи без роботи стоять тут (перед базою — «ангар»)")]
-    public Vector3 robotHome = new Vector3(0f, 0f, -27f);
+    [Tooltip("Роботи без роботи стоять тут («ангар»). (0,0,-8) — перехрестя проходів поруч з центром бази, видно з самого початку")]
+    public Vector3 robotHome = new Vector3(0f, 0f, -8f);
 
     public RoleLook Find(CrewRole role)
     {
