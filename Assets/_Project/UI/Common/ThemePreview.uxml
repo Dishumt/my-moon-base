@@ -10,7 +10,7 @@
     <ui:VisualElement name="preview-root" style="flex-grow: 1; background-color: rgb(2, 7, 13);">
         <ui:VisualElement class="backdrop" />
 
-        <!-- tablet shell: .tablet--open makes it visible (without it opacity is 0) -->
+        <!-- tablet shell: the class "tablet open" makes it visible, without it opacity is 0 -->
         <ui:VisualElement name="tablet" class="tablet tablet--open">
             <ui:VisualElement class="cb cb--tl" />
             <ui:VisualElement class="cb cb--tr" />
