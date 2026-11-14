@@ -24,6 +24,13 @@ public static class ModuleParts
         return Make(PrimitiveType.Cylinder, parent, name, mat, localPos, localScale, collider, tint);
     }
 
+    /// <summary>Сфера (діаметр = localScale). Половина під землею виглядає як купол.</summary>
+    public static GameObject Sphere(Transform parent, string name, Material mat, Vector3 localPos, Vector3 localScale,
+                                    bool collider = true, Color? tint = null)
+    {
+        return Make(PrimitiveType.Sphere, parent, name, mat, localPos, localScale, collider, tint);
+    }
+
     static GameObject Make(PrimitiveType type, Transform parent, string name, Material mat, Vector3 pos, Vector3 scale,
                            bool collider, Color? tint)
     {

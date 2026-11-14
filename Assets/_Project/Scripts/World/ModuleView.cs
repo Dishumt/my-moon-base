@@ -6,7 +6,7 @@ using UnityEngine;
 /// Створює його BaseView сам — руками в сцену не став.
 ///  - модуля немає → порожньо;
 ///  - будується (BuildHoursLeft > 0) → напівпрозоре риштування, яке росте з прогресом;
-///  - готова кімната → коробка: підлога, низькі стіни, шлюз з двома дверима, дах окремим об'єктом;
+///  - готова кімната → оболонка свого типу (бочка, купол, бункер), меблі всередині і шлюз (див. RoomBuilder);
 ///  - готове обладнання (панель, батарея, антена...) → проста фігура без входу.
 /// Усе будує код із простих кубів і циліндрів, тож вручну збирати не треба.
 /// Коли 02 намалює текстури, їх просто ставимо в матеріали ModuleLook.
@@ -123,106 +123,17 @@ public class ModuleView : MonoBehaviour
         scaffold.localPosition = new Vector3(0f, h * 0.5f, 0f);
     }
 
-    // ---------- Готова кімната ----------
-    //
-    //  Вигляд згори (камера знизу). Шлюз — окремий тамбур НАЗОВНІ, перед кімнатою:
-    //   ┌────────────────┐  задня стіна
-    //   │    кімната     │
-    //   └──────╴ ╶───────┘  передня стіна з внутрішніми дверима
-    //       │ шлюз  │
-    //       └──╴ ╶──┘       зовнішні двері
-    //
-    // Кімната (глибина size.y - 1) зсунута назад, шлюз (airlockDepth) стирчить уперед;
-    // разом це займає квадратик 8 м і лишає прохід між модулями.
+    // ---------- Готова кімната (будує RoomBuilder) ----------
 
     float roomFront = float.NaN, roomBack, airlockFront, airlockHalfWidth; // для Contains
 
     void BuildRoom(ModuleLook look, ModuleType type)
     {
-        Transform root = visual.transform;
-        float w = size.x, h = look.wallHeight, t = look.wallThickness;
-        var wall = look.wallMaterial;
-        Color typeColor = look.ColorOf(type);
-
-        float roomDepth = size.y - 1f;
-        roomBack = size.y / 2 + 0.5f;
-        roomFront = roomBack - roomDepth;
-        airlockFront = roomFront - look.airlockDepth;
-        float roomMid = (roomFront + roomBack) / 2, airMid = (airlockFront + roomFront) / 2;
-
-        float door = Mathf.Min(look.doorWidth, w - 4 * t);
-        float aw = door + 1f;               // ширина шлюзу
-        airlockHalfWidth = aw / 2;
-        float ah = h * 0.85f;               // шлюз трохи нижчий за кімнату
-
-        // ----- Кімната -----
-        ModuleParts.Box(root, "Floor", wall, new Vector3(0f, 0.05f, roomMid), new Vector3(w, 0.1f, roomDepth),
-                        collider: false, tint: Color.Lerp(typeColor, Color.white, 0.6f));
-        ModuleParts.Box(root, "Wall Back", wall, new Vector3(0f, h / 2, roomBack - t / 2), new Vector3(w, h, t));
-        ModuleParts.Box(root, "Wall Left", wall, new Vector3(-w / 2 + t / 2, h / 2, roomMid), new Vector3(t, h, roomDepth));
-        ModuleParts.Box(root, "Wall Right", wall, new Vector3(w / 2 - t / 2, h / 2, roomMid), new Vector3(t, h, roomDepth));
-        WallWithGap(root, "Wall Front", wall, roomFront + t / 2, -w / 2, w / 2, door, h, t);
-        var roof = ModuleParts.Box(root, "Roof", look.roofMaterial, new Vector3(0f, h + 0.075f, roomMid), new Vector3(w + 0.2f, 0.15f, roomDepth + 0.2f),
-                                   collider: false, tint: typeColor);
-
-        // ----- Шлюз (тамбур назовні) -----
-        Color airColor = new Color(0.62f, 0.64f, 0.68f);
-        ModuleParts.Box(root, "Airlock Floor", wall, new Vector3(0f, 0.05f, airMid), new Vector3(aw, 0.1f, look.airlockDepth),
-                        collider: false, tint: new Color(0.5f, 0.5f, 0.53f));
-        ModuleParts.Box(root, "Airlock Side L", wall, new Vector3(-aw / 2 + t / 2, ah / 2, airMid), new Vector3(t, ah, look.airlockDepth), tint: airColor);
-        ModuleParts.Box(root, "Airlock Side R", wall, new Vector3(aw / 2 - t / 2, ah / 2, airMid), new Vector3(t, ah, look.airlockDepth), tint: airColor);
-        WallWithGap(root, "Airlock Front", wall, airlockFront + t / 2, -aw / 2, aw / 2, door, ah, t, airColor);
-        var airRoof = ModuleParts.Box(root, "Airlock Roof", look.roofMaterial, new Vector3(0f, ah + 0.075f, airMid),
-                                      new Vector3(aw + 0.2f, 0.15f, look.airlockDepth), collider: false, tint: airColor);
-
-        // ----- Двері (зачинені; відчиняє Airlock) -----
-        Color doorColor = new Color(0.35f, 0.38f, 0.42f);
-        var outerDoor = DoubleDoor(root, "Door Outer", wall, new Vector3(0f, ah / 2, airlockFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
-        var innerDoor = DoubleDoor(root, "Door Inner", wall, new Vector3(0f, h / 2, roomFront + t / 2), door, h - 0.1f, t * 0.6f, doorColor);
-
-        // ----- Світло всередині (вмикається, коли інженер заходить) -----
-        var lightGo = new GameObject("Interior Light");
-        lightGo.transform.SetParent(root, false);
-        lightGo.transform.localPosition = new Vector3(0f, h - 0.3f, roomMid);
-        var light = lightGo.AddComponent<Light>();
-        light.type = LightType.Point;
-        light.color = look.interiorLightColor;
-        light.range = Mathf.Max(w, roomDepth) * 1.2f;
-        light.intensity = 0f;
-        light.shadows = LightShadows.None;
-
-        visual.AddComponent<ModuleInterior>().Setup(this,
-            new[] { roof.GetComponent<Renderer>(), airRoof.GetComponent<Renderer>() },
-            new[] { typeColor, airColor }, light);
-
-        // front = зовнішній край шлюзу, inner = середина внутрішніх дверей
-        visual.AddComponent<Airlock>().Setup(outerDoor.transform, innerDoor.transform, door, aw,
-                                             airlockFront, roomFront + t / 2, ah);
-    }
-
-    /// <summary>
-    /// Двері з двох половинок (як у ліфті). Airlock стискає їх до країв отвору,
-    /// тож вони не виїжджають за стіну.
-    /// </summary>
-    static GameObject DoubleDoor(Transform root, string name, Material mat, Vector3 center, float width, float height, float thick, Color color)
-    {
-        var door = new GameObject(name);
-        door.transform.SetParent(root, false);
-        door.transform.localPosition = center;
-        float half = width / 2;
-        ModuleParts.Box(door.transform, "L", mat, new Vector3(-half / 2, 0f, 0f), new Vector3(half, height, thick), tint: color);
-        ModuleParts.Box(door.transform, "R", mat, new Vector3(half / 2, 0f, 0f), new Vector3(half, height, thick), tint: color);
-        return door;
-    }
-
-    /// <summary>Стіна вздовж X від x0 до x1 на висоті z, з отвором ширини gap посередині.</summary>
-    static void WallWithGap(Transform root, string name, Material mat, float z, float x0, float x1, float gap, float h, float t,
-                            Color? tint = null)
-    {
-        float mid = (x0 + x1) / 2;
-        float partL = mid - gap / 2 - x0, partR = x1 - (mid + gap / 2);
-        if (partL > 0.01f) ModuleParts.Box(root, name + " L", mat, new Vector3(x0 + partL / 2, h / 2, z), new Vector3(partL, h, t), tint: tint);
-        if (partR > 0.01f) ModuleParts.Box(root, name + " R", mat, new Vector3(x1 - partR / 2, h / 2, z), new Vector3(partR, h, t), tint: tint);
+        var r = RoomBuilder.Build(visual.transform, this, look, type, size);
+        roomFront = r.roomFront;
+        roomBack = r.roomBack;
+        airlockFront = r.airlockFront;
+        airlockHalfWidth = r.airlockHalfWidth;
     }
 
     // ---------- Готове обладнання (без входу) ----------

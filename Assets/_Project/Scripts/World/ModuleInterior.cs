@@ -2,11 +2,10 @@
 using UnityEngine;
 
 /// <summary>
-/// «Як у Project Zomboid»: коли інженер заходить у модуль, дах плавно зникає
-/// і вмикається світло всередині. Вулицю затемнює OutdoorDarkening (на Sun).
-/// Цей компонент додає ModuleView сам — руками ставити не треба.
-/// Замість фізичного тригера перевіряємо, чи інженер у прямокутнику модуля:
-/// так простіше і не потрібні Rigidbody.
+/// «Як у Project Zomboid»: коли інженер заходить у модуль, оболонка (бочка, купол, дах шлюзу) плавно зникає,
+/// а все всередині (підлога, меблі) світлішає теплим світлом. Вулицю затемнює OutdoorDarkening (на Sun).
+/// Цей компонент додає RoomBuilder сам — руками ставити не треба.
+/// Замість фізичного тригера перевіряємо, чи інженер у прямокутнику модуля: так простіше і не потрібні Rigidbody.
 /// </summary>
 public class ModuleInterior : MonoBehaviour
 {
@@ -15,30 +14,30 @@ public class ModuleInterior : MonoBehaviour
     static int insideCount;
 
     static Transform engineer;
+    static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+    static readonly int Indoor = Shader.PropertyToID("_Indoor");
 
-    ModuleView slot;
-    Renderer[] roofs;
-    Color[] roofColors;
-    Light interiorLight;
+    ModuleView view;
+    Renderer[] shell;
+    Color[] shellColors;
+    Renderer[] interior;
     MaterialPropertyBlock block;
-    float roofAlpha = 1f;   // 1 = дах видно, 0 = сховано
+    float shellAlpha = 1f;   // 1 = оболонку видно, 0 = сховано
+    float applied = -1f;     // яке значення вже намальоване (щоб не робити зайвої роботи щокадру)
     bool inside;
 
-    static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
-
-    /// <summary>roofs — дахи (кімнати і шлюзу), roofColors — їхні кольори.</summary>
-    public void Setup(ModuleView slot, Renderer[] roofs, Color[] roofColors, Light interiorLight)
+    public void Setup(ModuleView view, Renderer[] shell, Color[] shellColors, Renderer[] interior)
     {
-        this.slot = slot;
-        this.roofs = roofs;
-        this.roofColors = roofColors;
-        this.interiorLight = interiorLight;
+        this.view = view;
+        this.shell = shell;
+        this.shellColors = shellColors;
+        this.interior = interior;
         block = new MaterialPropertyBlock();
     }
 
     void Update()
     {
-        if (slot == null) return;
+        if (view == null) return;
         if (engineer == null)
         {
             var go = GameObject.FindGameObjectWithTag("Player");
@@ -46,7 +45,7 @@ public class ModuleInterior : MonoBehaviour
             engineer = go.transform;
         }
 
-        bool nowInside = slot.Contains(engineer.position);
+        bool nowInside = view.Contains(engineer.position);
         if (nowInside != inside)
         {
             inside = nowInside;
@@ -56,25 +55,42 @@ public class ModuleInterior : MonoBehaviour
         var look = ModuleLook.Instance;
         float fade = look != null ? look.roofFadeSeconds : 0.4f;
         float step = fade > 0f ? Time.unscaledDeltaTime / fade : 1f;
-        roofAlpha = Mathf.MoveTowards(roofAlpha, inside ? 0f : 1f, step);
+        shellAlpha = Mathf.MoveTowards(shellAlpha, inside ? 0f : 1f, step);
 
-        ApplyRoof();
-        if (interiorLight != null && look != null)
-            interiorLight.intensity = (1f - roofAlpha) * look.interiorLightIntensity;
+        if (!Mathf.Approximately(applied, shellAlpha)) Apply(look);
     }
 
-    void ApplyRoof()
+    void Apply(ModuleLook look)
     {
-        if (roofs == null) return;
-        for (int i = 0; i < roofs.Length; i++)
+        applied = shellAlpha;
+
+        for (int i = 0; i < shell.Length; i++)
         {
-            var roof = roofs[i];
-            if (roof == null) continue;
-            roof.enabled = roofAlpha > 0.01f; // зовсім прозорий дах просто вимикаємо
-            var c = roofColors[i];
-            c.a = roofAlpha;
+            var r = shell[i];
+            if (r == null) continue;
+            r.enabled = shellAlpha > 0.01f; // зовсім прозору оболонку просто вимикаємо
+
+            var c = shellColors[i];
+            c.a *= shellAlpha;
+            // Непрозоре малюємо звичайним матеріалом (правильно ховає персонажів позаду),
+            // напівпрозоре — скляним (roofMaterial).
+            if (look != null)
+            {
+                var mat = c.a > 0.99f ? look.wallMaterial : look.roofMaterial;
+                if (mat != null && r.sharedMaterial != mat) r.sharedMaterial = mat;
+            }
+            r.GetPropertyBlock(block);
             block.SetColor(BaseColor, c);
-            roof.SetPropertyBlock(block);
+            r.SetPropertyBlock(block);
+        }
+
+        // Світло всередині: шейдер Moon/Toon підмішує теплий колір (_Indoor 0..1)
+        foreach (var r in interior)
+        {
+            if (r == null) continue;
+            r.GetPropertyBlock(block);
+            block.SetFloat(Indoor, 1f - shellAlpha);
+            r.SetPropertyBlock(block);
         }
     }
 
