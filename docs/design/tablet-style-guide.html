@@ -1,0 +1,366 @@
+<!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablet Style Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Ті самі кольори й назви класів, що в Assets/_Project/UI/Common/Theme.uss.
+   Клас тут = клас у .uxml. Розміри — для еталонного екрана 1280x720. */
+:root {
+  --color-void:#02070D; --color-panel:#04101A; --color-card:#07182A; --color-card-selected:#0C2A42;
+  --color-line:#2B5675; --color-line-hi:#3F7AA0; --color-dim:#3D5870; --color-accent:#5FD4F4;
+  --color-text:#D8F3FF; --color-soft:#B8D6E8; --color-muted:#6F93AD;
+  --color-energy:#FFC83D; --color-energy-bg:#1A1400; --color-water:#3D8BFF; --color-oxygen:#5FD4F4;
+  --color-food:#58C46A; --color-radiation:#A569E8; --color-regolith:#9A8F7C;
+  --color-ok:#58C46A; --color-warn:#FF9A5C; --color-alarm:#FF4D5E;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--color-void); color:var(--color-text);
+       font-family:'JetBrains Mono', ui-monospace, Consolas, monospace; }
+.page { max-width:1280px; margin:0 auto; padding:24px 16px 64px; }
+h1 { font-size:22px; letter-spacing:3px; color:var(--color-accent); margin:8px 0 4px; }
+h2 { font-size:15px; letter-spacing:4px; color:var(--color-muted); margin:48px 0 14px;
+     border-bottom:1px solid var(--color-line); padding-bottom:8px; }
+.lead { color:var(--color-soft); font-size:14px; line-height:1.6; max-width:820px; }
+code { color:var(--color-energy); font-size:13px; }
+button { font-family:inherit; cursor:pointer; }
+
+/* ===== копія Theme.uss ===== */
+.t-body{font-size:16px;color:var(--color-soft)} .t-label{font-size:14px;letter-spacing:3px;color:var(--color-muted)}
+.t-title{font-size:26px;letter-spacing:2px;font-weight:700;color:var(--color-accent)}
+.t-big{font-size:24px;letter-spacing:2px;font-weight:700;color:var(--color-accent)}
+.c-ok{color:var(--color-ok)} .c-warn{color:var(--color-warn)} .c-bad{color:var(--color-alarm)}
+.c-mute{color:var(--color-muted)} .c-acc{color:var(--color-accent)} .c-en{color:var(--color-energy)}
+.row{display:flex;flex-direction:row;align-items:center} .row-between{display:flex;align-items:center;justify-content:space-between}
+.col{display:flex;flex-direction:column} .grow{flex-grow:1}
+.mr-8{margin-right:8px} .mr-16{margin-right:16px} .mb-8{margin-bottom:8px} .mb-12{margin-bottom:12px} .mb-16{margin-bottom:16px} .mt-12{margin-top:12px}
+
+.panel{background:var(--color-panel);border:2px solid var(--color-line)}
+.panel--side{background:rgba(95,212,244,.04);border:1px solid var(--color-line);padding:16px 20px}
+
+.tablet{position:relative;padding:18px;background:var(--color-panel);border:2px solid var(--color-line);border-radius:6px}
+.cb{position:absolute;width:26px;height:26px;border:0 solid var(--color-accent)}
+.cb--tl{left:-2px;top:-2px;border-top-width:3px;border-left-width:3px}
+.cb--tr{right:-2px;top:-2px;border-top-width:3px;border-right-width:3px}
+.cb--bl{left:-2px;bottom:-2px;border-bottom-width:3px;border-left-width:3px}
+.cb--br{right:-2px;bottom:-2px;border-bottom-width:3px;border-right-width:3px}
+.thead{height:36px;display:flex;align-items:center;font-size:15px;letter-spacing:2px;color:var(--color-muted)}
+.brand{font-size:20px;letter-spacing:2px;font-weight:700;color:var(--color-accent)}
+
+.led{width:10px;height:10px;border-radius:5px;background:var(--color-muted);margin-right:8px;display:inline-block}
+.led--ok{background:var(--color-ok)} .led--warn{background:var(--color-energy)} .led--bad{background:var(--color-alarm)}
+.blink{animation:blink 1.2s steps(1) infinite} @keyframes blink{50%{opacity:.25}}
+
+.tabs{height:48px;margin-top:10px;display:flex;border-bottom:2px solid var(--color-line);overflow-x:auto}
+.tab{height:48px;margin:0 8px 0 0;padding:0 22px;background:transparent;border:2px solid var(--color-line);border-bottom:0;
+     font-size:18px;letter-spacing:3px;color:var(--color-muted);transition:background-color .2s,color .2s;flex-shrink:0}
+.tab:hover{color:var(--color-text)}
+.tab--on{background:var(--color-accent);border-color:var(--color-accent);color:var(--color-panel);font-weight:700}
+.tab--alert{border-color:var(--color-warn)}
+.tab-close{width:44px;height:44px;margin:0 0 0 auto;align-self:center;background:transparent;border:2px solid var(--color-alarm);
+           color:var(--color-alarm);font-size:20px;flex-shrink:0}
+.tab-close:hover{background:rgba(255,77,94,.15)}
+
+.btn{flex-grow:1;height:64px;margin:0;background:transparent;border:2px solid var(--color-accent);color:var(--color-accent);
+     font-size:20px;letter-spacing:2px;transition:background-color .15s,transform .15s;padding:0 20px}
+.btn:hover{background:rgba(95,212,244,.12)} .btn:active{transform:scale(.97)}
+.btn--primary{background:var(--color-accent);color:var(--color-panel);font-weight:700} .btn--primary:hover{background:#8BE3FA}
+.btn--pm{font-size:34px} .btn--small{height:40px;flex-grow:0;padding:0 14px;font-size:13px;letter-spacing:1px}
+.btn--disabled,.opt--disabled,.step--disabled{opacity:.4}
+
+.chip{display:inline-block;margin:0 6px 6px 0;padding:3px 8px;font-size:12px;letter-spacing:1px;border:1.5px solid var(--color-muted);color:var(--color-muted)}
+.chip--ok{color:var(--color-ok);border-color:var(--color-ok)} .chip--warn{color:var(--color-warn);border-color:var(--color-warn)}
+.chip--en{color:var(--color-energy);border-color:var(--color-energy)} .chip--bad{color:var(--color-alarm);border-color:var(--color-alarm)}
+.chip--acc{color:var(--color-accent);border-color:var(--color-accent)}
+.kv{display:flex;justify-content:space-between;align-items:center;font-size:14px;letter-spacing:1px;color:var(--color-text);padding:3px 0}
+.kv__key{color:var(--color-muted);letter-spacing:2px}
+.msg{min-height:20px;font-size:14px;color:var(--color-muted)} .msg--err{color:var(--color-alarm);font-size:15px} .msg--good{color:var(--color-ok);font-size:15px}
+.note{padding:8px 14px;border-left:3px solid var(--color-accent);background:rgba(95,212,244,.07);font-size:17px;color:var(--color-soft)}
+.note--warn{border-color:var(--color-warn);background:rgba(255,154,92,.08)} .note--fact{border-color:var(--color-energy);background:rgba(255,200,61,.06)}
+
+.opt{display:flex;align-items:center;min-height:40px;margin:0 0 5px;padding:5px 12px;background:var(--color-card);
+     border:2px solid var(--color-line);font-size:15px;letter-spacing:1px;color:var(--color-text);width:100%;text-align:left}
+.opt:hover{border-color:var(--color-accent)} .opt--sel{border-color:var(--color-accent);background:var(--color-card-selected)}
+.opt--cur{border-color:var(--color-energy)} .opt--disabled:hover{border-color:var(--color-alarm)}
+
+.segs{display:flex;padding:0 6px} .seg{flex-grow:1;height:36px;margin-right:8px;border:2px solid var(--color-line);transition:background-color .2s,border-color .2s}
+.seg--on{background:var(--color-energy);border-color:var(--color-energy)} .seg--small{height:26px}
+
+.bars{height:34px;margin-top:12px;display:flex;align-items:center;gap:0}
+.res{flex:1 1 0;display:flex;align-items:center;margin-right:20px;font-size:15px;letter-spacing:1px;font-weight:700}
+.res__label{width:46px} .res__segs{flex-grow:1;display:flex;margin-right:10px}
+.res__seg{flex-grow:1;height:16px;margin-right:2px;background:rgba(255,255,255,.07)}
+.res--water{color:var(--color-water)} .res--oxygen{color:var(--color-oxygen)} .res--food{color:var(--color-food)} .res--low{color:var(--color-warn)}
+.res__seg--water{background:var(--color-water)} .res__seg--oxygen{background:var(--color-oxygen)} .res__seg--food{background:var(--color-food)} .res__seg--low{background:var(--color-warn)}
+
+.grid-row{display:flex} .grid-cell{width:72px;height:72px;margin:0 4px 4px 0;padding:2px;background:var(--color-card);border:2px solid var(--color-line);
+  color:var(--color-dim);font-size:10px;display:flex;align-items:center;justify-content:center;text-align:center;flex-shrink:0}
+.grid-cell:hover{border-color:var(--color-accent)}
+.grid-cell--building{border-color:var(--color-energy);color:var(--color-energy);background:var(--color-energy-bg)}
+.grid-cell--built{border-color:var(--color-line-hi);color:var(--color-text);background:var(--color-card-selected)}
+.grid-cell--sel{border-color:var(--color-accent);border-width:3px}
+
+/* ===== тільки для цієї сторінки ===== */
+.screen{background:
+   radial-gradient(ellipse at 70% 20%, rgba(95,212,244,.06), transparent 60%), var(--color-void);
+   border:1px solid var(--color-line);padding:16px;overflow-x:auto}
+.screen-inner{min-width:900px}
+.tbody{margin-top:12px;min-height:420px;display:flex}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.sw{border:1px solid var(--color-line);background:var(--color-card)}
+.sw div:first-child{height:44px} .sw div:last-child{padding:6px 8px;font-size:12px;color:var(--color-soft)}
+.kit{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.kit > div{background:var(--color-panel);border:1px solid var(--color-line);padding:16px}
+.kit h3{margin:0 0 12px;font-size:12px;letter-spacing:3px;color:var(--color-muted);font-weight:400}
+.cls{font-size:11px;color:var(--color-energy);margin:4px 0 12px}
+.steps{display:flex;gap:6px;margin-top:8px}
+.step{flex:1;border:2px solid var(--color-line);padding:8px 10px;font-size:12px;letter-spacing:1px;color:var(--color-muted);background:var(--color-card)}
+.step b{display:block;color:var(--color-text);font-size:13px;margin-bottom:4px}
+.step--now{border-color:var(--color-accent);background:var(--color-card-selected)} .step--now b{color:var(--color-accent)}
+.qty{width:56px;text-align:center;font-size:22px;font-weight:700;color:var(--color-accent)}
+.rocket{flex:1;display:flex;align-items:flex-end;justify-content:center;border:1px dashed var(--color-line);min-height:300px;position:relative;
+        background:linear-gradient(to top, rgba(95,212,244,.08), transparent 40%)}
+.rocket svg{margin-bottom:16px}
+.pad{position:absolute;bottom:0;left:0;right:0;height:16px;background:var(--color-card);border-top:2px solid var(--color-line)}
+pre{background:var(--color-panel);border:1px solid var(--color-line);padding:14px;font-size:13px;color:var(--color-soft);overflow-x:auto;line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:13px} td,th{border-bottom:1px solid var(--color-line);padding:8px;text-align:left;vertical-align:top}
+th{color:var(--color-muted);font-weight:400;letter-spacing:2px}
+@media (max-width:640px){ .page{padding:16px} h1{font-size:18px} }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="t-label">MOON BASE · ROLE 05 → ROLE 04</div>
+<h1>Стиль планшета (BASE-OS)</h1>
+<p class="lead">Це копія стилю з <code>UI/Common/Theme.uss</code> у браузері. Тут однакові кольори, розміри й <b>назви класів</b>, тож що бачиш тут, те ж саме вийде в Unity. Щоб екран запуску (роль 04, <code>UI/Launch/</code>) мав такий самий стиль, достатньо підключити <code>Theme.uss</code> і брати ці класи. Інструкція в самому низу.</p>
+
+<!-- ============ 1. TABLET ============ -->
+<h2>1 · ПЛАНШЕТ, ЯК ЗАРАЗ У ГРІ (вкладка BUILD)</h2>
+<div class="screen"><div class="screen-inner">
+  <div class="tablet">
+    <div class="cb cb--tl"></div><div class="cb cb--tr"></div><div class="cb cb--bl"></div><div class="cb cb--br"></div>
+    <div class="thead">
+      <span class="brand">BASE-OS v1.2</span>
+      <span style="margin-left:16px">ENGINEER TABLET</span>
+      <span class="grow"></span>
+      <span class="mr-16">DAY 3 · 14:00</span>
+      <span class="row mr-16"><span class="led led--warn blink"></span><span class="c-en">SIM PAUSED</span></span>
+      <span class="row"><span class="led led--ok"></span><span class="c-ok">LINK OK</span></span>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab">MAP</button><button class="tab tab--on">BUILD</button><button class="tab tab--alert">POWER</button>
+      <button class="tab">CREW</button><button class="tab">SUPPLY</button><button class="tab">COMMS</button>
+      <button class="tab-close">X</button>
+    </div>
+    <div class="tbody">
+      <div class="panel grow row" style="padding:12px;align-items:flex-start">
+        <div id="grid"></div>
+        <div class="grow col" style="margin-left:16px">
+          <span class="kv__key">SLOT 14</span>
+          <span class="mb-8" style="font-size:20px">EMPTY</span>
+          <span class="msg mb-8">Choose a module to build here.</span>
+          <button class="opt opt--sel"><span class="grow">GREENHOUSE</span><span class="chip chip--en" style="margin:0">20 MAT · 12 H</span></button>
+          <button class="opt"><span class="grow">SHELTER</span><span class="chip chip--en" style="margin:0">30 MAT · 18 H</span></button>
+          <button class="opt opt--disabled"><span class="grow">LAB</span><span class="chip chip--bad" style="margin:0">NEED 40 MAT</span></button>
+          <div class="note mt-12">Greenhouse — grows food for the crew.</div>
+          <div class="row mt-12"><button class="btn btn--primary">BUILD →</button></div>
+          <span class="msg msg--good mt-12">Ordered! Robots are on their way.</span>
+        </div>
+      </div>
+    </div>
+    <div class="bars">
+      <div class="res res--water"><span class="res__label">H₂O</span><span class="res__segs" data-n="14" data-c="water"></span><span>72</span></div>
+      <div class="res res--oxygen"><span class="res__label">O₂</span><span class="res__segs" data-n="17" data-c="oxygen"></span><span>86</span></div>
+      <div class="res res--low"><span class="res__label">FOOD</span><span class="res__segs" data-n="4" data-c="low"></span><span>19</span></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ============ 2. LAUNCH EXAMPLE ============ -->
+<h2>2 · ПРИКЛАД: ЕКРАН ЗАПУСКУ В ТОМУ Ж СТИЛІ (ідея для ролі 04)</h2>
+<p class="lead">Тільки ідея, щоб було видно, що стиль підходить. Тексти взяті з наших ключів <code>sup.*</code>, <code>item.*</code>, <code>step.*</code>. Кнопки + і − працюють, маса рахується.</p>
+<div class="screen"><div class="screen-inner">
+  <div class="tablet">
+    <div class="cb cb--tl"></div><div class="cb cb--tr"></div><div class="cb cb--bl"></div><div class="cb cb--br"></div>
+    <div class="thead">
+      <span class="brand">LAUNCH CONTROL</span>
+      <span style="margin-left:16px">// CARGO LIST · ORDER #2</span>
+      <span class="grow"></span>
+      <span class="row mr-16"><span class="led led--ok"></span><span class="c-ok">EARTH · PAD READY</span></span>
+      <button class="tab-close" style="margin:0">X</button>
+    </div>
+    <div class="tbody" style="gap:16px">
+      <div class="panel col" style="flex:1.4;padding:14px">
+        <div class="row-between mb-12"><span class="t-label">CARGO</span><span class="t-label" id="cap">SHIP HOLDS 100 kg</span></div>
+        <div id="items"></div>
+        <div class="mt-12">
+          <div class="row-between mb-8"><span class="kv__key">CARGO MASS</span><span id="massv" class="c-en">0 / 100 kg</span></div>
+          <div class="segs" id="mass" style="padding:0"></div>
+          <div class="msg mt-12" id="massmsg"></div>
+        </div>
+        <div class="note note--fact mt-12" style="font-size:15px">Heavier cargo needs more fuel at launch.</div>
+      </div>
+      <div class="col" style="flex:1;gap:12px">
+        <div class="rocket">
+          <svg width="70" height="190" viewBox="0 0 70 190" aria-hidden="true">
+            <path d="M35 4 C52 30 54 60 54 150 L16 150 C16 60 18 30 35 4Z" fill="#07182A" stroke="#5FD4F4" stroke-width="2"/>
+            <circle cx="35" cy="62" r="9" fill="#04101A" stroke="#5FD4F4" stroke-width="2"/>
+            <path d="M16 118 L2 160 L16 150Z M54 118 L68 160 L54 150Z" fill="#0C2A42" stroke="#3F7AA0" stroke-width="2"/>
+            <path d="M24 152 L35 186 L46 152Z" fill="#FFC83D" opacity=".85"/>
+          </svg>
+          <div class="pad"></div>
+        </div>
+        <div class="panel--side">
+          <div class="kv"><span class="kv__key">NEXT DELIVERY</span><span>in 2 d 6 h</span></div>
+          <div class="kv"><span class="kv__key">FLIGHT</span><span>3 DAYS</span></div>
+          <div class="kv"><span class="kv__key">FUEL</span><span class="c-en" id="fuel">LOW</span></div>
+        </div>
+        <button class="btn btn--primary" id="launch" style="flex-grow:0">LAUNCH →</button>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step step--now"><b>MAKE THE LIST</b>now</div>
+      <div class="step"><b>SEND IN A COMMS WINDOW</b>right after the order</div>
+      <div class="step"><b>LAUNCH FROM EARTH</b></div>
+      <div class="step"><b>FLIGHT · 3 DAYS</b></div>
+      <div class="step"><b>LANDS ON THE PAD</b></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ============ 3. COLORS ============ -->
+<h2>3 · КОЛЬОРИ (змінні з Theme.uss)</h2>
+<p class="lead">У USS пишемо <code>color: var(--color-accent);</code>. Кольори ресурсів не змінюємо: енергія — жовта, вода — синя, кисень — блакитний, їжа — зелена, радіація — фіолетова.</p>
+<div class="swatches" id="sw"></div>
+
+<!-- ============ 4. COMPONENTS ============ -->
+<h2>4 · ДЕТАЛІ (клас = як писати в .uxml)</h2>
+<div class="kit">
+  <div><h3>КНОПКИ</h3>
+    <div class="row mb-8"><button class="btn btn--primary">LAUNCH →</button></div><div class="cls">class="btn btn--primary" — головна дія</div>
+    <div class="row mb-8"><button class="btn">CANCEL</button></div><div class="cls">class="btn"</div>
+    <div class="row mb-8" style="gap:8px"><button class="btn btn--pm" style="flex-grow:0;width:64px">−</button><button class="btn btn--pm" style="flex-grow:0;width:64px">+</button></div><div class="cls">class="btn btn--pm" — плюс / мінус</div>
+    <div class="row mb-8" style="gap:8px"><button class="btn btn--small">SMALL</button><button class="btn btn--small btn--disabled">DISABLED</button></div><div class="cls">btn--small · btn--disabled (сіра, але натискається, щоб показати ЧОМУ)</div>
+  </div>
+  <div><h3>ВКЛАДКИ І ВОГНИКИ</h3>
+    <div class="tabs mb-8" style="margin-top:0"><button class="tab tab--on">ON</button><button class="tab">OFF</button><button class="tab tab--alert">ALERT</button></div>
+    <div class="cls">tab · tab--on · tab--alert · tab-close</div>
+    <div class="row mb-8"><span class="led led--ok"></span>OK <span class="led led--warn" style="margin-left:14px"></span>WAIT <span class="led led--bad" style="margin-left:14px"></span>BAD</div>
+    <div class="cls">led led--ok / led--warn / led--bad (+ led--blink)</div>
+    <div class="t-title">TITLE</div><div class="cls">t-title</div>
+    <div class="t-label">SMALL LABEL</div><div class="cls">t-label</div>
+  </div>
+  <div><h3>ЧІПИ, ЗНАЧЕННЯ, ПОВІДОМЛЕННЯ</h3>
+    <div><span class="chip chip--ok">OK</span><span class="chip chip--warn">LOW</span><span class="chip chip--en">20 MAT</span><span class="chip chip--bad">TOO HEAVY</span><span class="chip chip--acc">NEW</span></div>
+    <div class="cls">chip chip--ok / --warn / --en / --bad / --acc</div>
+    <div class="kv"><span class="kv__key">FUEL</span><span>62 %</span></div><div class="cls">kv + kv__key — рядок «назва : значення»</div>
+    <div class="msg msg--err">Too heavy! Remove 12 kg.</div><div class="cls">msg msg--err</div>
+    <div class="msg msg--good">Launch OK!</div><div class="cls">msg msg--good</div>
+  </div>
+  <div><h3>ПІДКАЗКИ І РЯДКИ ВИБОРУ</h3>
+    <div class="note mb-8">A note explains what is going on.</div><div class="cls">note</div>
+    <div class="note note--warn mb-8">Solar storm in 6 hours!</div><div class="cls">note note--warn</div>
+    <div class="note note--fact mb-8">Real NASA fact goes here.</div><div class="cls">note note--fact</div>
+    <button class="opt">WATER</button><button class="opt opt--sel">FOOD (selected)</button><button class="opt opt--cur">MED KITS (current)</button><button class="opt opt--disabled">LOCKED</button>
+    <div class="cls">opt · opt--sel · opt--cur · opt--disabled</div>
+  </div>
+  <div><h3>БЛОКИ І СМУЖКИ</h3>
+    <div class="segs mb-8" style="padding:0"><div class="seg seg--on"></div><div class="seg seg--on"></div><div class="seg seg--on"></div><div class="seg"></div><div class="seg"></div></div>
+    <div class="cls">segs › seg / seg--on (енергія, маса)</div>
+    <div class="res res--water mb-8" style="margin-right:0"><span class="res__label">H₂O</span><span class="res__segs" data-n="12" data-c="water"></span><span>60</span></div>
+    <div class="cls">res res--water › res__label, res__segs › res__seg res__seg--water</div>
+    <div class="panel--side">panel--side — бічна панель</div><div class="cls">panel · panel--side</div>
+  </div>
+</div>
+
+<!-- ============ 5. HOW TO ============ -->
+<h2>5 · ЯК ЗРОБИТИ ТАКИЙ САМИЙ СТИЛЬ В UNITY (для ролі 04)</h2>
+<p class="lead">1. У своєму <code>UI/Launch/Launch.uxml</code> одразу під першим рядком підключи спільний стиль:</p>
+<pre>&lt;ui:UXML xmlns:ui="UnityEngine.UIElements"&gt;
+    &lt;Style src="/Assets/_Project/UI/Common/Theme.uss" /&gt;
+
+    &lt;ui:VisualElement name="launch" class="tablet tablet--open"&gt;
+        &lt;ui:VisualElement class="cb cb--tl" picking-mode="Ignore" /&gt;
+        &lt;ui:VisualElement class="cb cb--tr" picking-mode="Ignore" /&gt;
+        &lt;ui:VisualElement class="cb cb--bl" picking-mode="Ignore" /&gt;
+        &lt;ui:VisualElement class="cb cb--br" picking-mode="Ignore" /&gt;
+        &lt;ui:VisualElement class="thead"&gt;
+            &lt;ui:Label name="launch-title" class="brand" /&gt;
+        &lt;/ui:VisualElement&gt;
+        &lt;ui:Button name="launch-go" class="btn btn--primary" /&gt;
+    &lt;/ui:VisualElement&gt;
+&lt;/ui:UXML&gt;</pre>
+<p class="lead">2. Бери класи з розділу 4. Свої кольори не вигадуй, а бери змінні <code>var(--color-…)</code>.<br>
+3. Якщо бракує якогось класу, створи свій файл <code>UI/Launch/Launch.uss</code> і підключи його другим рядком <code>&lt;Style&gt;</code>. <code>Theme.uss</code> не правь, бо це зона ролі 05. Напиши Вані, і він додасть.<br>
+4. Великі літери пиши прямо в тексті (<code>LAUNCH</code>), бо USS не вміє <code>text-transform</code>.<br>
+5. Тексти бери тільки через <code>Loc.Get("sup.title")</code>. Ключі <code>sup.*</code>, <code>item.*</code> і <code>step.*</code> уже є в <code>texts_en.json</code>.</p>
+
+<table>
+<tr><th>ЧОГО НЕМАЄ В USS</th><th>ЯК ОБІЙТИ</th></tr>
+<tr><td>box-shadow, світіння</td><td>9-slice спрайт від ролі 02</td></tr>
+<tr><td>gap між елементами</td><td>класи-відступи <code>.mr-8</code>, <code>.mb-8</code>, <code>.mt-12</code>…</td></tr>
+<tr><td>text-transform: uppercase</td><td>у C#: <code>label.text = text.ToUpperInvariant()</code></td></tr>
+<tr><td>анімація миготіння</td><td>клас <code>led--blink</code> вмикати й вимикати з C# кожні 600 мс</td></tr>
+<tr><td>dashed-рамки, лінії</td><td>Painter2D у своєму елементі</td></tr>
+</table>
+<p class="lead c-mute" style="margin-top:24px;font-size:12px">AI-assisted (Claude). Розміри наведено для екрана 1280×720. У PanelSettings: Scale With Screen Size, 1280×720, Match 0.5.</p>
+</div>
+
+<script>
+// сітка 6x6 (як BuildGridView): 0 = лівий нижній
+(function(){
+  var built={0:'HABITAT',1:'SOLAR',6:'BATTERY'}, building={7:'ANTENNA 8 H'}, sel=14, g=document.getElementById('grid');
+  for(var r=5;r>=0;r--){var row=document.createElement('div');row.className='grid-row';
+    for(var c=0;c<6;c++){var id=r*6+c,d=document.createElement('div');d.className='grid-cell';
+      if(built[id]){d.className+=' grid-cell--built';d.textContent=built[id];}
+      else if(building[id]){d.className+=' grid-cell--building';d.textContent=building[id];}
+      else d.textContent=id;
+      if(id===sel)d.className+=' grid-cell--sel';
+      row.appendChild(d);}
+    g.appendChild(row);}
+})();
+// смужки ресурсів по 20 сегментів
+document.querySelectorAll('.res__segs').forEach(function(s){
+  var n=+s.dataset.n;for(var i=0;i<20;i++){var e=document.createElement('span');e.className='res__seg'+(i<n?' res__seg--'+s.dataset.c:'');s.appendChild(e);}
+});
+// вкладки клікаються
+document.querySelectorAll('#tabs .tab').forEach(function(t){t.onclick=function(){
+  document.querySelectorAll('#tabs .tab').forEach(function(x){x.classList.remove('tab--on')});t.classList.add('tab--on');};});
+// кольори
+var cols=[['--color-void','фон за планшетом'],['--color-panel','планшет'],['--color-card','картки, рядки'],['--color-card-selected','вибране'],
+ ['--color-line','рамки'],['--color-line-hi','рамка увімкненого'],['--color-accent','головний акцент'],['--color-text','текст'],['--color-muted','тихий текст'],
+ ['--color-energy','ЕНЕРГІЯ'],['--color-water','ВОДА'],['--color-oxygen','КИСЕНЬ'],['--color-food','ЇЖА'],['--color-radiation','РАДІАЦІЯ'],
+ ['--color-regolith','реголіт'],['--color-ok','добре'],['--color-warn','увага'],['--color-alarm','тривога']];
+var sw=document.getElementById('sw'),cs=getComputedStyle(document.documentElement);
+cols.forEach(function(c){var v=cs.getPropertyValue(c[0]).trim();sw.insertAdjacentHTML('beforeend',
+ '<div class="sw"><div style="background:'+v+'"></div><div>'+c[0]+'<br><span class="c-mute">'+v+' · '+c[1]+'</span></div></div>');});
+// екран запуску
+(function(){
+  var CAP=100, items=[['WATER','+20 H₂O each',10,2],['FOOD','+10 food each',5,3],['MED KITS','one kit cures one sick astronaut',2,1],['MATERIALS','for building modules',8,4]];
+  var box=document.getElementById('items');
+  items.forEach(function(it,i){box.insertAdjacentHTML('beforeend',
+   '<div class="opt" style="cursor:default"><div class="grow col"><span>'+it[0]+'</span><span class="c-mute" style="font-size:12px">'+it[1]+' · '+it[2]+' kg each</span></div>'+
+   '<button class="btn btn--pm" style="flex-grow:0;width:48px;height:48px;font-size:26px;padding:0" data-i="'+i+'" data-d="-1">−</button>'+
+   '<span class="qty" id="q'+i+'"></span>'+
+   '<button class="btn btn--pm" style="flex-grow:0;width:48px;height:48px;font-size:26px;padding:0" data-i="'+i+'" data-d="1">+</button></div>');});
+  var m=document.getElementById('mass');for(var k=0;k<10;k++){var s=document.createElement('div');s.className='seg seg--small';m.appendChild(s);}
+  function upd(){var mass=0;items.forEach(function(it,i){mass+=it[2]*it[3];document.getElementById('q'+i).textContent=it[3];});
+    var on=Math.min(10,Math.round(mass/CAP*10));m.querySelectorAll('.seg').forEach(function(s,i){s.className='seg seg--small'+(i<on?' seg--on':'');
+      if(i<on&&mass>CAP){s.style.background='var(--color-alarm)';s.style.borderColor='var(--color-alarm)';}else{s.style.background='';s.style.borderColor='';}});
+    document.getElementById('massv').textContent=mass+' / '+CAP+' kg';
+    var msg=document.getElementById('massmsg'),btn=document.getElementById('launch'),fuel=document.getElementById('fuel');
+    if(mass>CAP){msg.className='msg msg--err mt-12';msg.textContent='Too heavy! Remove '+(mass-CAP)+' kg.';btn.classList.add('btn--disabled');}
+    else if(CAP-mass<=15){msg.className='msg c-warn mt-12';msg.textContent='Almost full: '+(CAP-mass)+' kg left.';btn.classList.remove('btn--disabled');}
+    else{msg.className='msg msg--good mt-12';msg.textContent='Room left: '+(CAP-mass)+' kg.';btn.classList.remove('btn--disabled');}
+    fuel.textContent=mass>70?'HIGH':mass>40?'MEDIUM':'LOW';}
+  box.addEventListener('click',function(e){var b=e.target.closest('button[data-i]');if(!b)return;var it=items[+b.dataset.i];it[3]=Math.max(0,it[3]+(+b.dataset.d));upd();});
+  upd();
+})();
+</script>
+</body>
+</html>
