@@ -8,7 +8,7 @@ using UnityEngine;
 /// Один клік замість сотні:
 ///  - земля стає 400×400 м (від центру до краю ≈ 40 с ходьби);
 ///  - (сітку бази для модулів малює BaseView — тут її розставляти не треба);
-///  - точки PoiMarker для кожної точки з chapter_01.json, з простими заглушками-кубами і циліндрами.
+///  - точки PoiMarker для кожної точки з усіх chapter_NN.json, з простими заглушками-кубами і циліндрами.
 /// Потім усе можна посунути руками. Можна скасувати через Ctrl+Z.
 /// Точки, які вже є в сцені (за PoiId), не чіпає.
 /// </summary>
@@ -38,8 +38,19 @@ public static class WorldLayoutTool
 
     static void LayoutPois()
     {
-        var data = DataLoader.Load<ChapterStartData>("Chapters/chapter_01");
-        if (data == null || data.pois == null) { Debug.LogWarning("WorldLayoutTool: не прочитав chapter_01.json"); return; }
+        // Точки з УСІХ розділів (chapter_01, 02, 03...): у пізніших розділах відкриваються нові точки,
+        // а маркер точки, якої ще немає в поточному розділі, у грі схований (PoiMarker).
+        var all = new System.Collections.Generic.List<PoiStart>();
+        for (int ch = 1; ch <= 9; ch++)
+        {
+            string path = "Chapters/chapter_" + ch.ToString("00");
+            if (!DataLoader.Exists(path)) break;
+            var d = DataLoader.Load<ChapterStartData>(path);
+            if (d == null || d.pois == null) continue;
+            foreach (var p in d.pois) if (!all.Exists(x => x.id == p.id)) all.Add(p);
+        }
+        if (all.Count == 0) { Debug.LogWarning("WorldLayoutTool: не прочитав жодного chapter_NN.json"); return; }
+        var data = new ChapterStartData { pois = all };
 
         var parent = GetOrCreate("Pois").transform;
         var existing = Object.FindObjectsByType<PoiMarker>();
