@@ -18,11 +18,11 @@
 
 | # | Роль | Хто | Що читати |
 |---|---|---|---|
-| 01 | Техлід (Unity) | _ім'я_ | [01-tech-lead.md](docs/roles/01-tech-lead.md) |
-| 02 | Арт-дизайнер | _ім'я_ | [02-art.md](docs/roles/02-art.md) |
-| 03 | Симуляція й будівництво | _ім'я_ | [03-simulation.md](docs/roles/03-simulation.md) |
-| 04 | Запуск, поставки й екіпаж | _ім'я_ | [04-logistics.md](docs/roles/04-logistics.md) |
-| 05 | Планшет, інтерфейс і тексти | _ім'я_ | [05-tablet-ui.md](docs/roles/05-tablet-ui.md) |
+| 01 | Техлід (Unity) | _Єгор_ | [01-tech-lead.md](docs/roles/01-tech-lead.md) |
+| 02 | Арт-дизайнер | _Юля_ | [02-art.md](docs/roles/02-art.md) |
+| 03 | Симуляція й будівництво | _Тимофій_ | [03-simulation.md](docs/roles/03-simulation.md) |
+| 04 | Запуск, поставки й екіпаж | _Артем_ | [04-logistics.md](docs/roles/04-logistics.md) |
+| 05 | Планшет, інтерфейс і тексти | _Ваня_ | [05-tablet-ui.md](docs/roles/05-tablet-ui.md) |
 | 06 | Радіація, здоров'я й дані NASA | _ім'я_ | [06-radiation-data.md](docs/roles/06-radiation-data.md) |
 
 Капітан команди, крім своєї ролі, стежить за планом, часом і подачею проєкту.
