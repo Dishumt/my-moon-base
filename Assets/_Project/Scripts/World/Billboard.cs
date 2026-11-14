@@ -18,6 +18,9 @@ public class Billboard : MonoBehaviour
 
     [SerializeField] Mode mode = Mode.Upright;
 
+    /// <summary>Режим можна змінити з коду (наприклад, іконкам над головою — FaceCamera, щоб не витягувались).</summary>
+    public Mode BillboardMode { get => mode; set => mode = value; }
+
     /// <summary>Додатковий масштаб (сплющення при приземленні — ставить MoonHop). 1,1 = без змін.</summary>
     public Vector2 ExtraScale { get; set; } = Vector2.one;
 

@@ -200,35 +200,10 @@ public class EngineerController : MonoBehaviour
         if (missingIndoor) set = suit;                         // картинок без скафандра нема — беремо скафандр
         spriteRenderer.color = missingIndoor ? noIndoorSpritesTint : Color.white;
 
-        bool sideways = Mathf.Abs(facing.x) > Mathf.Abs(facing.y);
-        Sprite[] walk;
-        Sprite idle;
-        bool flip = false;
-
-        if (sideways)
-        {
-            bool right = facing.x > 0f;
-            walk = right ? set.walkRight : set.walkLeft;
-            if (right && IsEmpty(walk)) { walk = set.walkLeft; flip = true; } // правих кадрів нема — дзеркалимо ліві
-            idle = IsEmpty(walk) ? set.idleFront : walk[0];
-        }
-        else if (facing.y > 0f) { walk = set.walkBack; idle = set.idleBack; }
-        else { walk = set.walkFront; idle = set.idleFront; }
-
-        Sprite frame = idle;
-        bool hopping = hop != null && hop.IsHopping;
-        if (hopping && !IsEmpty(walk))
-        {
-            // Нога на землі — кадр поштовху цієї ноги; у польоті — кадр «ноги разом». Кожен стрибок — інша нога.
-            int[] map = hop.OnGround ? set.pushFrames : set.airFrames;
-            int i = map != null && map.Length > hop.Leg ? map[hop.Leg] : 0;
-            frame = walk[Mathf.Clamp(i, 0, walk.Length - 1)];
-        }
-
+        Sprite frame = CharacterSprites.Pick(set, facing, hop, out bool flip);
         if (frame != null) spriteRenderer.sprite = frame;
         spriteRenderer.flipX = flip;
     }
 
-    static bool IsEmpty(Sprite[] frames) => frames == null || frames.Length == 0 || frames[0] == null;
-    static bool IsEmpty(SpriteSet s) => s.idleFront == null && IsEmpty(s.walkFront);
+    static bool IsEmpty(SpriteSet s) => CharacterSprites.IsEmpty(s);
 }
