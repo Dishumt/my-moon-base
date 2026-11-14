@@ -21,7 +21,8 @@ public class WorldDebugButtons : MonoBehaviour
         var s = game.State;
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Світ: почати модуль")) StartModule(s);
+        if (GUILayout.Button("Світ: модуль у вільну")) StartModule(s, FirstFree(s));
+        if (GUILayout.Button("Світ: модуль тут")) StartModule(s, HereSlot());
         if (GUILayout.Button("Світ: -1 год будови")) foreach (var m in s.Modules) m.BuildHoursLeft = Mathf.Max(0f, m.BuildHoursLeft - 1f);
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
@@ -30,14 +31,23 @@ public class WorldDebugButtons : MonoBehaviour
         GUILayout.EndHorizontal();
     }
 
-    void StartModule(GameState s)
+    void StartModule(GameState s, int slotId)
     {
-        foreach (var slot in ModuleSlot.All)
-        {
-            if (s.FindModule(slot.slotId) != null) continue;
-            s.Modules.Add(new ModuleState { Type = testType, SlotId = slot.slotId, BuildHoursLeft = testBuildHours });
-            return;
-        }
-        Debug.Log("WorldDebugButtons: вільних слотів немає.");
+        string err = BaseGrid.CanPlace(s, slotId);
+        if (err != null) { Debug.Log("WorldDebugButtons: не можна будувати — " + err); return; }
+        s.Modules.Add(new ModuleState { Type = testType, SlotId = slotId, BuildHoursLeft = testBuildHours });
+    }
+
+    static int FirstFree(GameState s)
+    {
+        for (int id = 0; id < BaseGrid.Count; id++) if (BaseGrid.CanPlace(s, id) == null) return id;
+        return -1;
+    }
+
+    /// <summary>Квадратик, де зараз стоїть інженер.</summary>
+    static int HereSlot()
+    {
+        var player = GameObject.FindGameObjectWithTag("Player");
+        return player != null ? BaseGrid.FromWorld(player.transform.position) : -1;
     }
 }

@@ -7,16 +7,13 @@ using UnityEngine;
 /// Меню Unity: Moon → Розставити базу і поверхню (відкрита сцена).
 /// Один клік замість сотні:
 ///  - земля стає 400×400 м (від центру до краю ≈ 40 с ходьби);
-///  - 12 слотів модулів сіткою навколо центру (наявні слоти з тими самими номерами просто пересуваються);
+///  - (сітку бази для модулів малює BaseView — тут її розставляти не треба);
 ///  - точки PoiMarker для кожної точки з chapter_01.json, з простими заглушками-кубами і циліндрами.
 /// Потім усе можна посунути руками. Можна скасувати через Ctrl+Z.
 /// Точки, які вже є в сцені (за PoiId), не чіпає.
 /// </summary>
 public static class WorldLayoutTool
 {
-    const int SlotCount = 12;
-    const float SlotSpacing = 8f;   // модуль 6 м + 2 м прохід
-
     [MenuItem("Moon/Розставити базу і поверхню (відкрита сцена)")]
     public static void Layout()
     {
@@ -24,7 +21,6 @@ public static class WorldLayoutTool
         int group = Undo.GetCurrentGroup();
 
         ResizeGround();
-        LayoutSlots();
         LayoutPois();
 
         Undo.CollapseUndoOperations(group);
@@ -38,43 +34,6 @@ public static class WorldLayoutTool
         if (ground == null) { Debug.LogWarning("WorldLayoutTool: немає об'єкта Ground."); return; }
         Undo.RecordObject(ground.transform, "Ground");
         ground.transform.localScale = new Vector3(40f, 1f, 40f); // Plane 10 м × 40 = 400 м
-    }
-
-    static void LayoutSlots()
-    {
-        var parent = GetOrCreate("Slots").transform;
-
-        // Сітка 4 × 3 з центром у (0,0); інженер стартує в проході між модулями.
-        for (int id = 0; id < SlotCount; id++)
-        {
-            int col = id % 4, row = id / 4;
-            var pos = new Vector3((col - 1.5f) * SlotSpacing, 0f, (row - 1f) * SlotSpacing + SlotSpacing * 0.5f);
-
-            var slot = FindSlot(id);
-            if (slot == null)
-            {
-                var go = new GameObject("Slot " + id);
-                Undo.RegisterCreatedObjectUndo(go, "Slot");
-                go.transform.SetParent(parent, false);
-                slot = Undo.AddComponent<ModuleSlot>(go);
-                slot.slotId = id;
-            }
-            else
-            {
-                Undo.RecordObject(slot.gameObject, "Slot");
-                slot.gameObject.name = "Slot " + id;
-                Undo.SetTransformParent(slot.transform, parent, "Slot");
-            }
-            Undo.RecordObject(slot.transform, "Slot");
-            slot.transform.position = pos;
-        }
-    }
-
-    static ModuleSlot FindSlot(int id)
-    {
-        foreach (var s in Object.FindObjectsByType<ModuleSlot>(FindObjectsSortMode.None))
-            if (s.slotId == id) return s;
-        return null;
     }
 
     static void LayoutPois()

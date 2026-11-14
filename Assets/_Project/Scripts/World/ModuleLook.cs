@@ -17,6 +17,8 @@ public class ModuleLook : MonoBehaviour
     public Material roofMaterial;
 
     [Header("Розміри, метри")]
+    [Tooltip("Ширина (X) і глибина (Y) модуля. Має бути менше за клітинку сітки (BaseGrid.CellSize = 8), щоб лишався прохід.")]
+    public Vector2 moduleSize = new Vector2(6f, 6f);
     public float wallHeight = 2.2f;
     public float wallThickness = 0.2f;
     [Tooltip("Ширина дверного отвору в передній стіні (що ближче до камери)")]
