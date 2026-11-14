@@ -10,3 +10,4 @@ Space Apps вимагає чесно позначати, де допомагав
 | `Assets/_Project/Scripts/Editor/SceneSetupTool.cs` | інструмент, що створює сцени (Claude) | 01 |
 | `Assets/_Project/Tests/EditMode/01CoreTests.cs` | тести ядра (Claude) | 01 |
 | `Assets/_Project/Resources/Data/**/*.json` | стартові JSON-заготовки (Claude) | 01 |
+| `docs/GAME.md`, розділ «Карта» | допоміг сформулювати рішення про обмежену карту і рух на WASD (Claude) | Капітан |
