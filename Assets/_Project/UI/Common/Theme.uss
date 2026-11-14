@@ -243,7 +243,7 @@
 .res__seg--food   { background-color: var(--color-food); }
 .res__seg--low    { background-color: var(--color-warn); }
 
-/* ---------- base grid (MAP tab, BuildGridView.cs) ---------- */
+/* ---------- base grid (BUILD tab, BuildGridView.cs) ---------- */
 .grid { flex-direction: column; }
 .grid-row { flex-direction: row; }
 .grid-cell {

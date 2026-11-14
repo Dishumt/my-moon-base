@@ -51,6 +51,7 @@
     { "key": "tablet.link_wait", "text": "NO LINK · {0} H" },
     { "key": "tablet.link_off", "text": "ANTENNA OFF" },
     { "key": "tab.map", "text": "MAP" },
+    { "key": "tab.build", "text": "BUILD" },
     { "key": "tab.power", "text": "POWER" },
     { "key": "tab.crew", "text": "CREW" },
     { "key": "tab.supply", "text": "SUPPLY" },
@@ -301,6 +302,9 @@
     { "key": "msg.3.text", "text": "Solar storms are real. In May 2024 a very strong one reached Earth." },
     { "key": "msg.archive", "text": "ARCHIVE" },
     { "key": "error.place_outside", "text": "This spot is outside the base" },
-    { "key": "error.place_taken", "text": "Something is already built here" }
+    { "key": "error.place_taken", "text": "Something is already built here" },
+    { "key": "error.unknown_module", "text": "We don't know how to build this module yet" },
+    { "key": "error.no_materials", "text": "Not enough materials. Order more from Earth" },
+    { "key": "report.module_built", "text": "Module {0} is ready! The robots finished building it." }
   ]
 }
