@@ -1,0 +1,82 @@
+<!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="/Assets/_Project/UI/Common/Theme.uss" />
+
+    <!-- tablet-stage: covers the whole screen; hidden (display:none) while the tablet is closed -->
+    <ui:VisualElement name="tablet-stage" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: none;">
+        <ui:VisualElement name="backdrop" class="backdrop" />
+
+        <ui:VisualElement name="tablet" class="tablet">
+            <!-- corner brackets -->
+            <ui:VisualElement class="cb cb--tl" picking-mode="Ignore" />
+            <ui:VisualElement class="cb cb--tr" picking-mode="Ignore" />
+            <ui:VisualElement class="cb cb--bl" picking-mode="Ignore" />
+            <ui:VisualElement class="cb cb--br" picking-mode="Ignore" />
+
+            <!-- header -->
+            <ui:VisualElement name="thead" class="thead">
+                <ui:Label name="t-brand" class="brand" text="BASE-OS v1.2" />
+                <ui:Label name="t-title" style="margin-left: 16px;" />
+                <ui:VisualElement class="grow" />
+                <ui:Label name="t-day" class="mr-16" />
+                <ui:VisualElement name="t-paused" class="row mr-16">
+                    <ui:VisualElement class="led led--warn" />
+                    <ui:Label name="t-paused-label" class="c-en" />
+                </ui:VisualElement>
+                <!-- link status: hidden until role 04 adds CommsState (the controller will show it then) -->
+                <ui:VisualElement name="t-link" class="row" style="display: none;">
+                    <ui:VisualElement name="t-link-led" class="led led--ok" />
+                    <ui:Label name="t-link-label" class="c-ok" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- tabs -->
+            <ui:VisualElement name="tabs" class="tabs">
+                <ui:Button name="tab-map" class="tab" />
+                <ui:Button name="tab-power" class="tab" />
+                <ui:Button name="tab-crew" class="tab" />
+                <ui:Button name="tab-supply" class="tab" />
+                <ui:Button name="tab-comms" class="tab" />
+                <ui:Button name="tablet-close" class="tab-close" text="X" />
+            </ui:VisualElement>
+
+            <!-- tab contents: placeholders for now. Each tab becomes its own .uxml in the next steps -->
+            <ui:VisualElement name="tbody" style="margin-top: 12px; height: 500px;">
+                <ui:VisualElement name="pane-map" class="panel" style="display: none; flex-grow: 1; align-items: center; justify-content: center;">
+                    <ui:Label name="pane-map-stub" class="t-label" />
+                </ui:VisualElement>
+                <ui:VisualElement name="pane-power" class="panel" style="display: none; flex-grow: 1; align-items: center; justify-content: center;">
+                    <ui:Label name="pane-power-stub" class="t-label" />
+                </ui:VisualElement>
+                <ui:VisualElement name="pane-crew" class="panel" style="display: none; flex-grow: 1; align-items: center; justify-content: center;">
+                    <ui:Label name="pane-crew-stub" class="t-label" />
+                </ui:VisualElement>
+                <ui:VisualElement name="pane-supply" class="panel" style="display: none; flex-grow: 1; align-items: center; justify-content: center;">
+                    <ui:Label name="pane-supply-stub" class="t-label" />
+                </ui:VisualElement>
+                <ui:VisualElement name="pane-comms" class="panel" style="display: none; flex-grow: 1; align-items: center; justify-content: center;">
+                    <ui:Label name="pane-comms-stub" class="t-label" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- resource strip: 20 segments each (filled by TabletController) -->
+            <ui:VisualElement name="bars" class="bars">
+                <ui:VisualElement name="r-water" class="res res--water">
+                    <ui:Label name="r-water-label" class="res__label" />
+                    <ui:VisualElement name="r-water-segs" class="res__segs" />
+                    <ui:Label name="r-water-value" />
+                </ui:VisualElement>
+                <ui:VisualElement name="r-oxygen" class="res res--oxygen">
+                    <ui:Label name="r-oxygen-label" class="res__label" />
+                    <ui:VisualElement name="r-oxygen-segs" class="res__segs" />
+                    <ui:Label name="r-oxygen-value" />
+                </ui:VisualElement>
+                <ui:VisualElement name="r-food" class="res res--food">
+                    <ui:Label name="r-food-label" class="res__label" />
+                    <ui:VisualElement name="r-food-segs" class="res__segs" />
+                    <ui:Label name="r-food-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
