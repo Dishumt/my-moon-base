@@ -230,7 +230,7 @@ public class ChapterSystem : ISimSystem
 
     private void ApplyStart(GameState s)
     {
-        ChapterStartData st = _chapter.start;
+        ChapterStartValues st = _chapter.start;
         if (st != null)
         {
             s.Res.Water = st.water;
