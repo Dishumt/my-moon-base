@@ -50,17 +50,23 @@ public class GameBootstrap : MonoBehaviour
     /// <summary>Порядок систем — як у CLAUDE.md. Не міняй без техліда!</summary>
     void RegisterSystems()
     {
-        Clock.Register(new PowerSystem());        // 03
-        Clock.Register(new LifeSupportSystem());  // 03
-        Clock.Register(new GreenhouseSystem());   // 03
-        Clock.Register(new FoodSystem());         // 03
-        Clock.Register(new ConstructionSystem()); // 03
+        // Деякі системи 03 читають інші системи (енергію, їжу, будівництво),
+        // тому створюємо їх спочатку, а реєструємо в тому самому порядку.
+        var power = new PowerSystem();
+        var food = new FoodSystem();
+        var construction = new ConstructionSystem(power);
+
+        Clock.Register(power);                          // 03
+        Clock.Register(new LifeSupportSystem(power));   // 03
+        Clock.Register(new GreenhouseSystem(power));    // 03
+        Clock.Register(food);                           // 03
+        Clock.Register(construction);                   // 03
         Clock.Register(new CrewSystem());         // 04
         Clock.Register(new RadiationSystem());    // 06
         Clock.Register(new HealthSystem());       // 06
         Clock.Register(new SupplySystem());       // 04
         Clock.Register(new CommsSystem());        // 04
-        Clock.Register(new ChapterSystem());      // 03
+        Clock.Register(new ChapterSystem(food, construction)); // 03
     }
 
     /// <summary>Знайти систему за типом, наприклад GetSystem&lt;CrewSystem&gt;().</summary>

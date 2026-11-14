@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 /// Building on the BUILD tab of the tablet (role 05). The MAP tab only shows the world.
 /// Draws the base grid BaseGrid.Width x BaseGrid.Depth as buttons (row 0 is at the BOTTOM, like in the world:
 /// closer to the camera). One square = one module, its number = BaseGrid.ToSlot(column, row).
-///  - empty square  -> click -> pick a module type -> ConstructionSystem.Order(type, slot);
+///  - empty square  -> click -> pick a module type -> ConstructionSystem.Order(state, type, slot);
 ///  - building / built square -> click -> shows what is there.
 /// Not a MonoBehaviour: TabletController creates it and gives it the "pane-build" element.
 /// </summary>
@@ -127,7 +127,7 @@ public class BuildGridView
         var construction = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ConstructionSystem>() : null;
         if (construction == null) return;
 
-        string err = construction.Order(type, selectedSlot);
+        string err = construction.Order(GameBootstrap.Instance.State, type, selectedSlot);
         if (err != null)
         {
             SetMessage(Loc.Get(err), true);
