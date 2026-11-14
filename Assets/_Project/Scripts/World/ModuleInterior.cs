@@ -17,20 +17,21 @@ public class ModuleInterior : MonoBehaviour
     static Transform engineer;
 
     ModuleView slot;
-    Renderer roof;
+    Renderer[] roofs;
+    Color[] roofColors;
     Light interiorLight;
     MaterialPropertyBlock block;
-    Color roofColor = Color.white;
     float roofAlpha = 1f;   // 1 = дах видно, 0 = сховано
     bool inside;
 
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
-    public void Setup(ModuleView slot, Renderer roof, Light interiorLight, Color roofColor)
+    /// <summary>roofs — дахи (кімнати і шлюзу), roofColors — їхні кольори.</summary>
+    public void Setup(ModuleView slot, Renderer[] roofs, Color[] roofColors, Light interiorLight)
     {
-        this.roofColor = roofColor;
         this.slot = slot;
-        this.roof = roof;
+        this.roofs = roofs;
+        this.roofColors = roofColors;
         this.interiorLight = interiorLight;
         block = new MaterialPropertyBlock();
     }
@@ -64,12 +65,17 @@ public class ModuleInterior : MonoBehaviour
 
     void ApplyRoof()
     {
-        if (roof == null) return;
-        roof.enabled = roofAlpha > 0.01f; // зовсім прозорий дах просто вимикаємо
-        var c = roofColor;
-        c.a = roofAlpha;
-        block.SetColor(BaseColor, c);
-        roof.SetPropertyBlock(block);
+        if (roofs == null) return;
+        for (int i = 0; i < roofs.Length; i++)
+        {
+            var roof = roofs[i];
+            if (roof == null) continue;
+            roof.enabled = roofAlpha > 0.01f; // зовсім прозорий дах просто вимикаємо
+            var c = roofColors[i];
+            c.a = roofAlpha;
+            block.SetColor(BaseColor, c);
+            roof.SetPropertyBlock(block);
+        }
     }
 
     void OnDestroy()

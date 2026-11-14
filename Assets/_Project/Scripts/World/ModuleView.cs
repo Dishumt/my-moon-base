@@ -33,11 +33,15 @@ public class ModuleView : MonoBehaviour
         transform.position = BaseGrid.ToWorld(slotId);
     }
 
-    /// <summary>Чи точка світу всередині прямокутника модуля (не в проході).</summary>
+    /// <summary>Чи точка світу всередині модуля: у кімнаті або в шлюзі (не в проході).</summary>
     public bool Contains(Vector3 worldPos)
     {
         Vector3 p = transform.InverseTransformPoint(worldPos);
-        return Mathf.Abs(p.x) < size.x * 0.5f && Mathf.Abs(p.z) < size.y * 0.5f;
+        if (float.IsNaN(roomFront)) // обладнання або будова: просто прямокутник
+            return Mathf.Abs(p.x) < size.x * 0.5f && Mathf.Abs(p.z) < size.y * 0.5f;
+        bool inRoom = Mathf.Abs(p.x) < size.x * 0.5f && p.z > roomFront && p.z < roomBack;
+        bool inAirlock = Mathf.Abs(p.x) < airlockHalfWidth && p.z > airlockFront && p.z <= roomFront;
+        return inRoom || inAirlock;
     }
 
     void Update()
@@ -78,6 +82,7 @@ public class ModuleView : MonoBehaviour
         if (visual != null) Destroy(visual);
         visual = null;
         scaffold = null;
+        roomFront = float.NaN;
         shown = want;
         if (m != null) shownType = m.Type;
         if (want == Shown.Nothing) { totalBuildHours = 0f; return; }
@@ -120,77 +125,91 @@ public class ModuleView : MonoBehaviour
 
     // ---------- Готова кімната ----------
     //
-    //  Вигляд згори (камера знизу):
+    //  Вигляд згори (камера знизу). Шлюз — окремий тамбур НАЗОВНІ, перед кімнатою:
     //   ┌────────────────┐  задня стіна
-    //   │                │
     //   │    кімната     │
-    //   │   ┌──╴ ╶──┐    │  внутрішні двері
-    //   │   │ шлюз  │    │
-    //   └───┴──╴ ╶──┴────┘  зовнішні двері
+    //   └──────╴ ╶───────┘  передня стіна з внутрішніми дверима
+    //       │ шлюз  │
+    //       └──╴ ╶──┘       зовнішні двері
     //
+    // Кімната (глибина size.y - 1) зсунута назад, шлюз (airlockDepth) стирчить уперед;
+    // разом це займає квадратик 8 м і лишає прохід між модулями.
+
+    float roomFront = float.NaN, roomBack, airlockFront, airlockHalfWidth; // для Contains
+
     void BuildRoom(ModuleLook look, ModuleType type)
     {
         Transform root = visual.transform;
-        float w = size.x, d = size.y, h = look.wallHeight, t = look.wallThickness;
+        float w = size.x, h = look.wallHeight, t = look.wallThickness;
         var wall = look.wallMaterial;
         Color typeColor = look.ColorOf(type);
 
+        float roomDepth = size.y - 1f;
+        roomBack = size.y / 2 + 0.5f;
+        roomFront = roomBack - roomDepth;
+        airlockFront = roomFront - look.airlockDepth;
+        float roomMid = (roomFront + roomBack) / 2, airMid = (airlockFront + roomFront) / 2;
+
         float door = Mathf.Min(look.doorWidth, w - 4 * t);
-        float aw = door + 1f;                                // ширина шлюзу
-        float front = -d / 2, inner = -d / 2 + look.airlockDepth; // z зовнішньої і внутрішньої стін шлюзу
+        float aw = door + 1f;               // ширина шлюзу
+        airlockHalfWidth = aw / 2;
+        float ah = h * 0.85f;               // шлюз трохи нижчий за кімнату
 
-        // Підлога кімнати — світлий відтінок кольору типу, підлога шлюзу — сіра
-        ModuleParts.Box(root, "Floor", wall, new Vector3(0f, 0.05f, 0f), new Vector3(w, 0.1f, d),
+        // ----- Кімната -----
+        ModuleParts.Box(root, "Floor", wall, new Vector3(0f, 0.05f, roomMid), new Vector3(w, 0.1f, roomDepth),
                         collider: false, tint: Color.Lerp(typeColor, Color.white, 0.6f));
-        ModuleParts.Box(root, "Airlock Floor", wall, new Vector3(0f, 0.06f, (front + inner) / 2), new Vector3(aw, 0.1f, inner - front),
-                        collider: false, tint: new Color(0.55f, 0.55f, 0.58f));
-
-        // Задня, ліва і права стіни
-        ModuleParts.Box(root, "Wall Back", wall, new Vector3(0f, h / 2, d / 2 - t / 2), new Vector3(w, h, t));
-        ModuleParts.Box(root, "Wall Left", wall, new Vector3(-w / 2 + t / 2, h / 2, 0f), new Vector3(t, h, d));
-        ModuleParts.Box(root, "Wall Right", wall, new Vector3(w / 2 - t / 2, h / 2, 0f), new Vector3(t, h, d));
-
-        // Передня стіна з отвором для зовнішніх дверей
-        WallWithGap(root, "Wall Front", wall, front + t / 2, -w / 2, w / 2, door, h, t);
-        // Стінки шлюзу: дві бічні і внутрішня з отвором
-        ModuleParts.Box(root, "Airlock Side L", wall, new Vector3(-aw / 2, h / 2, (front + inner) / 2), new Vector3(t, h, inner - front));
-        ModuleParts.Box(root, "Airlock Side R", wall, new Vector3(aw / 2, h / 2, (front + inner) / 2), new Vector3(t, h, inner - front));
-        WallWithGap(root, "Airlock Inner", wall, inner, -aw / 2, aw / 2, door, h, t);
-
-        // Двері (зачинені; відчиняє Airlock)
-        var outerDoor = ModuleParts.Box(root, "Door Outer", wall, new Vector3(0f, h / 2, front + t / 2), new Vector3(door, h - 0.1f, t * 0.6f),
-                                        tint: new Color(0.35f, 0.38f, 0.42f));
-        var innerDoor = ModuleParts.Box(root, "Door Inner", wall, new Vector3(0f, h / 2, inner), new Vector3(door, h - 0.1f, t * 0.6f),
-                                        tint: new Color(0.35f, 0.38f, 0.42f));
-
-        // Дах — окремий об'єкт кольору типу, його ховає ModuleInterior
-        var roof = ModuleParts.Box(root, "Roof", look.roofMaterial, new Vector3(0f, h + 0.075f, 0f), new Vector3(w + 0.2f, 0.15f, d + 0.2f),
+        ModuleParts.Box(root, "Wall Back", wall, new Vector3(0f, h / 2, roomBack - t / 2), new Vector3(w, h, t));
+        ModuleParts.Box(root, "Wall Left", wall, new Vector3(-w / 2 + t / 2, h / 2, roomMid), new Vector3(t, h, roomDepth));
+        ModuleParts.Box(root, "Wall Right", wall, new Vector3(w / 2 - t / 2, h / 2, roomMid), new Vector3(t, h, roomDepth));
+        WallWithGap(root, "Wall Front", wall, roomFront + t / 2, -w / 2, w / 2, door, h, t);
+        var roof = ModuleParts.Box(root, "Roof", look.roofMaterial, new Vector3(0f, h + 0.075f, roomMid), new Vector3(w + 0.2f, 0.15f, roomDepth + 0.2f),
                                    collider: false, tint: typeColor);
 
-        // Світло всередині (вмикається, коли інженер заходить)
+        // ----- Шлюз (тамбур назовні) -----
+        Color airColor = new Color(0.62f, 0.64f, 0.68f);
+        ModuleParts.Box(root, "Airlock Floor", wall, new Vector3(0f, 0.05f, airMid), new Vector3(aw, 0.1f, look.airlockDepth),
+                        collider: false, tint: new Color(0.5f, 0.5f, 0.53f));
+        ModuleParts.Box(root, "Airlock Side L", wall, new Vector3(-aw / 2 + t / 2, ah / 2, airMid), new Vector3(t, ah, look.airlockDepth), tint: airColor);
+        ModuleParts.Box(root, "Airlock Side R", wall, new Vector3(aw / 2 - t / 2, ah / 2, airMid), new Vector3(t, ah, look.airlockDepth), tint: airColor);
+        WallWithGap(root, "Airlock Front", wall, airlockFront + t / 2, -aw / 2, aw / 2, door, ah, t, airColor);
+        var airRoof = ModuleParts.Box(root, "Airlock Roof", look.roofMaterial, new Vector3(0f, ah + 0.075f, airMid),
+                                      new Vector3(aw + 0.2f, 0.15f, look.airlockDepth), collider: false, tint: airColor);
+
+        // ----- Двері (зачинені; відчиняє Airlock) -----
+        Color doorColor = new Color(0.35f, 0.38f, 0.42f);
+        var outerDoor = ModuleParts.Box(root, "Door Outer", wall, new Vector3(0f, ah / 2, airlockFront + t / 2),
+                                        new Vector3(door, ah - 0.1f, t * 0.6f), tint: doorColor);
+        var innerDoor = ModuleParts.Box(root, "Door Inner", wall, new Vector3(0f, h / 2, roomFront + t / 2),
+                                        new Vector3(door, h - 0.1f, t * 0.6f), tint: doorColor);
+
+        // ----- Світло всередині (вмикається, коли інженер заходить) -----
         var lightGo = new GameObject("Interior Light");
         lightGo.transform.SetParent(root, false);
-        lightGo.transform.localPosition = new Vector3(0f, h - 0.3f, d / 6);
+        lightGo.transform.localPosition = new Vector3(0f, h - 0.3f, roomMid);
         var light = lightGo.AddComponent<Light>();
         light.type = LightType.Point;
         light.color = look.interiorLightColor;
-        light.range = Mathf.Max(w, d) * 1.2f;
+        light.range = Mathf.Max(w, roomDepth) * 1.2f;
         light.intensity = 0f;
         light.shadows = LightShadows.None;
 
-        visual.AddComponent<ModuleInterior>().Setup(this, roof.GetComponent<Renderer>(), light, typeColor);
+        visual.AddComponent<ModuleInterior>().Setup(this,
+            new[] { roof.GetComponent<Renderer>(), airRoof.GetComponent<Renderer>() },
+            new[] { typeColor, airColor }, light);
 
-        var airlock = visual.AddComponent<Airlock>();
-        airlock.Setup(outerDoor.transform, innerDoor.transform, door, aw, front, inner, h);
+        // front = зовнішній край шлюзу, inner = середина внутрішніх дверей
+        visual.AddComponent<Airlock>().Setup(outerDoor.transform, innerDoor.transform, door, aw,
+                                             airlockFront, roomFront + t / 2, ah);
     }
 
     /// <summary>Стіна вздовж X від x0 до x1 на висоті z, з отвором ширини gap посередині.</summary>
-    static void WallWithGap(Transform root, string name, Material mat, float z, float x0, float x1, float gap, float h, float t)
+    static void WallWithGap(Transform root, string name, Material mat, float z, float x0, float x1, float gap, float h, float t,
+                            Color? tint = null)
     {
         float mid = (x0 + x1) / 2;
         float partL = mid - gap / 2 - x0, partR = x1 - (mid + gap / 2);
-        if (partL > 0.01f) ModuleParts.Box(root, name + " L", mat, new Vector3(x0 + partL / 2, h / 2, z), new Vector3(partL, h, t));
-        if (partR > 0.01f) ModuleParts.Box(root, name + " R", mat, new Vector3(x1 - partR / 2, h / 2, z), new Vector3(partR, h, t));
+        if (partL > 0.01f) ModuleParts.Box(root, name + " L", mat, new Vector3(x0 + partL / 2, h / 2, z), new Vector3(partL, h, t), tint: tint);
+        if (partR > 0.01f) ModuleParts.Box(root, name + " R", mat, new Vector3(x1 - partR / 2, h / 2, z), new Vector3(partR, h, t), tint: tint);
     }
 
     // ---------- Готове обладнання (без входу) ----------
