@@ -38,11 +38,17 @@ public class GameBootstrap : MonoBehaviour
         Instance = this;
 
         State = continueFromSave ? SaveSystem.Load() : null;
+        bool freshGame = State == null;
         if (State == null) State = GameStateFactory.FromChapter(DataLoader.Load<ChapterStartData>(chapterFile));
 
         var balance = DataLoader.Load<CoreBalance>("Balance/balance");
         Clock = new GameClock(State, balance.realSecondsPerDay);
         RegisterSystems();
+
+        // 03: відкрити модулі розділу (які можна замовляти). Для нової гри ChapterSystem ще й ставить
+        // стартові модулі (панелі тощо), бо GameStateFactory їх не створює.
+        var chapters = GetSystem<ChapterSystem>();
+        if (chapters != null) chapters.StartChapter(State, State.Chapter, freshGame);
 
         GameEvents.DayEnded += OnDayEnded;
     }

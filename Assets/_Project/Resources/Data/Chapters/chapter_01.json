@@ -1,30 +1,138 @@
 {
   "_ai": "AI-assisted (Claude)",
-  "_note": "Старт розділу 1. Власник: роль 03. Ядро читає поля з Scripts/Core/ChapterStartData.cs; цілі розділу роль 03 додає сюди і читає своїм класом. Числа — заглушки, роль 03 їх налаштує.",
+  "_note": "Розділ 1 «Перша висадка». Цей файл читають ДВА класи: ChapterStartData (ядро, ролі 01/04: поля chapter, titleKey, startHour, resources, power, crew, reserve, robots, pois) і ChapterData (роль 03: решта полів). Назви полів у resources і power пишуться з великої літери, як у класах. Типи цілей: SurviveDays, BuildModule, WaterAtLeast, ScienceAtLeast. Назви модулів і ролей — з enums.",
   "chapter": 1,
-  "titleKey": "chapter.01.title",
+  "titleKey": "chapter.1.title",
+  "descriptionKey": "chapter.1.description",
   "startHour": 6,
-  "resources": { "Battery": 5, "Water": 60, "Oxygen": 100, "Food": 40, "Materials": 40, "MedKits": 2 },
-  "power": { "LifeSupport": 3, "Greenhouse": 0, "Comms": 0, "Shelter": 0, "Lab": 0, "Medbay": 0, "Robots": 0 },
+  "startHour_note": "О котрій годині починається перший день (перший день через це коротший на 6 годин).",
+  "resources": {
+    "Battery": 10,
+    "Water": 60,
+    "Oxygen": 70,
+    "Food": 40,
+    "Materials": 40,
+    "MedKits": 0
+  },
+  "resources_note": "Запаси на початку розділу: Battery у блоко-годинах, Food у порціях, Oxygen бак із 100.",
+  "power": {
+    "LifeSupport": 2,
+    "Greenhouse": 0,
+    "Comms": 0,
+    "Shelter": 0,
+    "Lab": 0,
+    "Medbay": 0,
+    "Robots": 2
+  },
+  "power_note": "Початковий розподіл блоків енергії: гравець може змінити його в планшеті.",
   "crew": [
-    { "name": "Alex", "role": "Engineer" },
-    { "name": "Mira", "role": "Medic" },
-    { "name": "Sam", "role": "Botanist" },
-    { "name": "Kai", "role": "Geologist" }
+    {
+      "name": "Alex",
+      "role": "Engineer"
+    },
+    {
+      "name": "Maya",
+      "role": "Medic"
+    },
+    {
+      "name": "Leo",
+      "role": "Botanist"
+    },
+    {
+      "name": "Nora",
+      "role": "Geologist"
+    }
   ],
+  "crew_note": "ПРИПУЩЕННЯ: імена вигадані. Якщо екіпаж у вашому проєкті вже заданий, залиште свій блок crew.",
   "reserve": [
-    { "name": "Leo", "role": "Engineer" },
-    { "name": "Nora", "role": "Medic" },
-    { "name": "Tim", "role": "Botanist" },
-    { "name": "Zoe", "role": "Geologist" }
+    {
+      "name": "Ira",
+      "role": "Engineer"
+    },
+    {
+      "name": "Max",
+      "role": "Medic"
+    }
   ],
   "robots": 2,
   "pois": [
-    { "id": "ice_crater_1", "type": "Ice", "amount": 100 },
-    { "id": "sample_1", "type": "Sample", "amount": 3 },
-    { "id": "sample_2", "type": "Sample", "amount": 3 },
-    { "id": "landing_pad", "type": "LandingPad", "amount": 0 },
-    { "id": "fact_1", "type": "Fact", "amount": 0 },
-    { "id": "fact_2", "type": "Fact", "amount": 0 }
+    {
+      "id": "pad_01",
+      "type": "LandingPad",
+      "amount": 0
+    },
+    {
+      "id": "ice_01",
+      "type": "Ice",
+      "amount": 60
+    },
+    {
+      "id": "sample_01",
+      "type": "Sample",
+      "amount": 6
+    },
+    {
+      "id": "sample_02",
+      "type": "Sample",
+      "amount": 6
+    },
+    {
+      "id": "fact_01",
+      "type": "Fact",
+      "amount": 0
+    }
+  ],
+  "pois_note": "ПРИПУЩЕННЯ: id і кількість точок вигадані. id мають збігатися з точками в сцені. Якщо pois у вашому проєкті вже заданий, залиште свій блок. amount: для льоду скільки води всього, для зразків скільки науки.",
+  "startScience": 0,
+  "startModules": [
+    {
+      "type": "Solar",
+      "slot": 0
+    },
+    {
+      "type": "Solar",
+      "slot": 1
+    }
+  ],
+  "startModules_note": "Модулі, які вже стоять на початку. Номери слотів підігнати під сцену. Зайняті слоти пропускаються.",
+  "unlockedModules": [
+    "Habitat",
+    "Solar"
+  ],
+  "unlockedModules_note": "Які модулі можна замовляти в цьому розділі.",
+  "unlockedSystems": [
+    "Launch",
+    "Power",
+    "LifeSupport",
+    "Food",
+    "Construction",
+    "Exploration"
+  ],
+  "unlockedSystems_note": "Які системи гри працюють у цьому розділі.",
+  "goals": [
+    {
+      "id": "survive",
+      "type": "SurviveDays",
+      "target": 5,
+      "target_note": "Скільки днів треба прожити в цьому розділі.",
+      "module": "",
+      "titleKey": "goal.survive_days"
+    },
+    {
+      "id": "habitat",
+      "type": "BuildModule",
+      "target": 1,
+      "target_note": "Скільки готових житлових модулів має стояти на базі.",
+      "module": "Habitat",
+      "titleKey": "goal.build_module"
+    },
+    {
+      "id": "panels",
+      "type": "BuildModule",
+      "target": 3,
+      "target_note": "Скільки готових сонячних панелей має стояти разом зі стартовими.",
+      "module": "Solar",
+      "titleKey": "goal.build_module"
+    }
   ]
 }
