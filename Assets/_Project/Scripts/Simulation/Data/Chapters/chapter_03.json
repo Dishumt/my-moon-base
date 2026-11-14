@@ -1,0 +1,72 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Розділ 3 «Сонячний шторм». Числа тут стартові або цільові (не «на день»). Назви модулів — з enum ModuleType. Типи цілей: SurviveDays, BuildModule, WaterAtLeast, ScienceAtLeast. Бурі підключає роль 06.",
+  "chapter": 3,
+  "titleKey": "chapter.3.title",
+  "descriptionKey": "chapter.3.description",
+  "start": {
+    "_note": "Що є на базі на початку розділу (для нової гри з розділу 3 або повтору).",
+    "water": 40,
+    "water_note": "Вода: власний видобуток уже налагоджений.",
+    "food": 40,
+    "food_note": "Порцій їжі.",
+    "oxygen": 100,
+    "oxygen_note": "Повний бак кисню.",
+    "battery": 10,
+    "battery_note": "Заряд батареї, блоко-годин.",
+    "materials": 40,
+    "materials_note": "Будматеріали: вистачає на укриття (15), медмодуль (10) і трохи про запас.",
+    "medKits": 2,
+    "medKits_note": "Аптечки: у цьому розділі з'являються хвороби.",
+    "science": 0,
+    "science_note": "Очки науки."
+  },
+  "startModules": [
+    { "type": "Solar", "slot": 0 },
+    { "type": "Solar", "slot": 1 },
+    { "type": "Solar", "slot": 2 },
+    { "type": "Habitat", "slot": 3 },
+    { "type": "Greenhouse", "slot": 4 },
+    { "type": "Lab", "slot": 5 },
+    { "type": "Antenna", "slot": 6 }
+  ],
+  "startModules_note": "База після розділу 2. Номери слотів підігнати під сцену. Якщо слот уже зайнятий, пропускається.",
+  "unlockedModules": ["Habitat", "Solar", "Battery", "Greenhouse", "Antenna", "Lab", "Shelter", "Medbay"],
+  "unlockedModules_note": "Які модулі можна замовляти в цьому розділі.",
+  "unlockedSystems": ["Launch", "Power", "LifeSupport", "Food", "Construction", "Exploration", "IceMining", "Greenhouse", "Supply", "Comms", "Radiation", "Shelter", "Health", "Reserve"],
+  "unlockedSystems_note": "Які системи гри працюють у цьому розділі.",
+  "goals": [
+    {
+      "id": "survive",
+      "type": "SurviveDays",
+      "target": 10,
+      "target_note": "Скільки днів треба прожити, щоб пережити бурі.",
+      "module": "",
+      "titleKey": "goal.survive_days"
+    },
+    {
+      "id": "shelter",
+      "type": "BuildModule",
+      "target": 1,
+      "target_note": "Скільки готових укриттів має стояти на базі.",
+      "module": "Shelter",
+      "titleKey": "goal.build_module"
+    },
+    {
+      "id": "medbay",
+      "type": "BuildModule",
+      "target": 1,
+      "target_note": "Скільки готових медмодулів має стояти на базі.",
+      "module": "Medbay",
+      "titleKey": "goal.build_module"
+    },
+    {
+      "id": "science",
+      "type": "ScienceAtLeast",
+      "target": 20,
+      "target_note": "Скільки очок науки треба набрати.",
+      "module": "",
+      "titleKey": "goal.science"
+    }
+  ]
+}
