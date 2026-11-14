@@ -1,0 +1,102 @@
+/* AI-assisted: written with Claude. See docs/AI_USE.md */
+/* Власні класи екрана запуску. Усе спільне (.tablet, .panel, .btn, .t-label...) береться з Theme.uss */
+
+.body { flex-direction: row; flex-grow: 1; margin-top: 14px; }
+.pad { padding: 16px 20px; }
+.cargo-panel { width: 520px; }
+.ship-panel { flex-grow: 1; }
+
+/* --- рядки вантажу (їх створює код: cargo-row, cargo-name, cargo-count, small-btn) --- */
+.cargo-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 72px;
+    margin-bottom: 8px;
+    padding: 4px 12px;
+    background-color: var(--color-card);
+    border-width: 2px;
+    border-color: var(--color-line);
+    border-radius: 0;
+}
+.cargo-row:hover { border-color: var(--color-accent); }
+.cargo-name {
+    flex-grow: 1;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--color-text);
+}
+.cargo-count {
+    width: 72px;
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: var(--color-energy);
+}
+.small-btn {
+    width: 64px;
+    height: 64px;
+    margin: 0 0 0 6px;
+    font-size: 34px;
+    color: var(--color-accent);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 2px;
+    border-color: var(--color-accent);
+    border-radius: 0;
+}
+.small-btn:hover { background-color: rgba(95, 212, 244, 0.12); }
+.small-btn:active { scale: 0.95 0.95; }
+
+/* --- ракета з прямокутників --- */
+.ship-area { height: 230px; align-items: center; justify-content: center; }
+.ship { width: 120px; height: 210px; }
+.ship-nose-tip { position: absolute; left: 50px; top: 0px; width: 20px; height: 14px; background-color: var(--color-accent); }
+.ship-nose-mid { position: absolute; left: 40px; top: 14px; width: 40px; height: 18px; background-color: var(--color-accent); }
+.ship-body { position: absolute; left: 30px; top: 32px; width: 60px; height: 130px; background-color: var(--color-soft); }
+.ship-stripe { position: absolute; left: 30px; top: 112px; width: 60px; height: 10px; background-color: var(--color-accent); }
+.ship-window {
+    position: absolute; left: 46px; top: 58px; width: 28px; height: 28px;
+    background-color: var(--color-card);
+    border-width: 3px; border-color: var(--color-accent);
+}
+.ship-fin { position: absolute; top: 118px; width: 24px; height: 54px; background-color: var(--color-accent); }
+.ship-fin-left { left: 6px; }
+.ship-fin-right { left: 90px; }
+.ship-nozzle { position: absolute; left: 44px; top: 162px; width: 32px; height: 12px; background-color: var(--color-line-hi); }
+.ship-flame { position: absolute; left: 48px; top: 174px; width: 24px; height: 30px; background-color: var(--color-warn); }
+.ship-flame-core { position: absolute; left: 54px; top: 174px; width: 12px; height: 18px; background-color: var(--color-energy); }
+
+/* --- смужка маси: екіпаж блакитний, вантаж жовтий --- */
+.mass-bar {
+    flex-direction: row;
+    height: 20px;
+    background-color: var(--color-card);
+    border-width: 2px;
+    border-color: var(--color-line);
+    overflow: hidden;
+}
+.mass-crew { width: 25%; background-color: var(--color-accent); }
+.mass-cargo { width: 35%; background-color: var(--color-energy); }
+.legend { flex-direction: row; align-items: center; margin-top: 10px; }
+.legend-dot { width: 14px; height: 14px; margin-right: 6px; }
+.legend-crew { background-color: var(--color-accent); }
+.legend-cargo { background-color: var(--color-energy); }
+
+/* --- низ: паливо, світлофор, запуск --- */
+.bottom-row { flex-direction: row; align-items: center; margin-top: 14px; }
+.fuel-box { flex-grow: 1; margin-right: 24px; }
+
+.unity-base-slider__tracker { background-color: var(--color-line); border-radius: 0; }
+.unity-base-slider__dragger { background-color: var(--color-accent); border-radius: 0; border-width: 0; }
+
+.traffic-light {
+    flex-direction: row;
+    padding: 8px;
+    margin-right: 24px;
+    background-color: var(--color-void);
+    border-width: 2px;
+    border-color: var(--color-line);
+}
+.light { width: 56px; height: 56px; margin: 4px; border-radius: 28px; }
+
+.launch-box { width: 300px; }
+.launch-btn { flex-grow: 0; width: 100%; }

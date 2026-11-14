@@ -6,8 +6,9 @@ using UnityEngine;
 /// Створює його BaseView сам — руками в сцену не став.
 ///  - модуля немає → порожньо;
 ///  - будується (BuildHoursLeft > 0) → напівпрозоре риштування, яке росте з прогресом;
-///  - готовий → коробка: підлога, низькі стіни з дверима, дах окремим об'єктом.
-/// Коробку будує код із простих кубів, тож вручну її збирати не треба.
+///  - готова кімната → оболонка свого типу (бочка, купол, бункер), меблі всередині і шлюз (див. RoomBuilder);
+///  - готове обладнання (панель, батарея, антена...) → проста фігура без входу.
+/// Усе будує код із простих кубів і циліндрів, тож вручну збирати не треба.
 /// Коли 02 намалює текстури, їх просто ставимо в матеріали ModuleLook.
 /// </summary>
 public class ModuleView : MonoBehaviour
@@ -32,11 +33,15 @@ public class ModuleView : MonoBehaviour
         transform.position = BaseGrid.ToWorld(slotId);
     }
 
-    /// <summary>Чи точка світу всередині прямокутника модуля (не в проході).</summary>
+    /// <summary>Чи точка світу всередині модуля: у кімнаті або в шлюзі (не в проході).</summary>
     public bool Contains(Vector3 worldPos)
     {
         Vector3 p = transform.InverseTransformPoint(worldPos);
-        return Mathf.Abs(p.x) < size.x * 0.5f && Mathf.Abs(p.z) < size.y * 0.5f;
+        if (float.IsNaN(roomFront)) // обладнання або будова: просто прямокутник
+            return Mathf.Abs(p.x) < size.x * 0.5f && Mathf.Abs(p.z) < size.y * 0.5f;
+        bool inRoom = Mathf.Abs(p.x) < size.x * 0.5f && p.z > roomFront && p.z < roomBack;
+        bool inAirlock = Mathf.Abs(p.x) < airlockHalfWidth && p.z > airlockFront && p.z <= roomFront;
+        return inRoom || inAirlock;
     }
 
     void Update()
@@ -77,6 +82,7 @@ public class ModuleView : MonoBehaviour
         if (visual != null) Destroy(visual);
         visual = null;
         scaffold = null;
+        roomFront = float.NaN;
         shown = want;
         if (m != null) shownType = m.Type;
         if (want == Shown.Nothing) { totalBuildHours = 0f; return; }
@@ -91,15 +97,19 @@ public class ModuleView : MonoBehaviour
         visual = new GameObject(want == Shown.Built ? "Module " + m.Type : "Construction " + m.Type);
         visual.transform.SetParent(transform, false);
 
-        if (want == Shown.Building) BuildScaffold(look);
-        else BuildModule(look);
+        if (want == Shown.Building) BuildScaffold(look, m.Type);
+        else if (ModuleKinds.IsRoom(m.Type)) BuildRoom(look, m.Type);
+        else BuildEquipment(look, m.Type);
     }
 
     // ---------- Будова ----------
 
-    void BuildScaffold(ModuleLook look)
+    void BuildScaffold(ModuleLook look, ModuleType type)
     {
-        scaffold = Box("Scaffold", look.roofMaterial, Vector3.zero, Vector3.one, collider: false).transform;
+        var c = look.ColorOf(type);
+        c.a = 0.5f; // напівпрозоре риштування кольору майбутнього модуля
+        scaffold = ModuleParts.Box(visual.transform, "Scaffold", look.roofMaterial, Vector3.zero, Vector3.one,
+                                   collider: false, tint: c).transform;
     }
 
     void UpdateScaffold(ModuleState m)
@@ -113,59 +123,69 @@ public class ModuleView : MonoBehaviour
         scaffold.localPosition = new Vector3(0f, h * 0.5f, 0f);
     }
 
-    // ---------- Готовий модуль ----------
+    // ---------- Готова кімната (будує RoomBuilder) ----------
 
-    void BuildModule(ModuleLook look)
+    float roomFront = float.NaN, roomBack, airlockFront, airlockHalfWidth; // для Contains
+
+    void BuildRoom(ModuleLook look, ModuleType type)
     {
-        float w = size.x, d = size.y, h = look.wallHeight, t = look.wallThickness;
-        var wall = look.wallMaterial;
-
-        // Підлога (без колайдера: земля рівна, інженер ходить по висоті 0)
-        Box("Floor", wall, new Vector3(0f, 0.05f, 0f), new Vector3(w, 0.1f, d), collider: false);
-
-        // Задня, ліва і права стіни
-        Box("Wall Back", wall, new Vector3(0f, h / 2, d / 2 - t / 2), new Vector3(w, h, t));
-        Box("Wall Left", wall, new Vector3(-w / 2 + t / 2, h / 2, 0f), new Vector3(t, h, d));
-        Box("Wall Right", wall, new Vector3(w / 2 - t / 2, h / 2, 0f), new Vector3(t, h, d));
-
-        // Передня стіна з двома шматками і дверима посередині
-        float door = Mathf.Min(look.doorWidth, w - 2 * t);
-        float part = (w - door) / 2f;
-        Box("Wall Front L", wall, new Vector3(-w / 2 + part / 2, h / 2, -d / 2 + t / 2), new Vector3(part, h, t));
-        Box("Wall Front R", wall, new Vector3(w / 2 - part / 2, h / 2, -d / 2 + t / 2), new Vector3(part, h, t));
-
-        // Дах — окремий об'єкт, його ховає ModuleInterior
-        var roof = Box("Roof", look.roofMaterial, new Vector3(0f, h + 0.075f, 0f), new Vector3(w + 0.2f, 0.15f, d + 0.2f), collider: false);
-
-        // Світло всередині (вмикається, коли інженер заходить)
-        var lightGo = new GameObject("Interior Light");
-        lightGo.transform.SetParent(visual.transform, false);
-        lightGo.transform.localPosition = new Vector3(0f, h - 0.3f, 0f);
-        var light = lightGo.AddComponent<Light>();
-        light.type = LightType.Point;
-        light.color = look.interiorLightColor;
-        light.range = Mathf.Max(w, d) * 1.2f;
-        light.intensity = 0f;
-        light.shadows = LightShadows.None;
-
-        var interior = visual.AddComponent<ModuleInterior>();
-        interior.Setup(this, roof.GetComponent<Renderer>(), light);
+        var r = RoomBuilder.Build(visual.transform, this, look, type, size);
+        roomFront = r.roomFront;
+        roomBack = r.roomBack;
+        airlockFront = r.airlockFront;
+        airlockHalfWidth = r.airlockHalfWidth;
     }
 
-    /// <summary>Створює куб-коробку всередині visual.</summary>
-    GameObject Box(string name, Material mat, Vector3 localPos, Vector3 localScale, bool collider = true)
+    // ---------- Готове обладнання (без входу) ----------
+
+    void BuildEquipment(ModuleLook look, ModuleType type)
     {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.SetParent(visual.transform, false);
-        go.transform.localPosition = localPos;
-        go.transform.localScale = localScale;
-        var rend = go.GetComponent<Renderer>();
-        if (mat != null) rend.sharedMaterial = mat;
-        // Модуль сам тіні від сонця не ПРИЙМАЄ: інакше без даху всередині видно рвані косі тіні стін.
-        // Тіні він і далі ВІДКИДАЄ на землю надворі.
-        rend.receiveShadows = false;
-        if (!collider) Destroy(go.GetComponent<Collider>());
-        return go;
+        Transform root = visual.transform;
+        var mat = look.wallMaterial;
+        Color c = look.ColorOf(type);
+        Color metal = new Color(0.6f, 0.6f, 0.62f);
+
+        // Бетонна площадка під усім обладнанням
+        ModuleParts.Box(root, "Pad", mat, new Vector3(0f, 0.05f, 0f), new Vector3(size.x * 0.8f, 0.1f, size.y * 0.8f),
+                        collider: false, tint: new Color(0.5f, 0.5f, 0.52f));
+
+        switch (type)
+        {
+            case ModuleType.Solar:
+                // Дві похилі панелі на ніжках
+                for (int i = -1; i <= 1; i += 2)
+                {
+                    float x = i * size.x * 0.22f;
+                    ModuleParts.Box(root, "Leg", mat, new Vector3(x, 0.6f, 0f), new Vector3(0.15f, 1.2f, 0.15f), tint: metal);
+                    var panel = ModuleParts.Box(root, "Panel", mat, new Vector3(x, 1.25f, 0f), new Vector3(size.x * 0.4f, 0.08f, size.y * 0.6f),
+                                                collider: false, tint: c);
+                    panel.transform.localRotation = Quaternion.Euler(-35f, 0f, 0f); // нахил до низького полярного сонця
+                }
+                break;
+
+            case ModuleType.Battery:
+                // Три шафи-акумулятори
+                for (int i = -1; i <= 1; i++)
+                    ModuleParts.Box(root, "Cell", mat, new Vector3(i * 1.3f, 0.75f, 0f), new Vector3(1f, 1.5f, 1.4f), tint: c);
+                break;
+
+            case ModuleType.Antenna:
+            case ModuleType.Relay:
+                float mast = type == ModuleType.Relay ? 5f : 3.5f;
+                ModuleParts.Cylinder(root, "Mast", mat, new Vector3(0f, mast / 2, 0f), new Vector3(0.25f, mast / 2, 0.25f), tint: metal);
+                var dish = ModuleParts.Cylinder(root, "Dish", mat, new Vector3(0f, mast, -0.2f), new Vector3(2f, 0.05f, 2f),
+                                                collider: false, tint: c);
+                dish.transform.localRotation = Quaternion.Euler(-60f, 0f, 0f); // тарілка дивиться в небо, на Землю
+                break;
+
+            case ModuleType.Reactor:
+                ModuleParts.Cylinder(root, "Core", mat, new Vector3(0f, 1.25f, 0f), new Vector3(3f, 1.25f, 3f), tint: c);
+                ModuleParts.Cylinder(root, "Top", mat, new Vector3(0f, 2.6f, 0f), new Vector3(2f, 0.1f, 2f), collider: false, tint: metal);
+                break;
+
+            default:
+                ModuleParts.Box(root, "Block", mat, new Vector3(0f, 1f, 0f), new Vector3(3f, 2f, 3f), tint: c);
+                break;
+        }
     }
 }
