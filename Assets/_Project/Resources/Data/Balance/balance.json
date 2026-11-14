@@ -1,6 +1,84 @@
 {
   "_ai": "AI-assisted (Claude)",
-  "_note": "Числа балансу. Власник: роль 03 — додавай сюди свої числа (на день). Ядро читає тільки realSecondsPerDay (див. Scripts/Core/CoreBalance.cs), не перейменовуй його.",
+  "_note": "Стартові числа балансу для ролі 03 (Симуляція). Швидкості тут «на день», у коді їх ділимо на 24. Змінюй числа тут, а не в коді.",
   "realSecondsPerDay": 180,
-  "_note_realSecondsPerDay": "Скільки реальних секунд триває один ігровий день. 180 = 3 хвилини."
+  "realSecondsPerDay_note": "Скільки реальних секунд триває один ігровий день (3 хвилини). Це поле читає ядро (Core).",
+  "power": {
+    "_note": "Енергія в блоках потужності.",
+    "panelBlocks": 3,
+    "panelBlocks_note": "Скільки блоків енергії дає одна сонячна панель, коли вона на сонці.",
+    "panelBlocksInShade": 1,
+    "panelBlocksInShade_note": "Скільки блоків дає одна панель, коли хребет у тіні.",
+    "shadeHoursPerDay": 6,
+    "shadeHoursPerDay_note": "ПРИПУЩЕННЯ: у файлі ролі написано лише «кілька годин». Скільки годин на день хребет дає тінь. Підбери в балансі.",
+    "batteryCapacityBlockHours": 10,
+    "batteryCapacityBlockHours_note": "Скільки енергії вміщує батарея, у блоко-годинах (1 блок, що працює 1 годину = 1 блоко-година). Це місткість, а не швидкість, тому не «на день»."
+  },
+  "lifeSupport": {
+    "_note": "Життєзабезпечення: кисень робиться з води та енергії.",
+    "oxygenTankMax": 100,
+    "oxygenTankMax_note": "Найбільше кисню, що вміщає бак.",
+    "oxygenUsePerAstronautPerDay": 4,
+    "oxygenUsePerAstronautPerDay_note": "Скільки кисню за день витрачає один астронавт (4 людини = 16 на день).",
+    "oxygenMadePerBlockPerDay": 4,
+    "oxygenMadePerBlockPerDay_note": "Скільки кисню за день робить 1 блок енергії, що отримало життєзабезпечення. 4 блоки = 16 кисню, тобто рівновага для 4 людей.",
+    "waterUsePerBlockPerDay": 2,
+    "waterUsePerBlockPerDay_note": "Скільки води за день витрачає 1 блок життєзабезпечення, щоб зробити кисень. 4 блоки = 8 води на день.",
+    "oxygenAlarmPercent": 25,
+    "oxygenAlarmPercent_note": "Якщо кисню менше за цей відсоток бака, у звіті з'являється тривога.",
+    "waterAlarmPercent": 20,
+    "waterAlarmPercent_note": "ПРИПУЩЕННЯ: файл ролі не каже, відсоток від чого. Поки рахуємо від стартового запасу води (start.water). Якщо води менше, у звіті з'являється тривога."
+  },
+  "start": {
+    "_note": "Стартові запаси. Розділи можуть задавати свої в chapter_NN.json (задача 5).",
+    "water": 60,
+    "water_note": "Скільки води на базі на початку: її привезли із Землі.",
+    "food": 40,
+    "food_note": "Скільки порцій їжі на базі на початку (із Землі)."
+  },
+  "food": {
+    "_note": "Їжа й ситість астронавтів.",
+    "portionsPerAstronautPerDay": 1,
+    "portionsPerAstronautPerDay_note": "Скільки порцій їжі за день з'їдає один астронавт.",
+    "mealsPerDay": 3,
+    "mealsPerDay_note": "Скільки разів на день астронавт їсть: щоразу по третині порції.",
+    "satietyMax": 100,
+    "satietyMax_note": "Найбільша ситість астронавта (100 = ситий).",
+    "daysToEmptyWithoutFood": 2,
+    "daysToEmptyWithoutFood_note": "За скільки днів без їжі ситість падає зі 100 до 0.",
+    "satietyAfterMeal": 100,
+    "satietyAfterMeal_note": "До скількох піднімається ситість, коли астронавт поїв."
+  },
+  "greenhouse": {
+    "_note": "Теплиця: потрібні енергія і вода.",
+    "growthPerBlockPerDay": 1,
+    "growthPerBlockPerDay_note": "Скільки росту за день дає 1 блок енергії, що отримала теплиця.",
+    "harvestEveryDays": 3,
+    "harvestEveryDays_note": "Через скільки днів буває урожай.",
+    "portionsPerGrowth": 2,
+    "portionsPerGrowth_note": "Скільки порцій їжі дає 1 одиниця росту під час урожаю (урожай = ріст × 2).",
+    "botanistMultiplier": 1.5,
+    "botanistMultiplier_note": "У скільки разів більший урожай, якщо ботанік працює в теплиці (Task == Greenhouse).",
+    "waterUsePerBlockPerDay": 1,
+    "waterUsePerBlockPerDay_note": "Скільки води за день витрачає 1 блок енергії теплиці."
+  },
+  "robots": {
+    "_note": "Роботи будують модулі надворі.",
+    "count": 2,
+    "count_note": "Скільки роботів на базі.",
+    "powerBlocksWhenWorking": 1,
+    "powerBlocksWhenWorking_note": "Скільки блоків енергії бере один робот, поки працює."
+  },
+  "construction": {
+    "_note": "Будівництво.",
+    "engineerNearbySpeedMultiplier": 2,
+    "engineerNearbySpeedMultiplier_note": "У скільки разів швидше будують, коли інженер стоїть поруч (EngineerNearby)."
+  },
+  "defeat": {
+    "_note": "Коли місію перервано (поразка).",
+    "oxygenAtOrBelow": 0,
+    "oxygenAtOrBelow_note": "Якщо кисню стало стільки чи менше, місію перервано.",
+    "daysWithoutFood": 2,
+    "daysWithoutFood_note": "Скільки днів поспіль без їжі, і місію перервано."
+  }
 }
