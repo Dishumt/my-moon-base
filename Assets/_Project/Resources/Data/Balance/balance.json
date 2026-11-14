@@ -1,0 +1,6 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Числа балансу. Власник: роль 03 — додавай сюди свої числа (на день). Ядро читає тільки realSecondsPerDay (див. Scripts/Core/CoreBalance.cs), не перейменовуй його.",
+  "realSecondsPerDay": 180,
+  "_note_realSecondsPerDay": "Скільки реальних секунд триває один ігровий день. 180 = 3 хвилини."
+}

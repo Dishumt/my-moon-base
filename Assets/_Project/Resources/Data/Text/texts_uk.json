@@ -1,0 +1,17 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Українські тексти. Власник: роль 05. Ключі ті самі, що в texts_en.json. Якщо ключа тут немає, гра покаже англійський текст.",
+  "items": [
+    { "key": "chapter.01.title", "text": "Перша висадка" },
+    { "key": "role.engineer", "text": "Інженер" },
+    { "key": "role.medic", "text": "Медик" },
+    { "key": "role.botanist", "text": "Ботанік" },
+    { "key": "role.geologist", "text": "Геолог" },
+    { "key": "hud.day", "text": "День {0}" },
+    { "key": "hud.water", "text": "Вода" },
+    { "key": "hud.oxygen", "text": "Кисень" },
+    { "key": "hud.food", "text": "Їжа" },
+    { "key": "hud.battery", "text": "Батарея" },
+    { "key": "error.not_implemented", "text": "Це ще не готово." }
+  ]
+}

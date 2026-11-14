@@ -1,0 +1,17 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "English texts (main language). Owner: role 05. Format: key -> text; {0} is replaced with a word, e.g. a name.",
+  "items": [
+    { "key": "chapter.01.title", "text": "First Landing" },
+    { "key": "role.engineer", "text": "Engineer" },
+    { "key": "role.medic", "text": "Medic" },
+    { "key": "role.botanist", "text": "Botanist" },
+    { "key": "role.geologist", "text": "Geologist" },
+    { "key": "hud.day", "text": "Day {0}" },
+    { "key": "hud.water", "text": "Water" },
+    { "key": "hud.oxygen", "text": "Oxygen" },
+    { "key": "hud.food", "text": "Food" },
+    { "key": "hud.battery", "text": "Battery" },
+    { "key": "error.not_implemented", "text": "This is not ready yet." }
+  ]
+}
