@@ -1,0 +1,45 @@
+<!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="LaunchScreen.uss" />
+    <ui:VisualElement name="root" class="screen">
+
+        <ui:VisualElement name="top" class="top">
+
+            <ui:VisualElement name="cargo-panel" class="panel cargo-panel">
+                <ui:Label text="Cargo" class="title" />
+                <ui:VisualElement name="cargo-list" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="ship-panel" class="panel ship-panel">
+                <ui:Label text="Ship" class="title" />
+                <ui:VisualElement name="ship" class="ship" />
+                <ui:Label name="mass-label" text="Mass: 1600 kg" class="info" />
+                <ui:VisualElement class="mass-bar">
+                    <ui:VisualElement name="mass-crew" class="mass-crew" />
+                    <ui:VisualElement name="mass-cargo" class="mass-cargo" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <ui:VisualElement name="bottom" class="panel bottom">
+            <ui:VisualElement class="fuel-box">
+                <ui:Label name="fuel-label" text="Fuel: 3000 kg" class="info" />
+                <ui:Slider name="fuel-slider" low-value="0" high-value="6000" value="3000" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="traffic-light" class="traffic-light">
+                <ui:VisualElement name="light-red" class="light light-red" />
+                <ui:VisualElement name="light-yellow" class="light light-yellow" />
+                <ui:VisualElement name="light-green" class="light light-green" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="launch-box">
+                <ui:Label name="risk-label" text="Risk: 0%" class="risk" />
+                <ui:Button name="launch-button" text="LAUNCH" class="launch-btn" />
+                <ui:Label name="result-label" text="" class="info" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,62 @@
+/* AI-assisted: written with Claude. See docs/AI_USE.md */
+.screen {
+    flex-grow: 1;
+    padding: 24px;
+    background-color: rgb(15, 20, 35);
+}
+
+.top { flex-direction: row; flex-grow: 1; }
+
+.panel {
+    background-color: rgb(30, 40, 65);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 8px;
+}
+
+.cargo-panel { width: 40%; }
+.ship-panel { flex-grow: 1; align-items: center; }
+
+.title { font-size: 28px; color: white; margin-bottom: 12px; -unity-font-style: bold; }
+.info { font-size: 20px; color: rgb(200, 210, 230); margin: 6px; }
+
+.cargo-row { flex-direction: row; align-items: center; margin-bottom: 8px; }
+.cargo-name { font-size: 20px; color: white; width: 140px; }
+.cargo-count { font-size: 20px; color: white; width: 50px; -unity-text-align: middle-center; }
+.small-btn { width: 40px; height: 40px; font-size: 22px; }
+
+.ship {
+    width: 120px; height: 200px;
+    background-color: rgb(220, 225, 240);
+    border-radius: 20px;
+    margin: 12px;
+}
+
+.mass-bar {
+    flex-direction: row;
+    width: 100%; height: 24px;
+    background-color: rgb(50, 60, 90);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.mass-crew { width: 25%; background-color: rgb(255, 170, 60); }
+.mass-cargo { width: 35%; background-color: rgb(90, 170, 255); }
+
+.bottom { flex-direction: row; align-items: center; justify-content: space-between; }
+.fuel-box { flex-grow: 1; margin-right: 24px; }
+
+.traffic-light {
+    flex-direction: row;
+    padding: 10px;
+    background-color: rgb(10, 12, 20);
+    border-radius: 16px;
+    margin-right: 24px;
+}
+.light { width: 60px; height: 60px; border-radius: 30px; margin: 4px; }
+.light-red { background-color: rgb(120, 40, 40); }
+.light-yellow { background-color: rgb(140, 120, 40); }
+.light-green { background-color: rgb(40, 190, 80); }
+
+.launch-box { align-items: center; }
+.risk { font-size: 24px; color: white; margin-bottom: 8px; }
+.launch-btn { font-size: 28px; width: 200px; height: 60px; background-color: rgb(220, 70, 60); color: white; }
