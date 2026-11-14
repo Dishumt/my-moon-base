@@ -1,0 +1,19 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Швидкості завдань екіпажу (роль 04), на ДЕНЬ. Спеціаліст працює у specialistMultiplier разів швидше, хворий (Sick) — у sickMultiplier.",
+  "specialistMultiplier": 2,
+  "sickMultiplier": 0.5,
+  "labNeedsPower": true,
+  "labNeedsPower_note": "Лабораторія дає науку, тільки якщо їй дали хоч 1 блок енергії (Power.Lab).",
+  "items": [
+    { "task": "MineIce",        "specialist": "Geologist", "perDay": 6,   "outside": true },
+    { "task": "CollectSamples", "specialist": "Geologist", "perDay": 1.5, "outside": true },
+    { "task": "Greenhouse",     "specialist": "Botanist",  "perDay": 0 },
+    { "task": "Lab",            "specialist": "",          "perDay": 2 },
+    { "task": "Heal",           "specialist": "Medic",     "perDay": 0 },
+    { "task": "Repair",         "specialist": "Engineer",  "perDay": 0 },
+    { "task": "Rest",           "specialist": "",          "perDay": 0 },
+    { "task": "Shelter",        "specialist": "",          "perDay": 0 },
+    { "task": "Medbay",         "specialist": "",          "perDay": 0 }
+  ]
+}
