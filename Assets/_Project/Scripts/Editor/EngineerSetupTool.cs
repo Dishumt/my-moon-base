@@ -74,7 +74,7 @@ public static class EngineerSetupTool
     }
 
     /// <summary>Усі PNG у папці → Sprite з ногами внизу.</summary>
-    static void ImportAsSprites(string dir)
+    public static void ImportAsSprites(string dir)
     {
         foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { dir }))
         {
@@ -127,10 +127,10 @@ public static class EngineerSetupTool
         return sr;
     }
 
-    static Sprite Load(string dir, string name) => AssetDatabase.LoadAssetAtPath<Sprite>(dir + "/" + name + ".png");
+    public static Sprite Load(string dir, string name) => AssetDatabase.LoadAssetAtPath<Sprite>(dir + "/" + name + ".png");
 
     /// <summary>Кадри name01, name02 ... поки файли є.</summary>
-    static Sprite[] Frames(string dir, string prefix)
+    public static Sprite[] Frames(string dir, string prefix)
     {
         var list = new List<Sprite>();
         for (int i = 1; i <= 16; i++)

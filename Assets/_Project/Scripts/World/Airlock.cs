@@ -143,12 +143,44 @@ public class Airlock : MonoBehaviour
     {
         var look = ModuleLook.Instance;
         float speed = look != null && look.doorSeconds > 0f ? Time.deltaTime / look.doorSeconds : 1f;
-        outerOpen = Mathf.MoveTowards(outerOpen, outerTarget, speed);
-        innerOpen = Mathf.MoveTowards(innerOpen, innerTarget, speed);
+        // Астронавтам двері теж відчиняються (але не посеред шлюзування інженера)
+        bool crewOuter = false, crewInner = false;
+        if (step != Step.Busy) CrewNearDoors(out crewOuter, out crewInner);
+        outerOpen = Mathf.MoveTowards(outerOpen, crewOuter ? 1f : outerTarget, speed);
+        innerOpen = Mathf.MoveTowards(innerOpen, crewInner ? 1f : innerTarget, speed);
 
         // Половинки дверей стискаються до країв отвору (як у ліфті)
         if (outerDoor != null) SetSlide(outerDoor, outerOpen);
         if (innerDoor != null) SetSlide(innerDoor, innerOpen);
+    }
+
+    /// <summary>Чи стоїть хтось з екіпажу біля зовнішніх або внутрішніх дверей.</summary>
+    void CrewNearDoors(out bool nearOuter, out bool nearInner)
+    {
+        nearOuter = nearInner = false;
+        foreach (var a in AstronautView.All)
+        {
+            if (a == null || a.Data == null) continue;
+            Vector3 p = transform.InverseTransformPoint(a.transform.position);
+            if (Mathf.Abs(p.x) > door) continue;
+            if (p.z > front - 1.4f && p.z < front + 0.6f) nearOuter = true;
+            if (p.z > inner - 0.6f && p.z < inner + 1.4f) nearInner = true;
+        }
+    }
+
+    /// <summary>Здути пил у тамбурі (для астронавтів, які проходять шлюз).</summary>
+    public void BlowDust(float seconds)
+    {
+        if (dust == null) return;
+        StopCoroutine(nameof(DustFor));
+        StartCoroutine(DustFor(seconds));
+    }
+
+    IEnumerator DustFor(float seconds)
+    {
+        dust.Play();
+        yield return Wait(seconds);
+        dust.Stop();
     }
 
     void SetSlide(Transform d, float open)

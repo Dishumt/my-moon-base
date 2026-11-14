@@ -1,4 +1,5 @@
 // AI-assisted: written with Claude. See docs/AI_USE.md
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -126,6 +127,63 @@ public class ModuleView : MonoBehaviour
     // ---------- Готова кімната (будує RoomBuilder) ----------
 
     float roomFront = float.NaN, roomBack, airlockFront, airlockHalfWidth; // для Contains
+
+    // ---------- Точки для астронавтів і роботів (у світових координатах) ----------
+
+    /// <summary>Чи це готова кімната зі шлюзом (у неї можна зайти).</summary>
+    public bool IsEnterableRoom => shown == Shown.Built && !float.IsNaN(roomFront);
+    /// <summary>Чи модуль ще будується (там працюють роботи).</summary>
+    public bool IsUnderConstruction => shown == Shown.Building;
+    /// <summary>Тип модуля, який зараз намальований.</summary>
+    public ModuleType Type => shownType;
+
+    Vector3 Local(float x, float z) => transform.TransformPoint(new Vector3(x, 0f, z));
+
+    /// <summary>Надворі перед зовнішніми дверима шлюзу.</summary>
+    public Vector3 OuterDoorPoint => Local(0f, airlockFront - 0.5f); // посередині проходу між рядами модулів
+    /// <summary>Посередині шлюзу (тут знімають і одягають скафандр).</summary>
+    public Vector3 ChamberPoint => Local(0f, (airlockFront + roomFront) / 2f);
+    /// <summary>У кімнаті одразу за внутрішніми дверима.</summary>
+    public Vector3 InnerDoorPoint => Local(0f, roomFront + 1f);
+    /// <summary>Місце в кімнаті для i-го астронавта (щоб не стояли один в одному).</summary>
+    public Vector3 RoomSpot(int i)
+    {
+        float mid = (roomFront + roomBack) / 2f;
+        float x = (i % 2 == 0 ? -1f : 1f) * size.x * 0.22f;
+        float z = mid + ((i / 2) % 2 == 0 ? 0.6f : -0.5f);
+        return Local(x, z);
+    }
+    /// <summary>Перед модулем надворі (обладнання, ремонт, будова).</summary>
+    public Vector3 FrontPoint(int i) => Local((i - 1.5f) * 1.2f, -size.y / 2f - 0.8f);
+    /// <summary>Місце для робота біля будови (по кутах квадратика).</summary>
+    public Vector3 RobotSpot(int i)
+    {
+        float hx = size.x / 2f + 0.6f, hz = size.y / 2f + 0.5f;
+        switch (i % 4)
+        {
+            case 0: return Local(-hx, -hz * 0.4f);
+            case 1: return Local(hx, -hz * 0.4f);
+            case 2: return Local(-hx, hz * 0.5f);
+            default: return Local(hx, hz * 0.5f);
+        }
+    }
+
+    /// <summary>Додає прямокутники (x/z у метрах), крізь які не можна ходити: кімната, шлюз або весь модуль.</summary>
+    public void AddBlockers(List<Rect> list, float margin)
+    {
+        if (shown == Shown.Nothing) return;
+        Vector3 c = transform.position;
+        if (IsEnterableRoom)
+        {
+            list.Add(Rect.MinMaxRect(c.x - size.x / 2 - margin, c.z + roomFront - margin, c.x + size.x / 2 + margin, c.z + roomBack + margin));
+            list.Add(Rect.MinMaxRect(c.x - airlockHalfWidth - margin, c.z + airlockFront - margin, c.x + airlockHalfWidth + margin, c.z + roomFront));
+        }
+        else
+        {
+            float k = shown == Shown.Built ? 0.8f : 1f; // обладнання стоїть на площадці 80%
+            list.Add(Rect.MinMaxRect(c.x - size.x * k / 2 - margin, c.z - size.y * k / 2 - margin, c.x + size.x * k / 2 + margin, c.z + size.y * k / 2 + margin));
+        }
+    }
 
     void BuildRoom(ModuleLook look, ModuleType type)
     {
