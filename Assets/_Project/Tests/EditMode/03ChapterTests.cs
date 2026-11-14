@@ -171,6 +171,39 @@ public class ChapterSystemTests
         Assert.IsFalse(rig.Chapter.IsSystemUnlocked("Radiation"));
     }
 
+    // ───────────────────────── Замовлення модуля: слот і матеріали ─────────────────────────
+
+    [Test]
+    public void Order_SlotOutsideGrid_Refused()
+    {
+        var rig = MakeRig(MakeChapter(Goal("g", "SurviveDays", 3)));
+
+        Assert.AreEqual("error.place_outside", rig.Build.Order(rig.S, ModuleType.Habitat, BaseGrid.Count));
+        Assert.AreEqual("error.place_outside", rig.Build.Order(rig.S, ModuleType.Habitat, -1));
+        Assert.AreEqual(0, rig.S.Modules.Count);
+        Assert.AreEqual(100f, rig.S.Res.Materials, 0.001f); // матеріали не списались
+    }
+
+    [Test]
+    public void Order_TakenSlot_Refused()
+    {
+        var rig = MakeRig(MakeChapter(Goal("g", "SurviveDays", 3)));
+        BuildHabitat(rig.S, 5);
+
+        Assert.AreEqual("error.place_taken", rig.Build.Order(rig.S, ModuleType.Habitat, 5));
+        Assert.AreEqual(1, rig.S.Modules.Count);
+    }
+
+    [Test]
+    public void Order_NotEnoughMaterials_Refused()
+    {
+        var rig = MakeRig(MakeChapter(Goal("g", "SurviveDays", 3)));
+        rig.S.Res.Materials = 5f; // житловий модуль коштує 20
+
+        Assert.AreEqual("error.no_materials", rig.Build.Order(rig.S, ModuleType.Habitat, 9));
+        Assert.AreEqual(5f, rig.S.Res.Materials, 0.001f);
+    }
+
     // ───────────────────────── Поразка ─────────────────────────
 
     [Test]

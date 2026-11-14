@@ -2,8 +2,8 @@
   "_ai": "AI-assisted (Claude)",
   "_note": "Розділ 1 «Перша висадка». Цей файл читають ДВА класи: ChapterStartData (ядро, ролі 01/04: поля chapter, titleKey, startHour, resources, power, crew, reserve, robots, pois) і ChapterData (роль 03: решта полів). Назви полів у resources і power пишуться з великої літери, як у класах. Типи цілей: SurviveDays, BuildModule, WaterAtLeast, ScienceAtLeast. Назви модулів і ролей — з enums.",
   "chapter": 1,
-  "titleKey": "chapter.1.title",
-  "descriptionKey": "chapter.1.description",
+  "titleKey": "chapter.01.title",
+  "descriptionKey": "chapter.01.description",
   "startHour": 6,
   "startHour_note": "О котрій годині починається перший день (перший день через це коротший на 6 годин).",
   "resources": {
