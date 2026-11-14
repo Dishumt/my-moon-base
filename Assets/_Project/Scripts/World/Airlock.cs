@@ -146,16 +146,24 @@ public class Airlock : MonoBehaviour
         outerOpen = Mathf.MoveTowards(outerOpen, outerTarget, speed);
         innerOpen = Mathf.MoveTowards(innerOpen, innerTarget, speed);
 
-        // Двері від'їжджають убік (у стіну) на свою ширину
+        // Половинки дверей стискаються до країв отвору (як у ліфті)
         if (outerDoor != null) SetSlide(outerDoor, outerOpen);
         if (innerDoor != null) SetSlide(innerDoor, innerOpen);
     }
 
     void SetSlide(Transform d, float open)
     {
-        var pos = d.localPosition;
-        pos.x = Mathf.SmoothStep(0f, door * 0.95f, open);
-        d.localPosition = pos;
+        float half = door / 2;
+        float w = Mathf.Lerp(half, 0.06f, Mathf.SmoothStep(0f, 1f, open)); // ширина однієї половинки
+        for (int i = 0; i < d.childCount; i++)
+        {
+            var part = d.GetChild(i);
+            float side = part.localPosition.x < 0f ? -1f : 1f;
+            var scale = part.localScale;
+            scale.x = w;
+            part.localScale = scale;
+            part.localPosition = new Vector3(side * (half - w / 2), 0f, 0f); // притиснута до свого краю
+        }
     }
 
     ParticleSystem CreateDust(Vector3 localPos)

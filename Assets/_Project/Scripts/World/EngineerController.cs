@@ -78,6 +78,14 @@ public class EngineerController : MonoBehaviour
     {
         Instance = this;
         controller = GetComponent<CharacterController>();
+        if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (IsEmpty(suit))
+            Debug.LogWarning("EngineerController: немає картинок інженера. Запусти меню Moon → Налаштувати інженера (спрайти й анімація) і збережи сцену.");
+        else
+        {
+            var cube = GetComponent<MeshRenderer>();
+            if (cube != null) cube.enabled = false; // є спрайт — кубик-заглушка не потрібен
+        }
         if (spriteRenderer != null) spriteBasePos = spriteRenderer.transform.localPosition;
         RefreshSprite();
     }

@@ -177,10 +177,8 @@ public class ModuleView : MonoBehaviour
 
         // ----- Двері (зачинені; відчиняє Airlock) -----
         Color doorColor = new Color(0.35f, 0.38f, 0.42f);
-        var outerDoor = ModuleParts.Box(root, "Door Outer", wall, new Vector3(0f, ah / 2, airlockFront + t / 2),
-                                        new Vector3(door, ah - 0.1f, t * 0.6f), tint: doorColor);
-        var innerDoor = ModuleParts.Box(root, "Door Inner", wall, new Vector3(0f, h / 2, roomFront + t / 2),
-                                        new Vector3(door, h - 0.1f, t * 0.6f), tint: doorColor);
+        var outerDoor = DoubleDoor(root, "Door Outer", wall, new Vector3(0f, ah / 2, airlockFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
+        var innerDoor = DoubleDoor(root, "Door Inner", wall, new Vector3(0f, h / 2, roomFront + t / 2), door, h - 0.1f, t * 0.6f, doorColor);
 
         // ----- Світло всередині (вмикається, коли інженер заходить) -----
         var lightGo = new GameObject("Interior Light");
@@ -200,6 +198,21 @@ public class ModuleView : MonoBehaviour
         // front = зовнішній край шлюзу, inner = середина внутрішніх дверей
         visual.AddComponent<Airlock>().Setup(outerDoor.transform, innerDoor.transform, door, aw,
                                              airlockFront, roomFront + t / 2, ah);
+    }
+
+    /// <summary>
+    /// Двері з двох половинок (як у ліфті). Airlock стискає їх до країв отвору,
+    /// тож вони не виїжджають за стіну.
+    /// </summary>
+    static GameObject DoubleDoor(Transform root, string name, Material mat, Vector3 center, float width, float height, float thick, Color color)
+    {
+        var door = new GameObject(name);
+        door.transform.SetParent(root, false);
+        door.transform.localPosition = center;
+        float half = width / 2;
+        ModuleParts.Box(door.transform, "L", mat, new Vector3(-half / 2, 0f, 0f), new Vector3(half, height, thick), tint: color);
+        ModuleParts.Box(door.transform, "R", mat, new Vector3(half / 2, 0f, 0f), new Vector3(half, height, thick), tint: color);
+        return door;
     }
 
     /// <summary>Стіна вздовж X від x0 до x1 на висоті z, з отвором ширини gap посередині.</summary>
