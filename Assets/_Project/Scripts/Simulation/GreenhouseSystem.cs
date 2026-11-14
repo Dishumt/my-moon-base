@@ -15,7 +15,7 @@ public class GreenhouseSystem : ISimSystem
 {
     private const float Eps = 0.0001f;
 
-    private PowerSystem _power;
+    private readonly PowerSystem _power;
     private readonly GreenhouseBalance _b;
 
     /// <summary>Скільки росту накопичилося від останнього врожаю.</summary>
@@ -25,9 +25,6 @@ public class GreenhouseSystem : ISimSystem
     public int DaysSinceHarvest { get; private set; }
 
     private readonly HashSet<string> _reportedToday = new HashSet<string>();
-
-    /// <summary>Саме так створює систему GameBootstrap: PowerSystem знаходиться сам.</summary>
-    public GreenhouseSystem() : this((PowerSystem)null) { }
 
     /// <summary>Гра: читає числа з Resources/Data/Balance/balance.json.</summary>
     public GreenhouseSystem(PowerSystem power)
@@ -40,23 +37,11 @@ public class GreenhouseSystem : ISimSystem
         _b = balance.greenhouse;
     }
 
-
-    // PowerSystem: або переданий у конструктор, або береться із GameBootstrap (він створює системи без аргументів).
-    private PowerSystem Power
-    {
-        get
-        {
-            if (_power == null && GameBootstrap.Instance != null)
-                _power = GameBootstrap.Instance.GetSystem<PowerSystem>();
-            return _power;
-        }
-    }
-
     public void Tick(GameState s, float hours, DayReport r)
     {
         if (hours <= 0f) return;
 
-        float blocks = Power != null ? Math.Max(0, Power.Granted.Greenhouse) : 0f;
+        float blocks = Math.Max(0, _power.Granted.Greenhouse);
         if (blocks < Eps) return;
 
         // Без готової теплиці енергія пропадає марно.

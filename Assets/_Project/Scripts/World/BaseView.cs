@@ -43,6 +43,36 @@ public class BaseView : MonoBehaviour
         }
     }
 
+    /// <summary>Модуль у світі за номером квадратика або null.</summary>
+    public static ModuleView Find(int slotId)
+    {
+        if (instance == null || !instance.views.TryGetValue(slotId, out var v)) return null;
+        return v;
+    }
+
+    /// <summary>Усі модулі, що зараз є у світі.</summary>
+    public static IEnumerable<ModuleView> All => instance != null ? instance.views.Values : (IEnumerable<ModuleView>)new ModuleView[0];
+
+    /// <summary>Перший готовий модуль-кімната такого типу або null.</summary>
+    public static ModuleView FindRoom(ModuleType type)
+    {
+        foreach (var v in All) if (v.IsEnterableRoom && v.Type == type) return v;
+        return null;
+    }
+
+    /// <summary>Шлях по землі в обхід модулів (для астронавтів і роботів).</summary>
+    public static List<Vector3> PathTo(Vector3 from, Vector3 to, float margin = 0.15f)
+    {
+        var blockers = new List<Rect>();
+        foreach (var v in All) v.AddBlockers(blockers, margin);
+        float half = Mathf.Max(BaseGrid.Width, BaseGrid.Depth) * BaseGrid.CellSize / 2f + 8f; // база + запас
+        var area = new Rect(-half, -half, 2 * half, 2 * half);
+        var path2 = BasePathfinder.FindPath(new Vector2(from.x, from.z), new Vector2(to.x, to.z), blockers, area);
+        var path = new List<Vector3>(path2.Count);
+        foreach (var p in path2) path.Add(new Vector3(p.x, 0f, p.y));
+        return path;
+    }
+
     /// <summary>
     /// У якому збудованому модулі стоїть точка; -1 = надворі (або в проході між модулями).
     /// Для Astronaut.InsideSlot.

@@ -30,8 +30,8 @@ public class ChapterSystem : ISimSystem
 {
     private const float Eps = 0.0001f;
 
-    private FoodSystem _food;
-    private ConstructionSystem _construction;
+    private readonly FoodSystem _food;
+    private readonly ConstructionSystem _construction;
     private readonly DefeatBalance _defeat;
     private readonly Func<int, ChapterData> _loader;
 
@@ -48,12 +48,6 @@ public class ChapterSystem : ISimSystem
     /// <summary>Чи розділ уже закінчився (пройдено чи програно).</summary>
     public bool IsFinished { get { return _finished; } }
 
-    /// <summary>
-    /// Саме так створює систему GameBootstrap. FoodSystem і ConstructionSystem
-    /// знаходяться самі через GameBootstrap.Instance у момент першого використання.
-    /// </summary>
-    public ChapterSystem() : this(null, null) { }
-
     /// <summary>Гра: числа з balance.json, розділи з Resources/Data/Chapters/chapter_0N.json.</summary>
     public ChapterSystem(FoodSystem food, ConstructionSystem construction)
         : this(food, construction,
@@ -68,27 +62,6 @@ public class ChapterSystem : ISimSystem
         _construction = construction;
         _defeat = balance.defeat;
         _loader = chapterLoader;
-    }
-
-    // Залежності: або передані в конструктор, або береться із GameBootstrap (він створює системи без аргументів).
-    private FoodSystem Food
-    {
-        get
-        {
-            if (_food == null && GameBootstrap.Instance != null)
-                _food = GameBootstrap.Instance.GetSystem<FoodSystem>();
-            return _food;
-        }
-    }
-
-    private ConstructionSystem Construction
-    {
-        get
-        {
-            if (_construction == null && GameBootstrap.Instance != null)
-                _construction = GameBootstrap.Instance.GetSystem<ConstructionSystem>();
-            return _construction;
-        }
     }
 
     // ───────────────────────── Початок розділу ─────────────────────────
@@ -110,7 +83,7 @@ public class ChapterSystem : ISimSystem
         if (_chapter == null)
         {
             Debug.LogError("Розділ " + chapter + " не вдалося прочитати. Модулі не обмежені.");
-            if (Construction != null) Construction.IsUnlocked = null;
+            _construction.IsUnlocked = null;
             return;
         }
 
@@ -126,7 +99,7 @@ public class ChapterSystem : ISimSystem
             foreach (string name in _chapter.unlockedSystems)
                 _unlockedSystems.Add(name);
 
-        if (Construction != null) Construction.IsUnlocked = IsModuleUnlocked;
+        _construction.IsUnlocked = IsModuleUnlocked;
 
         if (applyStart) ApplyStart(s);
     }
@@ -174,12 +147,7 @@ public class ChapterSystem : ISimSystem
     {
         if (hours <= 0f) return;
 
-        if (_chapter == null)
-        {
-            // Ніхто не викликав StartChapter. Якщо база порожня, це нова гра: ставимо стартові модулі.
-            StartChapter(s, s.Chapter, false);
-            if (_chapter != null && s.Modules.Count == 0) AddStartModules(s);
-        }
+        if (_chapter == null) StartChapter(s, s.Chapter, false);
         if (_finished || _chapter == null) return;
 
         // 1. Поразка важливіша за перемогу.
@@ -227,7 +195,7 @@ public class ChapterSystem : ISimSystem
         if (s.Res.Oxygen <= _defeat.oxygenAtOrBelow + Eps)
             return "gameover.no_oxygen";
 
-        if (s.Crew.Count > 0 && Food != null && Food.HoursWithoutFood + Eps >= _defeat.daysWithoutFood * 24f)
+        if (s.Crew.Count > 0 && _food.HoursWithoutFood + Eps >= _defeat.daysWithoutFood * 24f)
             return "gameover.no_food";
 
         return null;
@@ -262,23 +230,18 @@ public class ChapterSystem : ISimSystem
 
     private void ApplyStart(GameState s)
     {
-        ResourceState st = _chapter.resources;
+        ChapterStartValues st = _chapter.start;
         if (st != null)
         {
-            s.Res.Water = st.Water;
-            s.Res.Food = st.Food;
-            s.Res.Oxygen = st.Oxygen;
-            s.Res.Battery = st.Battery;
-            s.Res.Materials = st.Materials;
-            s.Res.MedKits = st.MedKits;
+            s.Res.Water = st.water;
+            s.Res.Food = st.food;
+            s.Res.Oxygen = st.oxygen;
+            s.Res.Battery = st.battery;
+            s.Res.Materials = st.materials;
+            s.Res.MedKits = st.medKits;
+            s.Science = st.science;
         }
-        s.Science = _chapter.startScience;
 
-        AddStartModules(s);
-    }
-
-    private void AddStartModules(GameState s)
-    {
         if (_chapter.startModules == null) return;
 
         foreach (ChapterStartModule sm in _chapter.startModules)

@@ -20,7 +20,7 @@ public class ConstructionSystem : ISimSystem
 {
     private const float Eps = 0.0001f;
 
-    private PowerSystem _power;
+    private readonly PowerSystem _power;
     private readonly BuildCostTable _costs;
     private readonly float _engineerMultiplier;
     private readonly float _powerPerWorkingRobot;
@@ -36,10 +36,7 @@ public class ConstructionSystem : ISimSystem
     /// </summary>
     public Func<ModuleType, bool> IsUnlocked;
 
-    /// <summary>Саме так створює систему GameBootstrap: ціни з modules.json, PowerSystem знаходиться сам.</summary>
-    public ConstructionSystem() : this((PowerSystem)null) { }
-
-    /// <summary>Гра: ціни з modules.json, числа з balance.json.</summary>
+    /// <summary>Гра: ціни з modules.json, числа з balance.json. Саме так створює систему GameBootstrap.</summary>
     public ConstructionSystem(PowerSystem power)
         : this(power, BuildCostTable.Load()) { }
 
@@ -100,18 +97,6 @@ public class ConstructionSystem : ISimSystem
         return null;
     }
 
-
-    // PowerSystem: або переданий у конструктор, або береться із GameBootstrap (він створює системи без аргументів).
-    private PowerSystem Power
-    {
-        get
-        {
-            if (_power == null && GameBootstrap.Instance != null)
-                _power = GameBootstrap.Instance.GetSystem<PowerSystem>();
-            return _power;
-        }
-    }
-
     // ───────────────────────── ISimSystem ─────────────────────────
 
     public void Tick(GameState s, float hours, DayReport r)
@@ -123,9 +108,8 @@ public class ConstructionSystem : ISimSystem
         AssignWork(s);
 
         // Скільки роботів можуть працювати: їм дали енергію (по блоку на кожного).
-        int grantedRobots = Power != null ? Power.Granted.Robots : 0;
         int canWork = _powerPerWorkingRobot > Eps
-            ? (int)Math.Floor(grantedRobots / _powerPerWorkingRobot + Eps)
+            ? (int)Math.Floor(_power.Granted.Robots / _powerPerWorkingRobot + Eps)
             : int.MaxValue;
 
         var touchedModules = new List<ModuleState>();

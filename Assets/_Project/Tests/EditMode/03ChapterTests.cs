@@ -68,12 +68,11 @@ public class ChapterSystemTests
             chapter = 1,
             titleKey = "chapter.1.title",
             descriptionKey = "chapter.1.description",
-            resources = new ResourceState
+            start = new ChapterStartValues
             {
-                Water = 60f, Food = 40f, Oxygen = 100f, Battery = 10f,
-                Materials = 40f, MedKits = 0
+                water = 60f, food = 40f, oxygen = 100f, battery = 10f,
+                materials = 40f, medKits = 0, science = 0f
             },
-            startScience = 0f,
             startModules = new[]
             {
                 new ChapterStartModule { type = "Solar", slot = 0 },
@@ -334,16 +333,19 @@ public class ChapterSystemTests
 
             Assert.IsNotNull(c, name + " не прочитався");
             Assert.AreEqual(n, c.chapter, name + ": поле chapter");
-            Assert.IsNotNull(c.resources, name + ": немає resources");
-            Assert.Greater(c.resources.Oxygen, 0f, name + ": кисню на старті 0, буде миттєва поразка");
-
-            // Той самий файл читає ядро: перевіряємо, що з нього виходить робочий стан гри.
+            // Стартові ресурси, екіпаж і роботів читає ядро (ChapterStartData), а не ChapterData.
             ChapterStartData core = DataLoader.Load<ChapterStartData>("Chapters/chapter_" + n.ToString("00"));
             GameState fresh = GameStateFactory.FromChapter(core);
+            Assert.Greater(fresh.Res.Oxygen, 0f, name + ": кисню на старті 0, буде миттєва поразка");
             Assert.AreEqual(4, fresh.Crew.Count, name + ": у файлі має бути 4 астронавти (crew)");
             Assert.AreEqual(2, fresh.Robots.Count, name + ": у файлі має бути 2 роботи (robots)");
-            Assert.AreEqual(c.resources.Oxygen, fresh.Res.Oxygen, 0.001f, name + ": resources не дійшли до ядра");
             Assert.Greater(fresh.Power.LifeSupport, 0, name + ": початковий план енергії без життєзабезпечення");
+            Assert.IsNotNull(c.start, name + ": немає start");
+            Assert.AreEqual(fresh.Res.Oxygen, c.start.oxygen, 0.001f, name + ": start.oxygen ≠ resources.Oxygen");
+            Assert.AreEqual(fresh.Res.Water, c.start.water, 0.001f, name + ": start.water ≠ resources.Water");
+            Assert.AreEqual(fresh.Res.Food, c.start.food, 0.001f, name + ": start.food ≠ resources.Food");
+            Assert.AreEqual(fresh.Res.Materials, c.start.materials, 0.001f, name + ": start.materials ≠ resources.Materials");
+            Assert.AreEqual(fresh.Res.Battery, c.start.battery, 0.001f, name + ": start.battery ≠ resources.Battery");
             Assert.IsNotEmpty(c.goals, name + ": немає цілей");
             Assert.IsNotEmpty(c.unlockedModules, name + ": немає відкритих модулів");
 

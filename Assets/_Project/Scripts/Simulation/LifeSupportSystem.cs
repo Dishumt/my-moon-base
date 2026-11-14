@@ -17,7 +17,7 @@ public class LifeSupportSystem : ISimSystem
 {
     private const float Eps = 0.0001f;
 
-    private PowerSystem _power;
+    private readonly PowerSystem _power;
     private readonly LifeSupportBalance _b;
     private readonly float _startWater; // від стартової води рахуємо «20% води»
 
@@ -28,9 +28,6 @@ public class LifeSupportSystem : ISimSystem
 
     // Щоб не писати ту саму тривогу 24 рази на день.
     private readonly HashSet<string> _reportedToday = new HashSet<string>();
-
-    /// <summary>Саме так створює систему GameBootstrap: PowerSystem знаходиться сам.</summary>
-    public LifeSupportSystem() : this((PowerSystem)null) { }
 
     /// <summary>Гра: читає числа з Resources/Data/Balance/balance.json.</summary>
     public LifeSupportSystem(PowerSystem power)
@@ -44,18 +41,6 @@ public class LifeSupportSystem : ISimSystem
         _startWater = balance.start != null ? balance.start.water : 0f;
     }
 
-
-    // PowerSystem: або переданий у конструктор, або береться із GameBootstrap (він створює системи без аргументів).
-    private PowerSystem Power
-    {
-        get
-        {
-            if (_power == null && GameBootstrap.Instance != null)
-                _power = GameBootstrap.Instance.GetSystem<PowerSystem>();
-            return _power;
-        }
-    }
-
     public void Tick(GameState s, float hours, DayReport r)
     {
         if (hours <= 0f) return;
@@ -63,7 +48,7 @@ public class LifeSupportSystem : ISimSystem
         float dayPart = hours / 24f; // яка частина доби минула
         float tank = _b.oxygenTankMax;
 
-        float blocks = Power != null ? Math.Max(0, Power.Granted.LifeSupport) : 0f;
+        float blocks = Math.Max(0, _power.Granted.LifeSupport);
         float crewUse = s.Crew.Count * _b.oxygenUsePerAstronautPerDay * dayPart;
 
         // Скільки блоків реально працює: обмежує вода.

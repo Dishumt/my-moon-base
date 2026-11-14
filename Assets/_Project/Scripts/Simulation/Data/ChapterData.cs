@@ -3,8 +3,6 @@ using System;
 
 // Класи для Resources/Data/Chapters/chapter_01..03.json.
 // Читати: var c = DataLoader.Load<ChapterData>("Chapters/chapter_01");
-// Цей самий файл читає ще й ядро через ChapterStartData (ролі 01/04): chapter, titleKey, startHour,
-// resources, power, crew, reserve, robots, pois. Ті поля тут повторювати не треба, крім resources.
 // Поля, що закінчуються на _note, — пояснення для людей. У коді їх не використовуємо.
 
 [Serializable]
@@ -13,12 +11,23 @@ public class ChapterData
     public int chapter;
     public string titleKey;            // ключ тексту назви розділу
     public string descriptionKey;      // ключ тексту опису розділу
-    public ResourceState resources;    // стартові ресурси (клас ядра, назви полів з великої літери)
-    public float startScience;         // стартові очки науки
+    public ChapterStartValues start;     // стартові ресурси
     public ChapterStartModule[] startModules; // модулі, що стоять на початку
     public string[] unlockedModules;   // назви з enum ModuleType, які можна замовляти
     public string[] unlockedSystems;   // назви систем, що працюють у розділі
     public ChapterGoalData[] goals;    // цілі: розділ пройдено, коли виконано всі
+}
+
+[Serializable]
+public class ChapterStartValues
+{
+    public float water;
+    public float food;
+    public float oxygen;
+    public float battery;
+    public float materials;
+    public int medKits;
+    public float science;
 }
 
 [Serializable]

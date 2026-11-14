@@ -6,7 +6,7 @@ AI-assisted: написано з Claude. Ці нотатки можна вста
 
 ### Формат файлів розділів
 
-`chapter_01..03.json` тепер містять **усі поля, які читає ядро** (`ChapterStartData`): `chapter`, `titleKey`, `startHour`, `resources`, `power`, `crew`, `reserve`, `robots`, `pois`. Раніше стартові ресурси лежали в моєму об'єкті `start`, і ядро їх не бачило б (кисню було б 0, і гра закінчилась би миттєвою поразкою). Свої поля роль 03 додає поруч: `descriptionKey`, `startScience`, `startModules`, `unlockedModules`, `unlockedSystems`, `goals`.
+`chapter_01..03.json` тепер містять **усі поля, які читає ядро** (`ChapterStartData`): `chapter`, `titleKey`, `startHour`, `resources`, `power`, `crew`, `reserve`, `robots`, `pois`. Раніше стартові ресурси лежали в моєму об'єкті `start`, і ядро їх не бачило б (кисню було б 0, і гра закінчилась би миттєвою поразкою). Свої поля роль 03 додає поруч: `descriptionKey`, `start` (ті самі числа, що в `resources`, плюс наука; їх ставить `ChapterSystem`, коли розділ починається заново), `startModules`, `unlockedModules`, `unlockedSystems`, `goals`.
 
 > У полях `crew`, `reserve` і `pois` імена, `id` точок і кількості **вигадані**. Якщо в проєкті вже є свої блоки, залиште їх (id точок мають збігатися зі сценою).
 
