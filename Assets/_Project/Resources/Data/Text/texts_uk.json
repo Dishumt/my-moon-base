@@ -51,6 +51,7 @@
     { "key": "tablet.link_wait", "text": "НЕМАЄ ЗВʼЯЗКУ · {0} ГОД" },
     { "key": "tablet.link_off", "text": "АНТЕНА ВИМК." },
     { "key": "tab.map", "text": "МАПА" },
+    { "key": "tab.build", "text": "БУДІВНИЦТВО" },
     { "key": "tab.power", "text": "ЕНЕРГІЯ" },
     { "key": "tab.crew", "text": "ЕКІПАЖ" },
     { "key": "tab.supply", "text": "ПОСТАВКИ" },
@@ -301,6 +302,9 @@
     { "key": "msg.3.text", "text": "Сонячні бурі справжні. У травні 2024 року дуже сильна буря дійшла до Землі." },
     { "key": "msg.archive", "text": "ARCHIVE" },
     { "key": "error.place_outside", "text": "Це місце поза базою" },
-    { "key": "error.place_taken", "text": "Тут уже щось збудовано" }
+    { "key": "error.place_taken", "text": "Тут уже щось збудовано" },
+    { "key": "error.unknown_module", "text": "Ми ще не вміємо будувати такий модуль" },
+    { "key": "error.no_materials", "text": "Не вистачає матеріалів. Замов ще із Землі" },
+    { "key": "report.module_built", "text": "Модуль {0} готовий! Роботи закінчили будівництво." }
   ]
 }

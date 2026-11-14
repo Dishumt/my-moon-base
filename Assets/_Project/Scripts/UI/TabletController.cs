@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 /// Engineer tablet (role 05). Put it on the GameObject with UIDocument whose Source Asset is UI/Tablet/Tablet.uxml.
 ///  - Tab opens / closes the tablet, Esc, the X button or a click on the dark backdrop closes it;
 ///  - while the tablet is open the game is paused (Clock.PushModal / PopModal);
-///  - 5 tabs switch the panes (for now every pane is a placeholder);
+///  - 6 tabs switch the panes (for now every pane is a placeholder);
 ///  - the strip at the bottom shows water, oxygen and food from GameState.
 /// Other scripts (for example the HUD "Tablet" button) call TabletController.Instance.Open().
 /// </summary>
@@ -18,11 +18,11 @@ public class TabletController : MonoBehaviour
 {
     public static TabletController Instance { get; private set; }
 
-    static readonly string[] TabIds = { "map", "power", "crew", "supply", "comms" };
+    static readonly string[] TabIds = { "map", "build", "power", "crew", "supply", "comms" };
     const int Segments = 20;            // squares in every resource bar
     const long CloseAnimationMs = 280;  // same as transition-duration of .tablet in Theme.uss
 
-    [Tooltip("Which tab is shown first: map, power, crew, supply or comms")]
+    [Tooltip("Which tab is shown first: map, build, power, crew, supply or comms")]
     [SerializeField] string startTab = "power";
 
     [Tooltip("Food bar turns orange below this percent. TODO: ask role 03 to add it to balance.json")]
@@ -37,7 +37,7 @@ public class TabletController : MonoBehaviour
     readonly Dictionary<string, Button> tabButtons = new Dictionary<string, Button>();
     readonly Dictionary<string, VisualElement> panes = new Dictionary<string, VisualElement>();
     TabletBalance balance;
-    BuildGridView buildGrid;   // MAP tab: building on the base grid
+    BuildGridView buildGrid;   // BUILD tab: building on the base grid
 
     // ---------- start / stop ----------
 
@@ -96,7 +96,7 @@ public class TabletController : MonoBehaviour
         BuildSegments("oxygen");
         BuildSegments("food");
 
-        if (panes.TryGetValue("map", out var mapPane)) buildGrid = new BuildGridView(mapPane);
+        if (panes.TryGetValue("build", out var buildPane)) buildGrid = new BuildGridView(buildPane);
 
         GameEvents.StateChanged += Refresh;
         Loc.LanguageChanged += ApplyTexts;

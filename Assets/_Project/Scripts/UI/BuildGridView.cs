@@ -2,12 +2,12 @@
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Building on the MAP tab of the tablet (role 05).
+/// Building on the BUILD tab of the tablet (role 05). The MAP tab only shows the world.
 /// Draws the base grid BaseGrid.Width x BaseGrid.Depth as buttons (row 0 is at the BOTTOM, like in the world:
 /// closer to the camera). One square = one module, its number = BaseGrid.ToSlot(column, row).
 ///  - empty square  -> click -> pick a module type -> ConstructionSystem.Order(type, slot);
 ///  - building / built square -> click -> shows what is there.
-/// Not a MonoBehaviour: TabletController creates it and gives it the "pane-map" element.
+/// Not a MonoBehaviour: TabletController creates it and gives it the "pane-build" element.
 /// </summary>
 public class BuildGridView
 {
@@ -30,12 +30,12 @@ public class BuildGridView
 
     public BuildGridView(VisualElement pane)
     {
-        grid = pane.Q("map-grid");
-        slotTitle = pane.Q<Label>("map-slot-title");
-        slotState = pane.Q<Label>("map-slot-state");
-        hint = pane.Q<Label>("map-hint");
-        options = pane.Q("map-options");
-        message = pane.Q<Label>("map-msg");
+        grid = pane.Q("build-grid");
+        slotTitle = pane.Q<Label>("build-slot-title");
+        slotState = pane.Q<Label>("build-slot-state");
+        hint = pane.Q<Label>("build-hint");
+        options = pane.Q("build-options");
+        message = pane.Q<Label>("build-msg");
         if (grid == null) return;
 
         // rows from the top (Depth-1) down to 0, so row 0 is drawn at the bottom

@@ -42,7 +42,7 @@ public static class WorldLayoutTool
         if (data == null || data.pois == null) { Debug.LogWarning("WorldLayoutTool: не прочитав chapter_01.json"); return; }
 
         var parent = GetOrCreate("Pois").transform;
-        var existing = Object.FindObjectsByType<PoiMarker>(FindObjectsSortMode.None);
+        var existing = Object.FindObjectsByType<PoiMarker>();
 
         int sample = 0, fact = 0, other = 0;
         foreach (var p in data.pois)
