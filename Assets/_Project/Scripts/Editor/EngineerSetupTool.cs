@@ -50,8 +50,10 @@ public static class EngineerSetupTool
         // engineer_left_profile_walk_.. (вправо — дзеркально)
         ctrl.indoor = new EngineerController.SpriteSet
         {
-            idleFront = Load(IndoorDir, "engineer_front") ?? Load(IndoorDir, "engineer_front_128"),
-            idleBack = Load(IndoorDir, "engineer_back") ?? Load(IndoorDir, "engineer_back_128"),
+            // «Стоїть» — кадр ходьби з обома ногами на землі, а не engineer_front/back:
+            // ті намальовані крупніше і з ключем в іншій руці, тож при старті ходьби фігура «стрибала».
+            idleFront = Load(IndoorDir, "engineer_front_walk_02") ?? Load(IndoorDir, "engineer_front"),
+            idleBack = Load(IndoorDir, "engineer_back_walk_02") ?? Load(IndoorDir, "engineer_back"),
             walkFront = Frames(IndoorDir, "engineer_front_walk_"),
             walkBack = Frames(IndoorDir, "engineer_back_walk_"),
             walkLeft = Frames(IndoorDir, "engineer_left_profile_walk_"),
