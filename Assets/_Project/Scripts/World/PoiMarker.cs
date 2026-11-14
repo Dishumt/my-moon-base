@@ -6,6 +6,7 @@ using UnityEngine;
 /// Точка на поверхні Місяця: кратер з льодом, місце для зразків, посадковий майданчик, факт.
 /// PoiId має збігатися з "id" у chapter_NN.json (наприклад "ice_crater_1").
 /// Коли інженер підходить ближче, ніж Discover Radius, світ ставить PoiState.Discovered = true.
+/// Якщо точки немає в поточному розділі (відкриється пізніше) — маркер схований.
 /// </summary>
 public class PoiMarker : MonoBehaviour
 {
@@ -35,7 +36,16 @@ public class PoiMarker : MonoBehaviour
     }
 
     PoiState poi;
-    bool warned;
+    bool? visible;
+
+    /// <summary>Показати або сховати все, що намальовано в точці (камені, кратер, світло).</summary>
+    void SetVisible(bool on)
+    {
+        if (visible == on) return;
+        visible = on;
+        foreach (var r in GetComponentsInChildren<Renderer>(true)) r.enabled = on;
+        foreach (var l in GetComponentsInChildren<Light>(true)) l.enabled = on;
+    }
 
     void OnEnable() => all.Add(this);
     void OnDisable() => all.Remove(this);
@@ -50,10 +60,11 @@ public class PoiMarker : MonoBehaviour
             poi = game.State.FindPoi(poiId);
             if (poi == null)
             {
-                if (!warned) Debug.LogWarning("PoiMarker: у розділі немає точки з id '" + poiId + "' (об'єкт " + name + ")");
-                warned = true;
+                // Цієї точки немає в поточному розділі — вона відкриється пізніше (GAME.md). Ховаємо.
+                SetVisible(false);
                 return;
             }
+            SetVisible(true);
         }
 
         if (showWhenDiscovered != null && showWhenDiscovered.activeSelf != poi.Discovered)
