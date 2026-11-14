@@ -45,6 +45,9 @@ public static class EngineerSetupTool
             walkBack = Frames(SuitDir, "walk_back_"),
             walkLeft = Frames(SuitDir, "walk_left_"),
             walkRight = Frames(SuitDir, "walk_right_"),
+            // у скафандрі: кадри 2 і 3 — широкий крок (поштовх), 1 і 4 — ноги разом (політ)
+            pushFrames = new[] { 1, 2 },
+            airFrames = new[] { 0, 3 },
         };
         // Без скафандра: engineer_front, engineer_back (або старі *_128), engineer_front_walk_.., engineer_back_walk_..,
         // engineer_left_profile_walk_.. (вправо — дзеркально)
@@ -58,6 +61,9 @@ public static class EngineerSetupTool
             walkBack = Frames(IndoorDir, "engineer_back_walk_"),
             walkLeft = Frames(IndoorDir, "engineer_left_profile_walk_"),
             walkRight = new Sprite[0],
+            // без скафандра: кадри 1 і 3 — широкий крок, 2 і 4 — ноги разом (для ходьби вбік їх домальовано)
+            pushFrames = new[] { 0, 2 },
+            airFrames = new[] { 1, 3 },
         };
         sr.sprite = ctrl.suit.idleFront;
 

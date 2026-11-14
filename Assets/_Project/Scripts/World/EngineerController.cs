@@ -31,6 +31,10 @@ public class EngineerController : MonoBehaviour
         public Sprite[] walkLeft;    // іде вліво
         [Tooltip("Можна лишити порожнім — тоді беремо walkLeft і дзеркалимо")]
         public Sprite[] walkRight;   // іде вправо
+        [Tooltip("Номер кадру ходьби (0..3), коли нога на землі й відштовхується: [одна нога, інша нога]. Широкий крок.")]
+        public int[] pushFrames = { 1, 2 };
+        [Tooltip("Номер кадру ходьби (0..3) у польоті: [після однієї ноги, після іншої]. Ноги разом.")]
+        public int[] airFrames = { 0, 3 };
     }
 
     [Header("Рух")]
@@ -45,10 +49,6 @@ public class EngineerController : MonoBehaviour
 
     [Header("Спрайт")]
     [SerializeField] SpriteRenderer spriteRenderer;
-    [Tooltip("Кадр ходьби (0..3), коли нога на землі і відштовхується: [ліва нога, права нога]. Широкий крок.")]
-    [SerializeField] int[] pushFrames = { 1, 2 };
-    [Tooltip("Кадр ходьби (0..3) у польоті після поштовху: [після лівої, після правої]. Ноги разом.")]
-    [SerializeField] int[] airFrames = { 0, 3 };
     [Tooltip("У скафандрі (надворі)")]
     public SpriteSet suit = new SpriteSet();
     [Tooltip("Без скафандра (у модулях)")]
@@ -217,12 +217,10 @@ public class EngineerController : MonoBehaviour
 
         Sprite frame = idle;
         bool hopping = hop != null && hop.IsHopping;
-        if (hopping && !IsEmpty(walk) && hop.UseWalkCycle)
-            frame = walk[hop.WalkFrame % walk.Length]; // без скафандра — звичайний крок, усі кадри по колу
-        else if (hopping && !IsEmpty(walk))
+        if (hopping && !IsEmpty(walk))
         {
             // Нога на землі — кадр поштовху цієї ноги; у польоті — кадр «ноги разом». Кожен стрибок — інша нога.
-            int[] map = hop.OnGround ? pushFrames : airFrames;
+            int[] map = hop.OnGround ? set.pushFrames : set.airFrames;
             int i = map != null && map.Length > hop.Leg ? map[hop.Leg] : 0;
             frame = walk[Mathf.Clamp(i, 0, walk.Length - 1)];
         }
