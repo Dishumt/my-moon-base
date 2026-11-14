@@ -13,6 +13,11 @@ public class OutdoorDarkening : MonoBehaviour
     [Range(0f, 1f)] [SerializeField] float insideBrightness = 0.25f;
     [Tooltip("Скільки секунд триває затемнення")]
     [SerializeField] float fadeSeconds = 0.4f;
+    [Tooltip("Об'єкти з Unlit-матеріалом (наприклад, 2D-земля): світло на них не діє, тож фарбуємо їх темнішими самі")]
+    [SerializeField] Renderer[] alsoDarken = new Renderer[0];
+
+    MaterialPropertyBlock block;
+    static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
     Light sun;
     float baseSun, baseAmbientIntensity;
@@ -38,6 +43,19 @@ public class OutdoorDarkening : MonoBehaviour
         sun.intensity = baseSun * k;
         RenderSettings.ambientIntensity = baseAmbientIntensity * k;
         RenderSettings.ambientLight = baseAmbientLight * k;
+        TintUnlit(k);
+    }
+
+    void TintUnlit(float brightness)
+    {
+        if (block == null) block = new MaterialPropertyBlock();
+        foreach (var r in alsoDarken)
+        {
+            if (r == null) continue;
+            r.GetPropertyBlock(block);
+            block.SetColor(BaseColor, new Color(brightness, brightness, brightness, 1f));
+            r.SetPropertyBlock(block);
+        }
     }
 
     // Повертаємо світло як було, щоб не зіпсувати налаштування сцени після Play.
@@ -47,5 +65,6 @@ public class OutdoorDarkening : MonoBehaviour
         sun.intensity = baseSun;
         RenderSettings.ambientIntensity = baseAmbientIntensity;
         RenderSettings.ambientLight = baseAmbientLight;
+        TintUnlit(1f);
     }
 }
