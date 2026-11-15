@@ -32,22 +32,6 @@ public class CrewLook : MonoBehaviour
     [Tooltip("Показувати «голодний», коли ситість нижча за це число (0..100)")]
     public float hungryBelow = 30f;
 
-    [Header("Робот (кадри Юлі з Art/Characters/robot; заповнює те саме меню)")]
-    public Sprite[] robotDriveAway;    // їде від нас (вгору екраном)
-    public Sprite[] robotDriveToward;  // їде до нас (вниз екраном)
-    public Sprite[] robotLeft;         // їде ліворуч
-    public Sprite[] robotRight;        // їде праворуч
-    public Sprite[] robotBuild;        // будує (маніпулятор з ключем), дивиться праворуч
-    public Sprite[] robotShield;       // засипає модуль реголітом, дивиться праворуч
-    public Sprite[] robotSleep;        // спить: вільний або немає енергії
-    [Tooltip("Іконка над роботом, коли є завдання, але немає енергії")]
-    public Sprite iconNoEnergy;
-    [Tooltip("Кадрів на секунду в анімації робота")]
-    public float robotFps = 10f;
-
-    /// <summary>Чи є кадри робота (інакше RobotView малює запасний 3D-ровер з фігур).</summary>
-    public bool HasRobotSprites => !CharacterSprites.IsEmpty(robotDriveToward) && !CharacterSprites.IsEmpty(robotSleep);
-
     [Header("Рух")]
     public float crewSpeed = 3.2f;       // м/с надворі
     public float crewIndoorSpeed = 2.2f; // м/с у модулі й шлюзі

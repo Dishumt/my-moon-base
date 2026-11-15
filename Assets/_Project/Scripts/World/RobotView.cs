@@ -3,27 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Робот-будівельник у світі — 2D-спрайт Юлі (Art/Characters/robot), як персонажі.
+/// Робот-будівельник у світі: маленький ровер з простих фігур (у мультяшному стилі модулів).
 /// Читає з GameState свій RobotState:
-///  - TargetSlot >= 0 → їде до цього модуля (в обхід інших) і стає біля нього; кадри «їде» — у бік руху;
-///  - Working = true → працює: будує (маніпулятор з ключем) або засипає модуль реголітом, обличчям до модуля;
-///  - є завдання, але немає енергії → спить, над ним іконка енергії (гравець бачить, що роботам бракує енергії);
-///  - без завдання → повертається в «ангар» перед базою і спить.
-/// Якщо кадрів робота немає (меню Moon → Налаштувати екіпаж і роботів не запускали) — запасний ровер з фігур.
+///  - TargetSlot >= 0 → їде до цього модуля (в обхід інших) і стає біля нього;
+///  - Working = true → «працює»: маніпулятор рухається, лампа блимає жовтим;
+///  - є завдання, але немає енергії → лампа червона (гравець бачить, що роботам бракує енергії);
+///  - без завдання → повертається в «ангар» перед базою, лампа зелена.
 /// Створює його CrewView сам — руками в сцену не став.
 /// </summary>
 public class RobotView : MonoBehaviour
 {
     RobotState data;
     int index;
-
-    // Спрайт (кадри Юлі)
-    SpriteRenderer body, icon;
-    Billboard iconBillboard;
-    float animTime;
-    Vector3 moveDir = Vector3.back; // куди їхали востаннє (для вибору кадрів)
-
-    // Запасний 3D-ровер з фігур
     Transform model, arm, head;
     Renderer lamp;
     Vector3 target;
@@ -41,39 +32,8 @@ public class RobotView : MonoBehaviour
     {
         data = r;
         this.index = index;
-        var cl = CrewLook.Instance;
-        if (cl != null && cl.HasRobotSprites) BuildSprite();
-        else BuildModel();
+        BuildModel();
         transform.position = HomeSpot();
-    }
-
-    void BuildSprite()
-    {
-        var go = new GameObject("Sprite");
-        go.transform.SetParent(transform, false);
-        body = go.AddComponent<SpriteRenderer>();
-        go.AddComponent<Billboard>(); // стоїть рівно, як персонажі
-
-        // Тінь-пляма під колесами (та сама, що під людьми й меблями)
-        var sh = new GameObject("Shadow");
-        sh.transform.SetParent(transform, false);
-        sh.transform.localPosition = new Vector3(0f, 0.06f, 0f);
-        sh.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); // лежить на землі
-        sh.transform.localScale = new Vector3(1.1f, 0.55f, 1f);
-        var shadow = sh.AddComponent<SpriteRenderer>();
-        shadow.sprite = WorldSprites.Blob;
-        shadow.color = new Color(0f, 0f, 0f, 0.38f);
-        shadow.sortingOrder = -1;
-
-        // Іконка над головою: «немає енергії»
-        var ic = new GameObject("Status Icon");
-        ic.transform.SetParent(transform, false);
-        ic.transform.localPosition = new Vector3(0f, 1.65f, 0f);
-        icon = ic.AddComponent<SpriteRenderer>();
-        icon.sortingOrder = 2;
-        icon.enabled = false;
-        iconBillboard = ic.AddComponent<Billboard>();
-        iconBillboard.BillboardMode = Billboard.Mode.FaceCamera;
     }
 
     void BuildModel()
@@ -131,13 +91,6 @@ public class RobotView : MonoBehaviour
         }
         bool atSite = !driving && mv != null;
 
-        if (body != null)
-        {
-            AnimateSprite(driving, atSite, mv, dt);
-            return;
-        }
-
-        // ----- Запасний 3D-ровер -----
         // Лампа: жовта — працює, червона — є завдання, але немає енергії, зелена — вільний
         Color c = data.Working ? Yellow : (data.Task != RobotTask.Idle ? Red : Green);
         if (data.Working && Mathf.Repeat(Time.time * 3f, 1f) > 0.5f) c = Color.white; // блимає
@@ -161,52 +114,6 @@ public class RobotView : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Кадри Юлі: їде — у бік руху; на будові працює — будує або засипає реголітом (обличчям до модуля);
-    /// без роботи або без енергії — спить. Без енергії над ним ще й іконка енергії.
-    /// </summary>
-    void AnimateSprite(bool driving, bool atSite, ModuleView mv, float dt)
-    {
-        var cl = CrewLook.Instance;
-        if (cl == null) return;
-        animTime += dt; // пауза — анімація теж стоїть
-
-        Sprite[] frames;
-        bool flip = false;
-        if (driving)
-        {
-            Vector2 f = CharacterSprites.ToScreen(moveDir);
-            if (Mathf.Abs(f.x) > Mathf.Abs(f.y))
-            {
-                frames = f.x > 0f ? cl.robotRight : cl.robotLeft;
-                if (CharacterSprites.IsEmpty(frames)) { frames = f.x > 0f ? cl.robotLeft : cl.robotRight; flip = true; }
-            }
-            else frames = f.y > 0f ? cl.robotDriveAway : cl.robotDriveToward;
-        }
-        else if (atSite && data.Working)
-        {
-            frames = data.Task == RobotTask.Shield && !CharacterSprites.IsEmpty(cl.robotShield) ? cl.robotShield : cl.robotBuild;
-            // Кадри роботи дивляться праворуч; модуль ліворуч від робота — дзеркалимо
-            flip = CharacterSprites.ToScreen(mv.transform.position - transform.position).x < 0f;
-        }
-        else frames = cl.robotSleep;
-
-        if (CharacterSprites.IsEmpty(frames)) frames = cl.robotDriveToward;
-        float fps = cl.robotFps > 0f ? cl.robotFps : 10f;
-        body.sprite = frames[(int)(animTime * fps) % frames.Length];
-        body.flipX = flip;
-
-        // Є завдання, але немає енергії — іконка енергії над головою «дихає», щоб її помітили
-        bool noPower = data.Task != RobotTask.Idle && !data.Working && cl.iconNoEnergy != null;
-        icon.enabled = noPower;
-        if (noPower)
-        {
-            icon.sprite = cl.iconNoEnergy;
-            float pulse = 1f + 0.1f * Mathf.Sin(Time.time * 4f);
-            iconBillboard.ExtraScale = new Vector2(pulse, pulse);
-        }
-    }
-
     /// <summary>Їхати до точки. true — приїхали.</summary>
     bool Drive(Vector3 to, float dt)
     {
@@ -218,8 +125,7 @@ public class RobotView : MonoBehaviour
         var cl = CrewLook.Instance;
         float speed = cl != null ? cl.robotSpeed : 2.5f;
         transform.position += d / dist * Mathf.Min(dist, speed * dt);
-        moveDir = d / dist;
-        if (body == null) FaceTowards(to, dt); // спрайт повертає Billboard, а ровер з фігур — сам
+        FaceTowards(to, dt);
         return false;
     }
 
