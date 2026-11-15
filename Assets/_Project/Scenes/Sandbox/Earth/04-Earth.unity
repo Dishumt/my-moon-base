@@ -520,14 +520,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game::LaunchScreen
   openOnStart: 1
-  rocketTexture: {fileID: 2800000, guid: a3e03e572903e8244b5afb7545ec841f, type: 3}
+  rocketTexture: {fileID: 2800000, guid: 4994d70e72b045c094eae054162c2226, type: 3}
   rocketLooks:
   - id: small
-    texture: {fileID: 2800000, guid: 633fc6a773d7ea9409236edb9bf7feb4, type: 3}
+    texture: {fileID: 2800000, guid: dc89d76573d94f55a6fdb41143a0beb7, type: 3}
   - id: medium
-    texture: {fileID: 2800000, guid: a3e03e572903e8244b5afb7545ec841f, type: 3}
+    texture: {fileID: 2800000, guid: 4994d70e72b045c094eae054162c2226, type: 3}
   - id: heavy
-    texture: {fileID: 2800000, guid: 782cb7b51109cba4b9d0cbf2d4010457, type: 3}
+    texture: {fileID: 2800000, guid: 16ea0c32ed28413194e8dcd7ce4cee9c, type: 3}
   cargoIcons:
   - id: water
     texture: {fileID: 2800000, guid: eab93be6d4f3f49459dbcc2b2994bbfd, type: 3}

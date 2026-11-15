@@ -66,7 +66,7 @@ public class LaunchScreen : MonoBehaviour
     VisualElement goalsList, daysList, advisor;
     SimBalanceData balance;   // правила витрат ролі 03 — для «на скільки днів вистачить»
 
-    const float ShipBaseScale = 0.55f; // ракета на планшеті менша, ніж на майданчику
+    const float ShipBaseScale = 0.75f; // ракета на планшеті менша, ніж на майданчику
     Slider fuelSlider;
     Button launchButton, closeButton;
     VisualElement tablet;
@@ -615,7 +615,7 @@ public class LaunchScreen : MonoBehaviour
         var rocket = Supply.GetRocket(State);
         var tex = rocket != null ? FindLook(rocketLooks, rocket.id) : null;
         if (tex == null) tex = rocketTexture;
-        float scale = rocket != null && rocket.scale > 0f ? rocket.scale : 1f;
+        float aspect = tex != null && tex.height > 0 ? (float)tex.width / tex.height : 0.3f;
 
         var crew = new List<(string name, PadCrewFrames frames)>();
         foreach (var a in State.Crew)
@@ -624,7 +624,7 @@ public class LaunchScreen : MonoBehaviour
             crew.Add((a.Name, CrewFrames(a.Role)));
         }
 
-        yield return pad.Play(crew, tex != null ? new StyleBackground(tex) : default, tex != null, scale, success);
+        yield return pad.Play(crew, tex != null ? new StyleBackground(tex) : default, tex != null, aspect, rocket, success);
 
         tablet?.RemoveFromClassList("launch-hidden");
         if (success)

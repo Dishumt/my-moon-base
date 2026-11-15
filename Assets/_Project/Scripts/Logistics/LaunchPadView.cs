@@ -27,10 +27,10 @@ public class LaunchPadView
     readonly List<VisualElement> puffs = new List<VisualElement>();
 
     bool skip;
-    float W, H, groundTop, size, cx, towerX, armY, doorX;
+    float W, H, groundTop, size, rocketW, cx, towerX, armY, doorX;
+    float CrewSize = 56f;             // розмір астронавта на екрані, px (рахується від висоти екрана)
 
-    const float CrewSize = 72f;       // розмір астронавта на екрані, px
-    const float WalkSpeed = 230f;     // px за секунду
+    const float WalkSpeed = 200f;     // px за секунду
     const float FrameTime = 0.12f;    // зміна кадру ходьби
 
     static string T(string key) => LaunchText.Get(key);
@@ -70,7 +70,8 @@ public class LaunchPadView
     /// Уся сцена запуску. crew — хто летить (з кадрами), rocketTex — картинка вибраної ракети,
     /// scale — розмір ракети, success — чи політ вдалий (вже вирішено в SupplySystem).
     /// </summary>
-    public IEnumerator Play(List<(string name, PadCrewFrames frames)> crew, StyleBackground rocketTex, bool hasTex, float scale, bool success)
+    public IEnumerator Play(List<(string name, PadCrewFrames frames)> crew, StyleBackground rocketTex, bool hasTex, float aspect,
+                            RocketData rocketData, bool success)
     {
         skip = false;
         Show(true);
@@ -82,7 +83,7 @@ public class LaunchPadView
 
         yield return null; // чекаємо, поки UI Toolkit порахує розміри
         yield return null;
-        Layout(rocketTex, hasTex, scale);
+        Layout(rocketTex, hasTex, aspect, rocketData);
 
         // 1) екіпаж іде до ракети
         if (!skip) yield return Boarding(crew);
@@ -117,7 +118,7 @@ public class LaunchPadView
         SetText(status, "");
         count.style.scale = new Scale(Vector3.one);
         trail.style.display = DisplayStyle.Flex;
-        float baseTop = groundTop - size * 0.93f;
+        float baseTop = groundTop - size;
         float rise = 0f, speed = 0f;
         for (float t = 0f; t < 4f && !skip; t += Time.unscaledDeltaTime)
         {
@@ -129,7 +130,7 @@ public class LaunchPadView
             rocket.style.translate = new Translate(UnityEngine.Random.Range(-2f, 2f), 0f);
             Flame(1f);
             Smoke(Mathf.Clamp01(0.8f + t * 0.2f));
-            float bottom = baseTop - rise + size * 0.9f;
+            float bottom = baseTop - rise + size * 0.97f;
             trail.style.top = bottom;
             trail.style.height = Mathf.Max(0f, groundTop - bottom);
             trail.style.opacity = Mathf.Clamp01(1.2f - t * 0.3f);
@@ -154,59 +155,74 @@ public class LaunchPadView
 
     // ---------- Розкладка ----------
 
-    void Layout(StyleBackground rocketTex, bool hasTex, float scale)
+    /// <summary>
+    /// Розкласти майданчик. size — висота ракети: heightInCrew астронавтів (але не вище екрана).
+    /// aspect — ширина/висота картинки ракети; doorX/doorY — де люк капсули на картинці.
+    /// </summary>
+    void Layout(StyleBackground rocketTex, bool hasTex, float aspect, RocketData data)
     {
-        W = Mathf.Max(640f, view.resolvedStyle.width);
-        H = Mathf.Max(360f, view.resolvedStyle.height);
-        if (float.IsNaN(W)) W = 1280f;
-        if (float.IsNaN(H)) H = 720f;
+        W = view.resolvedStyle.width;
+        H = view.resolvedStyle.height;
+        if (float.IsNaN(W) || W < 10f) W = 1280f;
+        if (float.IsNaN(H) || H < 10f) H = 720f;
 
-        groundTop = H * 0.8f;
-        size = Mathf.Min(H * 0.5f, 380f) * Mathf.Clamp(scale, 0.5f, 1.6f);
+        float heightInCrew = data != null && data.heightInCrew > 0f ? data.heightInCrew : 8f;
+        float doorFx = data != null ? data.doorX : 0.1f;
+        float doorFy = data != null ? data.doorY : 0.28f;
+        if (aspect <= 0.01f) aspect = 0.3f;
+
+        groundTop = H * 0.86f;
+        CrewSize = Mathf.Clamp(H * 0.075f, 36f, 64f);
+        size = Mathf.Min(CrewSize * heightInCrew, groundTop - H * 0.06f);   // висота ракети
+        CrewSize = Mathf.Min(CrewSize, size / heightInCrew);                 // якщо ракету обрізали — менші й люди
+        rocketW = size * aspect;
         cx = W * 0.62f;
-        towerX = cx - size * 0.42f - 36f;
-        armY = groundTop - size * 0.93f + size * 0.3f;
-        doorX = cx - size * 0.12f;
+        float left = cx - rocketW * 0.5f, top = groundTop - size;
+        doorX = left + doorFx * rocketW;
+        armY = top + doorFy * size;
+        towerX = left - 16f - 36f;
 
         Place(ground, 0f, groundTop, W, H - groundTop);
-        Place(platform, cx - size * 0.5f, groundTop - 14f, size, 14f);
+        Place(platform, cx - rocketW * 0.75f, groundTop - 12f, rocketW * 1.5f, 12f);
 
         // ракета
-        Place(rocket, cx - size * 0.5f, groundTop - size * 0.93f, size, size);
+        Place(rocket, left, top, rocketW, size);
         rocket.style.translate = new Translate(0f, 0f);
         rocket.EnableInClassList("pad-rocket--box", !hasTex);
         rocket.style.backgroundImage = hasTex ? rocketTex : new StyleBackground(StyleKeyword.None);
         if (flame != null)
         {
-            Place(flame, size * 0.38f, size * 0.86f, size * 0.24f, size * 0.5f);
+            float fw = Mathf.Max(28f, rocketW * 0.6f);
+            Place(flame, (rocketW - fw) * 0.5f, size * 0.97f, fw, size * 0.3f);
             Flame(0f);
         }
 
-        // вежа з поперечками
-        float towerTop = groundTop - size * 0.98f;
+        // вежа з поперечками: від землі трохи вище за люк
+        float towerTop = armY - 50f;
         Place(tower, towerX, towerTop, 36f, groundTop - towerTop);
         tower.Clear();
         for (float y = 18f; y < groundTop - towerTop; y += 26f)
         {
             var bar = new VisualElement();
             bar.AddToClassList("pad-tower-bar");
-            Place(bar, 0f, y, 32f, 4f);
+            Place(bar, 0f, y, 28f, 4f);
             tower.Add(bar);
         }
-        Place(arm, towerX + 36f, armY - 8f, doorX - (towerX + 36f), 10f);
+        Place(arm, towerX + 36f, armY - 8f, Mathf.Max(0f, doorX - (towerX + 36f)), 10f);
 
         // слід вогню (видно після старту)
         trail.style.display = DisplayStyle.None;
-        Place(trail, cx - size * 0.06f, groundTop, size * 0.12f, 0f);
+        float tw = Mathf.Max(18f, rocketW * 0.4f);
+        Place(trail, cx - tw * 0.5f, groundTop, tw, 0f);
 
         // клуби диму
         smokeLayer.Clear();
         puffs.Clear();
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 12; i++)
         {
             var puff = new VisualElement();
             puff.AddToClassList("pad-puff");
-            puff.userData = (i % 2 == 0 ? -1f : 1f) * (0.2f + 0.12f * (i / 2)); // куди розлітається
+            puff.userData = (i % 2 == 0 ? -1f : 1f) * (0.15f + 0.1f * (i / 2)); // куди розлітається
             smokeLayer.Add(puff);
             puffs.Add(puff);
         }
@@ -302,7 +318,7 @@ public class LaunchPadView
         return f.walk[(int)(time / FrameTime) % f.walk.Length];
     }
 
-    static void SetFeet(VisualElement body, Label label, float x, float y, StyleBackground frame)
+    void SetFeet(VisualElement body, Label label, float x, float y, StyleBackground frame)
     {
         body.style.left = x - CrewSize * 0.5f;
         body.style.top = y - CrewSize;
@@ -330,9 +346,9 @@ public class LaunchPadView
             var p = puffs[i];
             float dir = (float)p.userData;
             float wobble = Mathf.Sin(t * 2f + i) * 0.05f;
-            float r = size * (0.12f + 0.22f * amount) * (1f + wobble);
-            float px = cx + dir * size * (0.4f + 1.2f * amount) - r;
-            float py = groundTop - r * 1.1f - (i % 3) * size * 0.04f * amount;
+            float r = size * (0.05f + 0.1f * amount) * (1f + wobble);
+            float px = cx + dir * size * (0.25f + 0.7f * amount) - r;
+            float py = groundTop - r * 1.1f - (i % 3) * size * 0.02f * amount;
             p.style.left = px;
             p.style.top = py;
             p.style.width = r * 2f;

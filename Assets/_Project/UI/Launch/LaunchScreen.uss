@@ -53,7 +53,7 @@
 .small-btn:active { scale: 0.95 0.95; }
 
 /* --- ракета з прямокутників --- */
-.ship-area { height: 120px; align-items: center; justify-content: center; }
+.ship-area { height: 140px; align-items: center; justify-content: center; }
 .ship { width: 120px; height: 210px; }
 .ship-nose-tip { position: absolute; left: 50px; top: 0px; width: 20px; height: 14px; background-color: var(--color-accent); }
 .ship-nose-mid { position: absolute; left: 40px; top: 14px; width: 40px; height: 18px; background-color: var(--color-accent); }
@@ -181,7 +181,7 @@
 .pad-name { position: absolute; width: 120px; font-size: 13px; color: #FFFFFF; -unity-text-align: middle-center; }
 .pad-title { position: absolute; left: 24px; top: 18px; color: #FFFFFF; }
 .pad-status { position: absolute; left: 24px; top: 44px; right: 260px; color: #FFFFFF; white-space: normal; }
-.pad-count { position: absolute; left: 0; right: 0; top: 90px; font-size: 110px; -unity-font-style: bold; color: #FFE27A; -unity-text-align: middle-center; }
+.pad-count { position: absolute; left: 24px; right: 55%; top: 110px; font-size: 110px; -unity-font-style: bold; color: #FFE27A; -unity-text-align: middle-center; }
 .pad-fact { position: absolute; left: 24px; bottom: 24px; width: 520px; }
 .pad-skip { position: absolute; right: 24px; top: 18px; }
 
