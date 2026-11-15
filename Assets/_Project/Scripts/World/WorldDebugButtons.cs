@@ -29,6 +29,7 @@ public class WorldDebugButtons : MonoBehaviour
         if (GUILayout.Button("Світ: добудувати все")) foreach (var m in s.Modules) m.BuildHoursLeft = 0f;
         if (GUILayout.Button("Світ: прибрати модулі")) { s.Modules.Clear(); s.Tunnels.Clear(); }
         if (GUILayout.Button("Світ: 2 кімнати + тунель")) InstantTunnel(s);   // роль 04: перевірка тунелів
+        if (GUILayout.Button("Світ: реголіт кімнатам ✓/✗")) ToggleRegolith(s);   // роль 04: насип росте/зникає за ~3 с
         GUILayout.EndHorizontal();
 
         // ----- Живі меблі: тип нового модуля, енергія кімнатам, аптечки -----
@@ -241,5 +242,14 @@ public class WorldDebugButtons : MonoBehaviour
     {
         var m = s.FindModule(slot);
         return m == null || ModuleKinds.IsRoom(m.Type);
+    }
+
+    /// <summary>Перевірка насипу (роль 04): усім готовим кімнатам вмикає реголіт, а якщо всі вже засипані — вимикає.</summary>
+    static void ToggleRegolith(GameState s)
+    {
+        bool anyBare = false;
+        foreach (var m in s.Modules) if (m.IsBuilt && ModuleKinds.IsRoom(m.Type) && !m.RegolithShield) anyBare = true;
+        foreach (var m in s.Modules) if (m.IsBuilt && ModuleKinds.IsRoom(m.Type)) m.RegolithShield = anyBare;
+        GameEvents.RaiseStateChanged();
     }
 }

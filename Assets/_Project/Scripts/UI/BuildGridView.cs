@@ -130,7 +130,13 @@ public class BuildGridView
         }
         else if (m.IsBuilt)
         {
-            SetText(slotState, Loc.Get("map.built") + "  ·  " + Loc.Get(m.RegolithShield ? "map.shield_yes" : "map.shield_no"));
+            bool room = ModuleKinds.IsRoom(m.Type);   // засипати реголітом можна лише кімнати (роль 04)
+            var construction = UiKit.Sys<ConstructionSystem>();
+            bool shielding = construction != null && construction.IsShielding(selectedSlot);
+            string shieldText = m.RegolithShield ? Loc.Get("map.shield_yes")
+                : shielding ? Loc.Get("map.shield_progress", UnityEngine.Mathf.RoundToInt(construction.ShieldProgress(state, selectedSlot) * 100f))
+                : room ? Loc.Get("map.shield_no") : "";
+            SetText(slotState, Loc.Get("map.built") + (shieldText.Length > 0 ? "  ·  " + shieldText : ""));
             SetText(hint, Loc.Get("mod." + m.Type) + " — " + Loc.Get("mod." + m.Type + ".desc") + TunnelInfo(state));
             if (options == null) return;
             if (ModuleKinds.IsRoom(m.Type))   // тунель — тільки від кімнати (у сонячну панель не зайдеш)
@@ -138,7 +144,7 @@ public class BuildGridView
                 AddTunnelButton(state, +1, "map.tunnel_right");   // до найближчої кімнати праворуч у ряду
                 AddTunnelButton(state, -1, "map.tunnel_left");    // ...і ліворуч
             }
-            if (m.RegolithShield) return;
+            if (m.RegolithShield || shielding || !room) return;   // уже засипаний, засипають зараз або це не кімната
             var shield = new Button(Shield);
             shield.AddToClassList("opt");
             shield.text = Loc.Get("map.shield_btn") + "\n<size=12>"

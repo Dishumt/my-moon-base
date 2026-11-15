@@ -32,6 +32,7 @@ public class ModuleView : MonoBehaviour
         SlotId = slotId;
         size = ModuleLook.Instance != null ? ModuleLook.Instance.moduleSize : new Vector2(6f, 6f);
         transform.position = BaseGrid.ToWorld(slotId);
+        if (GetComponent<RegolithCover>() == null) gameObject.AddComponent<RegolithCover>();   // насип реголіту (роль 04)
     }
 
     /// <summary>Чи точка світу всередині модуля: у кімнаті або в шлюзі (не в проході).</summary>
@@ -210,6 +211,8 @@ public class ModuleView : MonoBehaviour
     public Vector3 SideDoorPoint(int side) => Local(side * (size.x / 2f - 0.6f), RoomMidZ);
     /// <summary>Об'єкт, у якому зараз намальовано модуль (змінюється після перебудови).</summary>
     public GameObject Visual => visual;
+    /// <summary>Половина ширини шлюзу, м (насип реголіту лишає шлюз відкритим). 0 — це не кімната.</summary>
+    public float AirlockHalfWidth => float.IsNaN(roomFront) ? 0f : airlockHalfWidth;
 
     /// <summary>Перед модулем надворі (обладнання, ремонт, будова).</summary>
     public Vector3 FrontPoint(int i) => Local((i - 1.5f) * 1.2f, -size.y / 2f - 0.8f);
@@ -233,7 +236,10 @@ public class ModuleView : MonoBehaviour
         Vector3 c = transform.position;
         if (IsEnterableRoom)
         {
-            list.Add(Rect.MinMaxRect(c.x - size.x / 2 - margin, c.z + roomFront - margin, c.x + size.x / 2 + margin, c.z + roomBack + margin));
+            var cover = GetComponent<RegolithCover>();
+            Vector2 extra = cover != null ? cover.Margin : Vector2.zero;   // засипаний модуль ширший: не ходимо крізь насип
+            list.Add(Rect.MinMaxRect(c.x - size.x / 2 - margin - extra.x, c.z + roomFront - margin - extra.y,
+                                     c.x + size.x / 2 + margin + extra.x, c.z + roomBack + margin + extra.y));
             list.Add(Rect.MinMaxRect(c.x - airlockHalfWidth - margin, c.z + airlockFront - margin, c.x + airlockHalfWidth + margin, c.z + roomFront));
         }
         else
