@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Start menu (UI/Game/StartMenu.uxml): PLAY · CONTINUE · chapters · DEMO FOR JUDGES · EN / UK,
+/// Start menu (UI/Game/StartMenu.uxml): PLAY · CONTINUE · chapters · DEMO FOR JUDGES · NASA DATA · EN / UK,
 /// and "Space weather today" — a real NASA DONKI answer from SpaceWeatherFetcher (role 06) with a LIVE / ARCHIVE badge.
 /// Shown only on the first start of the scene. After "Next chapter", "Try again" and so on (GameStart request)
 /// the menu stays hidden and the game starts at once.
@@ -19,6 +19,7 @@ public class StartMenu : MonoBehaviour
 
     VisualElement root, stage;
     Label message, weatherTitle, weatherText, weatherBadge;
+    NasaDataView nasaData;
     bool bound, modalPushed;
 
     void OnEnable()
@@ -81,6 +82,12 @@ public class StartMenu : MonoBehaviour
         On("menu-play", Play);
         On("menu-continue", () => GameStart.Begin(StartMode.Continue));
         On("menu-demo", () => GameStart.Begin(StartMode.Demo));
+        var dataStage = root.Q("data-stage");
+        if (dataStage != null)
+        {
+            nasaData = new NasaDataView(dataStage, null);
+            On("menu-data", () => nasaData.Show());
+        }
         for (int n = 1; n <= GameStart.LastChapter; n++)
         {
             int chapter = n; // own copy for the lambda
@@ -158,6 +165,7 @@ public class StartMenu : MonoBehaviour
         SetText("menu-continue", Loc.Get("menu.continue"));
         UiKit.Show(root.Q("menu-continue"), SaveSystem.HasSave());
         SetText("menu-demo", Loc.Get("menu.demo"));
+        SetText("menu-data", Loc.Get("menu.data"));
         int unlocked = GameStart.UnlockedChapter;
         for (int n = 1; n <= GameStart.LastChapter; n++)
         {

@@ -15,6 +15,7 @@
                 <ui:Button name="menu-ch3" class="menu-ch" />
             </ui:VisualElement>
             <ui:Button name="menu-demo" class="menu-btn menu-btn--demo" />
+            <ui:Button name="menu-data" class="menu-btn menu-btn--data" />
             <ui:Label name="menu-msg" class="msg msg--err" />
             <ui:VisualElement class="menu-lang">
                 <ui:Button name="menu-en" class="menu-lang-btn" text="EN" />
@@ -26,6 +27,14 @@
                 <ui:Label name="menu-weather-badge" class="menu-badge" />
             </ui:VisualElement>
             <ui:Label name="menu-credit" class="menu-credit" />
+        </ui:VisualElement>
+        <!-- "NASA data in the game" (NasaDataView.cs): hidden until the button is pressed -->
+        <ui:VisualElement name="data-stage" class="data-stage" style="display: none;">
+            <ui:VisualElement class="data-window">
+                <ui:Label name="data-title" class="win-title" />
+                <ui:ScrollView name="data-list" class="data-list" />
+                <ui:Button name="data-close" class="win-btn win-btn--main" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

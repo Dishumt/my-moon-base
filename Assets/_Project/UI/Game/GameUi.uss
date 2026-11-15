@@ -104,3 +104,21 @@
               border-width: 1.5px; border-color: var(--color-muted); color: var(--color-muted); }
 .menu-badge--live { border-color: var(--color-ok); color: var(--color-ok); }
 .menu-credit { margin-top: 12px; font-size: 12px; color: var(--color-muted); -unity-text-align: middle-center; white-space: normal; }
+
+/* ---------- NASA data (NasaDataView.cs) ---------- */
+.menu-btn--data { border-color: var(--color-radiation); color: var(--color-radiation); }
+.menu-btn--data:hover { background-color: rgba(165, 105, 232, 0.12); }
+.data-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center;
+              background-color: rgba(2, 7, 13, 0.9); }
+.data-window { width: 900px; height: 640px; padding: 18px 22px; background-color: var(--color-panel);
+               border-width: 2px; border-color: var(--color-radiation); }
+.data-list { flex-grow: 1; margin: 6px 0 12px 0; }
+.data-section { flex-direction: row; align-items: center; margin: 12px 0 6px 0; }
+.data-section__title { font-size: 17px; letter-spacing: 2px; -unity-font-style: bold; color: var(--color-accent); margin-right: 10px; }
+.data-line { padding: 4px 10px; margin-bottom: 4px; background-color: var(--color-card); border-left-width: 3px; border-color: var(--color-line); }
+.data-line--muted { background-color: rgba(0, 0, 0, 0); }
+.data-line__text { font-size: 14px; color: var(--color-text); white-space: normal; }
+.data-line--muted .data-line__text { color: var(--color-muted); font-size: 13px; }
+.data-link { align-self: flex-start; margin: 2px 0 0 0; padding: 0; font-size: 12px; color: var(--color-accent); white-space: normal;
+             background-color: rgba(0, 0, 0, 0); border-width: 0; -unity-text-align: middle-left; }
+.data-link:hover { color: var(--color-text); }

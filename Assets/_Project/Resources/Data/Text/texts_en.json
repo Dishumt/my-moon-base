@@ -443,6 +443,20 @@
     { "key": "hint.ice", "text": "Water is running low. Press TAB → CREW and send the geologist to MINE ICE." },
     { "key": "hint.greenhouse", "text": "The greenhouse is ready, but it has no power. Press TAB → POWER → GREENHOUSE → +." },
     { "key": "hint.science", "text": "For science: send the geologist to COLLECT SAMPLES, and someone to LAB WORK (TAB → CREW)." },
-    { "key": "hint.speed", "text": "The base is fine! Press x2 or x4 at the top so the days go faster." }
+    { "key": "hint.speed", "text": "The base is fine! Press x2 or x4 at the top so the days go faster." },
+    { "key": "menu.data", "text": "NASA DATA IN THE GAME" },
+    { "key": "data.title", "text": "REAL NASA DATA IN THE GAME" },
+    { "key": "data.close", "text": "CLOSE" },
+    { "key": "data.live_explain", "text": "LIVE: the game asked NASA DONKI just now. ARCHIVE: a real past event saved in the game (no internet, or the site did not answer). We never show old data as new." },
+    { "key": "data.storms_title", "text": "SOLAR STORMS IN THE GAME · NASA DONKI" },
+    { "key": "data.storm_line", "text": "{0} · {1} · storm strength in the game: {2} of 3" },
+    { "key": "data.type.FLR", "text": "Solar flare (a flash on the Sun)" },
+    { "key": "data.type.SEP", "text": "Proton storm (fast particles from the Sun)" },
+    { "key": "data.type.GST", "text": "Geomagnetic storm (it shook Earth's magnetic field)" },
+    { "key": "data.type.CME", "text": "Coronal mass ejection (a cloud thrown out by the Sun)" },
+    { "key": "data.dose_title", "text": "RADIATION DOSE · NASA" },
+    { "key": "data.dose_text", "text": "On the space station an astronaut gets about {0} mSv of radiation a day. NASA allows {1} mSv for a whole career. The game makes time go {2} times faster for the dose, so you can see it grow." },
+    { "key": "data.msv", "text": "mSv (millisievert): the unit for a radiation dose, how many harmful rays the body got." },
+    { "key": "data.facts_title", "text": "FACTS FROM NASA SPACE BIOLOGY STUDIES (OSDR)" }
   ]
 }
