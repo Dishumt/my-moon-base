@@ -1,2 +1,10 @@
 @import url("unity-theme://default");
 VisualElement {}
+
+/* AI-assisted: written with Claude. See docs/AI_USE.md
+   Font with Cyrillic (Ukrainian). In WebGL the browser has no system fonts,
+   so the default Unity font shows no Ukrainian letters. Inter (SIL OFL 1.1). */
+:root, .unity-text-element {
+    -unity-font: url("project:///Assets/_Project/Art/Fonts/Inter-Regular.ttf");
+    -unity-font-definition: url("project:///Assets/_Project/Art/Fonts/Inter-Regular.ttf");
+}
