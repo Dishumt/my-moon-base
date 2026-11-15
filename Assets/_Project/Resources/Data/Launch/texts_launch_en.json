@@ -784,15 +784,15 @@
     },
     {
       "key": "flight.step2",
-      "text": "One orbit around Earth: checking all systems"
+      "text": "Parking orbit around Earth: checking all systems (about 1.5 laps)"
     },
     {
       "key": "flight.step3",
-      "text": "Flight to the Moon (in real space it takes about 3 days)"
+      "text": "Flying to the Moon: about 3 days, engines off"
     },
     {
       "key": "flight.step4",
-      "text": "Orbit around the Moon: slowing down"
+      "text": "Moon orbit: braking with the engines"
     },
     {
       "key": "flight.step5",
@@ -812,7 +812,7 @@
     },
     {
       "key": "flight.fact3",
-      "text": "We aim not at the Moon, but at the place where the Moon will be: it moves too! You could line up 30 Earths between Earth and the Moon."
+      "text": "We aim not at the Moon, but where it WILL be in 3 days: the Moon keeps moving along its orbit (the dotted circle). The farther from Earth, the slower the ship: Earth's gravity pulls it back."
     },
     {
       "key": "flight.fact4",
@@ -1017,6 +1017,10 @@
     {
       "key": "pad.fact.abort",
       "text": "Real crew ships have a rescue system: small motors pull the capsule away from the rocket, and parachutes bring the crew down safely."
+    },
+    {
+      "key": "flight.clock",
+      "text": "Mission time: {0} d {1} h {2} min (sped up)"
     }
   ]
 }
