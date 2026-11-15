@@ -250,6 +250,32 @@ public class LaunchScreen : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
+#if UNITY_EDITOR
+    // Картинки Юлі (роль 02): редактор сам підставляє їх у порожні поля, щоб не перетягувати вручну.
+    // Після цього збережи сцену (Ctrl+S) — тоді картинки потраплять і у WebGL-збірку.
+    const string PadBackgroundPath = "Assets/_Project/Art/Earth/Pixel Art Rocket Launch Site at Sunset.png";
+    const string PadBusPath = "Assets/_Project/Art/Earth/Pixel Art Blue-Stripe Bus Sprite.png";
+
+    void OnValidate() => AutoFillArt();
+    void Reset() => AutoFillArt();
+
+    void AutoFillArt()
+    {
+        bool changed = false;
+        if (padBackground == null)
+        {
+            padBackground = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(PadBackgroundPath);
+            changed |= padBackground != null;
+        }
+        if (padBus == null)
+        {
+            padBus = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(PadBusPath);
+            changed |= padBus != null;
+        }
+        if (changed) UnityEditor.EditorUtility.SetDirty(this);
+    }
+#endif
+
     void Start()
     {
         if (openOnStart) Open();
