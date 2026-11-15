@@ -38,6 +38,7 @@ public class LaunchPadView
     const float FrameTime = 0.12f;    // зміна кадру ходьби
 
     static string T(string key) => LaunchText.Get(key);
+    static string T(string key, params object[] args) => LaunchText.Get(key, args);
 
     public LaunchPadView(VisualElement root)
     {
