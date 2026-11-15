@@ -201,7 +201,7 @@ public class SupplySystem : ISimSystem
     public float GreenFuel(GameState s, bool firstMission)
     {
         var r = Evaluate(s, firstMission);
-        return (float)Math.Ceiling(r.FuelNeededKg * data.greenMargin / 10f) * 10f;
+        return (float)Math.Ceiling(r.FuelNeededKg * data.greenMargin / 10f - 0.001f) * 10f;   // -0.001: 2970.0002 → 2970, а не 2980
     }
 
     /// <summary>
