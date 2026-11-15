@@ -30,7 +30,9 @@ public class GoalCheck
 public class MissionPlan
 {
     public int Crew;
-    public int MissionDays;          // скільки днів треба протриматися
+    public float DaysToNextShip;     // через скільки днів прилетить НАСТУПНИЙ корабель (після цього)
+    public int ReserveDays;          // запас: стільки запізнюється корабель, що повернувся на Землю
+    public int MissionDays;          // скільки днів треба протриматися = до наступного корабля + запас
     public SupplyDays Food = new SupplyDays();
     public SupplyDays Water = new SupplyDays();
     public SupplyDays Oxygen = new SupplyDays();
@@ -56,7 +58,9 @@ public static class MissionPlanner
         var plan = new MissionPlan();
         var data = sup.Data;
         plan.Crew = firstMission ? data.firstMissionSeats : s.Crew.Count + s.Supply.Passengers.Count;
-        plan.MissionDays = firstMission ? SurviveDays(chapter, data.supplyEveryDays) : data.supplyEveryDays;
+        plan.DaysToNextShip = DaysToNextShip(s, sup, firstMission);
+        plan.ReserveDays = Math.Max(0, data.failedDelayDays);
+        plan.MissionDays = Math.Max(1, (int)Math.Ceiling(plan.DaysToNextShip + plan.ReserveDays - 0.01f));
 
         // що в ракеті
         foreach (var line in s.Supply.Cargo)
@@ -104,12 +108,21 @@ public static class MissionPlanner
         return plan;
     }
 
-    static int SurviveDays(ChapterData chapter, int fallback)
+    /// <summary>
+    /// Через скільки днів сяде наступний корабель, тобто той, що прилетить ПІСЛЯ цього.
+    /// Розклад той самий, що в SupplySystem: кожні supplyEveryDays днів о launchHour, плюс час польоту.
+    /// Перша місія: наступний корабель — перша поставка. Поставка: цей вантаж має протримати до наступної.
+    /// </summary>
+    public static float DaysToNextShip(GameState s, SupplySystem sup, bool firstMission)
     {
-        if (chapter != null && chapter.goals != null)
-            foreach (var g in chapter.goals)
-                if (g != null && g.type == "SurviveDays") return Math.Max(1, (int)Math.Ceiling(g.target));
-        return fallback;
+        var data = sup.Data;
+        int now = CommsSystem.AbsHour(s);
+        int flight = sup.FlightHours(s);
+        int from = firstMission ? now : s.Supply.NextLaunchAt + flight;   // коли сяде цей корабель
+        int nextLaunch = (from / 24 + data.supplyEveryDays) * 24 + data.launchHour;
+        if (!firstMission && nextLaunch < from) nextLaunch += 24;
+        int nextArrival = nextLaunch + flight;
+        return Math.Max(0f, (nextArrival - now) / 24f);
     }
 
     /// <summary>Одна найважливіша порада: спершу те, що не дасть долетіти, потім те, без чого не вижити, потім цілі.</summary>

@@ -508,7 +508,7 @@
     },
     {
       "key": "days.title",
-      "text": "SUPPLIES WILL LAST"
+      "text": "SUPPLIES WILL LAST (white line = need)"
     },
     {
       "key": "days.food",
@@ -544,15 +544,15 @@
     },
     {
       "key": "tip.oxygen_low",
-      "text": "Oxygen for only {0} days, but the crew must hold on for {1}. Take oxygen tanks!"
+      "text": "Oxygen for only {0} days. The next ship comes in {1} days (with reserve). Take oxygen tanks!"
     },
     {
       "key": "tip.water_low",
-      "text": "Water for only {0} days out of {1}. The base makes oxygen from water, so take water tanks!"
+      "text": "Water for only {0} days, but you must wait {1} days for the next ship. The base makes oxygen from water. Take water tanks!"
     },
     {
       "key": "tip.food_low",
-      "text": "Food for only {0} days out of {1}. Hungry astronauts work slowly. Take food boxes!"
+      "text": "Food for only {0} days, but the next ship comes in {1} days (with reserve). Hungry astronauts work slowly. Take food boxes!"
     },
     {
       "key": "tip.goal",
@@ -581,6 +581,14 @@
     {
       "key": "error.kit_locked",
       "text": "This module is not available yet. It opens in a later chapter."
+    },
+    {
+      "key": "mission.next_ship",
+      "text": "Last until the next ship: {0} days + {1} days reserve"
+    },
+    {
+      "key": "mission.reserve_why",
+      "text": "Why a reserve? If a ship has to turn back, it arrives a few days late."
     }
   ]
 }

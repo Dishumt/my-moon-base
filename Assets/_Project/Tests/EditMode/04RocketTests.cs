@@ -181,7 +181,10 @@ public class MissionPlannerTests
     {
         var p = Plan();
         Assert.AreEqual(4, p.Crew);
-        Assert.AreEqual(5, p.MissionDays);
+        // зараз 0 год; наступний корабель стартує на 4-й день о 8:00 (104 год) і летить 12 год → 116 год ≈ 4.83 дн.
+        Assert.AreEqual(116f / 24f, p.DaysToNextShip, 0.01f);
+        Assert.AreEqual(3, p.ReserveDays);
+        Assert.AreEqual(8, p.MissionDays);   // 4.83 + 3 запасу → 8 днів
         Assert.AreEqual(10f, p.Food.Days, 0.01f);      // 40 їжі / (4 людини × 1)
         Assert.AreEqual(8.75f, p.Oxygen.Days, 0.01f);  // 70 / (16 дихають − 8 робить машина)
         Assert.AreEqual(15f, p.Water.Days, 0.01f);     // 60 / (2 блоки × 2)

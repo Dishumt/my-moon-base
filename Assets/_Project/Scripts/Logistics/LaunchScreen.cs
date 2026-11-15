@@ -368,7 +368,7 @@ public class LaunchScreen : MonoBehaviour
         }
         else
         {
-            SetText(infoText, T("launch.info_default"));
+            SetText(infoText, T("launch.info_default") + " " + T("mission.reserve_why"));
             SetText(infoGives, "");
         }
 
@@ -529,7 +529,7 @@ public class LaunchScreen : MonoBehaviour
         if (goalsList != null)
         {
             goalsList.Clear();
-            AddGoalRow(T("mission.survive", plan.MissionDays), plan.SurviveOk);
+            AddGoalRow(T("mission.next_ship", Mathf.CeilToInt(plan.DaysToNextShip - 0.01f), plan.ReserveDays), plan.SurviveOk);
             foreach (var g in plan.Goals)
                 AddGoalRow(T("mission.build", T("launch.module." + g.Module), Mathf.Min(g.Have + g.Packed, g.Target), g.Target), g.Done);
         }
