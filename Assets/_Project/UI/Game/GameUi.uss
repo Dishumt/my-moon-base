@@ -75,6 +75,21 @@
 .win-btn--main { background-color: var(--color-accent); color: var(--color-panel); -unity-font-style: bold; }
 .win-btn--main:hover { background-color: #8BE3FA; }
 
+/* ---------- pause menu and "how to play" (GameMenu.cs) ---------- */
+.pause { width: 460px; }
+.pause-btn { flex-grow: 0; flex-shrink: 0; margin: 0 0 8px 0; }
+.pause-btn--danger { border-color: var(--color-alarm); color: #FFB3BA; background-color: rgba(255, 77, 94, 0.14); }
+.pause-btn--danger:hover { background-color: rgba(255, 77, 94, 0.28); }
+.help { width: 820px; }
+.help .win-lines { max-height: 440px; }
+
+/* ---------- small tool buttons under the clock: help, sound, menu ---------- */
+.hud-tools { position: absolute; right: 10px; top: 56px; flex-direction: row; }
+.hud-tool { height: 28px; margin: 0 0 0 6px; padding: 0 10px; font-size: 12px; letter-spacing: 1px; border-radius: 0;
+            background-color: rgba(4, 16, 26, 0.88); border-width: 2px; border-color: var(--color-line); color: var(--color-soft); }
+.hud-tool:hover { border-color: var(--color-accent); color: var(--color-text); }
+.hud-tool--off { color: var(--color-muted); border-color: var(--color-dim); }
+
 /* ---------- start menu ---------- */
 /* the menu hides the game world completely: a sky with stars, Earth and the edge of the Moon (StartMenu.BuildSky) */
 .menu-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center;

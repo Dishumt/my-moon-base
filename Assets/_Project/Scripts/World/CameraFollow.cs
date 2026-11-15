@@ -35,6 +35,13 @@ public class CameraFollow : MonoBehaviour
     [Tooltip("Точка, на яку дивимось, трохи вище ніг інженера")]
     [SerializeField] float lookHeight = 0.5f;
 
+    [Header("Поворот камери (Q / E, як у DST)")]
+    [Tooltip("На скільки градусів повертає один натиск Q або E")]
+    [SerializeField] float rotateStep = 45f;
+    [Tooltip("Більше = камера повертається швидше")]
+    [SerializeField] float rotateSpeed = 7f;
+
+    float targetYaw;        // кут, до якого плавно повертаємось
     float targetDistance;   // відстань, до якої плавно наближаємось
     Vector3 focus;          // точка на землі, за якою стежить камера
 
@@ -48,6 +55,7 @@ public class CameraFollow : MonoBehaviour
         }
 
         targetDistance = distance;
+        targetYaw = yaw;
         if (target != null) focus = FocusPoint();
         ApplyPosition();
     }
@@ -66,13 +74,26 @@ public class CameraFollow : MonoBehaviour
     void LateUpdate() // LateUpdate іде після руху інженера, тож камера не тремтить
     {
         ReadZoom();
+        ReadRotate();
 
         // Плавно: щокадру проходимо частину шляху до цілі.
         float dt = Time.unscaledDeltaTime;
         if (target != null) focus = Vector3.Lerp(focus, FocusPoint(), 1f - Mathf.Exp(-followSpeed * dt));
         distance = Mathf.Lerp(distance, targetDistance, 1f - Mathf.Exp(-zoomSpeed * dt));
+        yaw = Mathf.LerpAngle(yaw, targetYaw, 1f - Mathf.Exp(-rotateSpeed * dt));
+        if (Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 0.05f) yaw = targetYaw;
 
         ApplyPosition();
+    }
+
+    /// <summary>Q повертає камеру проти годинникової стрілки на крок, E — за. Не працює, поки відкрите меню чи планшет.</summary>
+    void ReadRotate()
+    {
+        var keyboard = Keyboard.current;
+        if (keyboard == null || UiKit.Blocked) return;
+        if (TabletController.Instance != null && TabletController.Instance.IsOpen) return;
+        if (keyboard.qKey.wasPressedThisFrame) targetYaw -= rotateStep;
+        else if (keyboard.eKey.wasPressedThisFrame) targetYaw += rotateStep;
     }
 
     void ReadZoom()

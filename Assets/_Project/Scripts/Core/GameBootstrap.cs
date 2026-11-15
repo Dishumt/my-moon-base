@@ -74,6 +74,7 @@ public class GameBootstrap : MonoBehaviour
         if (demo != null) ApplyDemo(demo);
 
         GameEvents.DayEnded += OnDayEnded;
+        GameEvents.HourPassed += OnHourPassed;
     }
 
     /// <summary>Чи це «Demo for judges» (тоді не зберігаємо гру).</summary>
@@ -137,9 +138,24 @@ public class GameBootstrap : MonoBehaviour
         Clock.Update(Time.deltaTime);
     }
 
-    void OnDayEnded(DayReport report)
+    void OnDayEnded(DayReport report) => SaveNow();
+
+    /// <summary>
+    /// Ще й тричі на день (6:00, 12:00, 18:00): якщо закрити вкладку браузера посеред дня, пропаде не більше пів дня.
+    /// О 24:00 не зберігаємо тут: день ще не перемкнувся, це робить OnDayEnded.
+    /// </summary>
+    void OnHourPassed()
     {
-        // демо не зберігаємо; пройдений чи програний розділ теж (інакше «Продовжити» поверне його)
+        if (State != null && State.Hour < 24 && State.Hour % 6 == 0) SaveNow();
+    }
+
+    /// <summary>
+    /// Зберегти гру зараз (кінець дня, меню паузи). Демо не зберігаємо; пройдений чи програний розділ теж
+    /// (інакше «Продовжити» поверне його).
+    /// </summary>
+    public void SaveNow()
+    {
+        if (State == null || Clock == null) return;
         var chapters = GetSystem<ChapterSystem>();
         if (autoSave && !IsDemo && (chapters == null || !chapters.IsFinished)) SaveSystem.Save(State);
     }
@@ -148,6 +164,7 @@ public class GameBootstrap : MonoBehaviour
     {
         if (Instance != this) return;
         GameEvents.DayEnded -= OnDayEnded;
+        GameEvents.HourPassed -= OnHourPassed;
         Instance = null;
     }
 }

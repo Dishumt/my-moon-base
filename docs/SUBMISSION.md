@@ -44,6 +44,7 @@ My Moon Base is a free browser game for kids aged 7–12. The player is the chie
 - **Radiation and real solar storms.** Every astronaut has a dose bar based on NASA dose numbers. Before a storm the player gets a warning with the real date and class of a NASA DONKI event and must bring everyone into a powered shelter.
 - **Communication.** At the south pole Earth hangs low over the horizon and the mountains hide it, so messages to Earth go only in comms windows; the antenna needs power.
 - **Evening report.** Every game day ends with a short report of what changed and **why**, with alarms in red. A coach line at the bottom of the screen always suggests the next sensible step.
+- **Surface map, sound and help.** The tablet has a MAP tab: a plan of the surface with the base, the crew and every place to visit (a question mark until the engineer gets there) and how far it is. All sounds (clicks, storm alarm, launch, evening report) are made by code, so there are no third-party audio files. ESC opens a pause menu with a "How to play" page; the first landing shows it by itself.
 
 **Benefits and impact.** Kids feel real engineering trade-offs instead of memorising facts: there is never enough power for everything, every action has a price, and safety (oxygen, radiation) comes first. The game is free, runs in a browser without installing anything, and is in two languages.
 
@@ -86,6 +87,6 @@ See `docs/NASA_DATA.md` (sources) and `docs/CREDITS.md` (assets).
 
 **Title:** My Moon Base
 **Short description:** Run the first base at the Moon's south pole. Share the power, keep the crew safe from real solar storms. For kids 7–12.
-**Controls:** W A S D — walk · TAB — tablet · Esc — close · buttons ⏸ / x1 / x2 / x4 at the top.
+**Controls:** W A S D — walk · Q / E — turn the camera · TAB — tablet · ESC — menu · P — pause · 1 2 3 — speed ×1 ×2 ×4 · M — sound · H — how to play.
 **Tip for judges:** press **DEMO FOR JUDGES** in the menu: chapter 3, a real NASA solar storm starts in about a minute.
 **Made for** the NASA Space Apps Challenge 2026, challenge "Build a Junior Astronaut Mission Trainer". AI use: see the repository (`docs/AI_USE.md`).

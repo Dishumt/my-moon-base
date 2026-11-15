@@ -100,6 +100,7 @@ public class MoonHop : MonoBehaviour
                 {
                     Leg = 1 - Leg;      // приземляємось на іншу ногу
                     Kick(suit, 8);
+                    StepSound(suit ? 0.6f : 0.3f);
                     if (suit) Footprint(Leg); // надворі на реголіті лишається відбиток
                     phase = wantMove ? Phase.Push : Phase.Landing;
                     t = 0f;
@@ -137,7 +138,17 @@ public class MoonHop : MonoBehaviour
         phase = Phase.Landing;
         t = 0f;
         Kick(suit, 22);
+        StepSound(1f);
         if (suit) { Footprint(0); Footprint(1); } // приземлився на обидві ноги
+    }
+
+    bool? isEngineer;
+
+    /// <summary>Глухий стукіт приземлення — тільки для інженера (гравця), інакше екіпаж «топав» би хором.</summary>
+    void StepSound(float volume)
+    {
+        if (!isEngineer.HasValue) isEngineer = GetComponent<EngineerController>() != null;
+        if (isEngineer.Value) GameAudio.Play(Sfx.Step, volume);
     }
 
     Vector3 lastPrint;

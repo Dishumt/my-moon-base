@@ -8,3 +8,6 @@ VisualElement {}
     -unity-font: url("project:///Assets/_Project/Art/Fonts/Inter-Regular.ttf");
     -unity-font-definition: url("project:///Assets/_Project/Art/Fonts/Inter-Regular.ttf");
 }
+
+/* Те саме для всіх елементів (перевірено у веб-збірці: українські тексти видно). Правило вище лишає шрифт і для тих, хто не має класу unity-text-element. */
+* { -unity-font-definition: url("project:///Assets/_Project/Art/Fonts/Inter-Regular.ttf"); }

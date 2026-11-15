@@ -23,6 +23,12 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <ui:VisualElement name="hud-tools" class="hud-tools" picking-mode="Ignore">
+            <ui:Button name="hud-help" class="hud-tool" />
+            <ui:Button name="hud-sound" class="hud-tool" />
+            <ui:Button name="hud-menu" class="hud-tool" />
+        </ui:VisualElement>
+
         <ui:VisualElement name="hud-goals" class="hud-goals" picking-mode="Ignore">
             <ui:Label name="hud-chapter" class="hud-goals__title" />
             <ui:VisualElement name="hud-goal-list" picking-mode="Ignore" />

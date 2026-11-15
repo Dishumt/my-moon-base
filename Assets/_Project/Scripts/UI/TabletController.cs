@@ -32,6 +32,9 @@ public class TabletController : MonoBehaviour
     public bool IsOpen { get; private set; }
     public string CurrentTab { get; private set; }
 
+    /// <summary>Номер кадру, коли планшет закрили (Esc закриває планшет, а не відкриває меню паузи в тому ж кадрі).</summary>
+    public int LastCloseFrame { get; private set; } = -1;
+
     VisualElement root, stage, tablet;
     Label dayLabel;
     VisualElement pausedBox;
@@ -42,6 +45,7 @@ public class TabletController : MonoBehaviour
     PowerTabView powerTab;     // POWER tab: sharing the power blocks
     CrewTabView crewTab;       // CREW tab: jobs for the astronauts
     CommsTabView commsTab;     // COMMS tab: when Earth can hear us
+    MapTabView mapTab;         // MAP tab: plan of the surface, places and distances
 
     // ---------- start / stop ----------
 
@@ -105,8 +109,7 @@ public class TabletController : MonoBehaviour
         if (panes.TryGetValue("power", out var powerPane)) powerTab = new PowerTabView(powerPane);
         if (panes.TryGetValue("crew", out var crewPane)) crewTab = new CrewTabView(crewPane);
         if (panes.TryGetValue("comms", out var commsPane)) commsTab = new CommsTabView(commsPane);
-        // MAP is only a placeholder for now: hide its tab so the player never sees "not ready"
-        if (tabButtons.TryGetValue("map", out var mapButton)) mapButton.style.display = DisplayStyle.None;
+        if (panes.TryGetValue("map", out var mapPane)) mapTab = new MapTabView(mapPane);
 
         GameEvents.StateChanged += Refresh;
         Loc.LanguageChanged += ApplyTexts;
@@ -167,6 +170,7 @@ public class TabletController : MonoBehaviour
     {
         if (!IsOpen) return;
         IsOpen = false;
+        LastCloseFrame = Time.frameCount;
         GameBootstrap.Instance?.Clock?.PopModal();
 
         tablet.RemoveFromClassList("tablet--open");
@@ -181,11 +185,12 @@ public class TabletController : MonoBehaviour
 
     public void ShowTab(string id)
     {
-        if (!panes.ContainsKey(id) || id == "map") id = "power";
+        if (!panes.ContainsKey(id)) id = "power";
         CurrentTab = id;
 
         foreach (var pair in tabButtons) pair.Value.EnableInClassList("tab--on", pair.Key == id);
         foreach (var pair in panes) pair.Value.style.display = pair.Key == id ? DisplayStyle.Flex : DisplayStyle.None;
+        if (id == "map" && IsOpen) mapTab?.Refresh();
     }
 
     // ---------- texts ----------
@@ -240,6 +245,7 @@ public class TabletController : MonoBehaviour
         powerTab?.Refresh();
         crewTab?.Refresh();
         commsTab?.Refresh();
+        if (CurrentTab == "map") mapTab?.Refresh(); // the plan is drawn from many objects: only when it is on screen
     }
 
     void BuildSegments(string kind)
