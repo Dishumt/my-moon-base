@@ -3575,12 +3575,12 @@ MonoBehaviour:
     depth: 5
     rim: 1.3
     ice: 1
-  - pos: {x: -131.55696, y: -47.88282}
+  - pos: {x: -33.646477, y: 125.57036}
     radius: 16.178139
     depth: 5
     rim: 1.3
     ice: 1
-  - pos: {x: -33.646477, y: 125.57036}
+  - pos: {x: -131.55696, y: -47.88282}
     radius: 15.652347
     depth: 5
     rim: 1.3
@@ -3659,19 +3659,19 @@ MonoBehaviour:
     radius: 32.98904
     height: 6.789563
   flats:
-  - pos: {x: 34.999996, y: 60.62178}
+  - pos: {x: -75.17541, y: 27.361618}
     radius: 5
   - pos: {x: 20.837778, y: -118.176926}
     radius: 5
+  - pos: {x: 0.0000004173708, y: -35}
+    radius: 10
   - pos: {x: -93.55673, y: 16.496588}
+    radius: 5
+  - pos: {x: 34.999996, y: 60.62178}
     radius: 5
   - pos: {x: 125.573685, y: 72.50001}
     radius: 5
   - pos: {x: 46.98463, y: 17.101006}
-    radius: 5
-  - pos: {x: 0.0000004173708, y: -35}
-    radius: 10
-  - pos: {x: -75.17541, y: 27.361618}
     radius: 5
 --- !u!4 &1782668200
 Transform:
@@ -4393,251 +4393,11 @@ MonoBehaviour:
     seed: 30428
     color: {r: 0.56445354, g: 0.54752, b: 0.55880904, a: 1}
   props:
-  - pos: {x: 125.573685, y: 72.50001}
-    sprite: 12
-    scale: 1.4
-    flip: 1
-    poiId: sample_04
-    shadow: 1
-  - pos: {x: 127.655334, y: 71.31597}
-    sprite: 11
-    scale: 0.9832284
-    flip: 1
-    poiId: sample_04
-    shadow: 1
-  - pos: {x: 124.3762, y: 70.357124}
-    sprite: 12
-    scale: 0.88827544
-    flip: 1
-    poiId: sample_04
-    shadow: 1
-  - pos: {x: 126.87212, y: 71.652405}
-    sprite: 10
-    scale: 0.96340173
-    flip: 0
-    poiId: sample_04
-    shadow: 0
-  - pos: {x: 126.815216, y: 73.743904}
-    sprite: 10
-    scale: 1.0039386
-    flip: 1
-    poiId: sample_04
-    shadow: 0
-  - pos: {x: 122.973206, y: 72.14183}
-    sprite: 10
-    scale: 0.80504733
-    flip: 0
-    poiId: sample_04
-    shadow: 0
-  - pos: {x: -77.00791, y: 28.76373}
+  - pos: {x: -74.219124, y: 28.867008}
     sprite: 15
     scale: 1
-    flip: 1
+    flip: 0
     poiId: fact_02
-    shadow: 1
-  - pos: {x: -131.55696, y: -47.88282}
-    sprite: 1
-    scale: 2.2
-    flip: 0
-    poiId: ice_01
-    shadow: 0
-  - pos: {x: -130.22955, y: -50.80625}
-    sprite: 6
-    scale: 1.7
-    flip: 1
-    poiId: ice_01
-    shadow: 0
-  - pos: {x: -131.7146, y: -50.301376}
-    sprite: 0
-    scale: 0.8577744
-    flip: 1
-    poiId: ice_01
-    shadow: 1
-  - pos: {x: -131.11559, y: -50.07459}
-    sprite: 0
-    scale: 1.0828927
-    flip: 1
-    poiId: ice_01
-    shadow: 1
-  - pos: {x: -129.18668, y: -46.214516}
-    sprite: 0
-    scale: 0.96324617
-    flip: 0
-    poiId: ice_01
-    shadow: 1
-  - pos: {x: -134.00342, y: -49.37288}
-    sprite: 0
-    scale: 1.0718584
-    flip: 1
-    poiId: ice_01
-    shadow: 1
-  - pos: {x: -127.74317, y: -48.578686}
-    sprite: 0
-    scale: 0.89815587
-    flip: 1
-    poiId: ice_01
-    shadow: 1
-  - pos: {x: -126.47928, y: -47.99576}
-    sprite: 7
-    scale: 1.1513541
-    flip: 1
-    poiId: ice_01
-    shadow: 1
-  - pos: {x: -131.18636, y: -42.67557}
-    sprite: 7
-    scale: 0.9779186
-    flip: 0
-    poiId: ice_01
-    shadow: 1
-  - pos: {x: 48.703156, y: 18.528425}
-    sprite: 15
-    scale: 1
-    flip: 1
-    poiId: fact_01
-    shadow: 1
-  - pos: {x: -33.646477, y: 125.57036}
-    sprite: 1
-    scale: 2.2
-    flip: 1
-    poiId: ice_03
-    shadow: 0
-  - pos: {x: -35.749348, y: 122.452965}
-    sprite: 6
-    scale: 1.7
-    flip: 0
-    poiId: ice_03
-    shadow: 0
-  - pos: {x: -32.885757, y: 129.88097}
-    sprite: 0
-    scale: 0.8972264
-    flip: 0
-    poiId: ice_03
-    shadow: 1
-  - pos: {x: -36.955574, y: 127.17606}
-    sprite: 0
-    scale: 0.82180715
-    flip: 1
-    poiId: ice_03
-    shadow: 1
-  - pos: {x: -32.627346, y: 123.19378}
-    sprite: 0
-    scale: 1.2672843
-    flip: 1
-    poiId: ice_03
-    shadow: 1
-  - pos: {x: -37.120342, y: 122.621025}
-    sprite: 0
-    scale: 1.160094
-    flip: 1
-    poiId: ice_03
-    shadow: 1
-  - pos: {x: -29.790346, y: 125.31509}
-    sprite: 0
-    scale: 1.2695333
-    flip: 1
-    poiId: ice_03
-    shadow: 1
-  - pos: {x: -29.739353, y: 124.30549}
-    sprite: 7
-    scale: 0.92548966
-    flip: 0
-    poiId: ice_03
-    shadow: 1
-  - pos: {x: -29.122412, y: 123.13541}
-    sprite: 7
-    scale: 1.1035181
-    flip: 1
-    poiId: ice_03
-    shadow: 1
-  - pos: {x: 34.999996, y: 60.62178}
-    sprite: 12
-    scale: 1.4
-    flip: 0
-    poiId: sample_01
-    shadow: 1
-  - pos: {x: 36.600685, y: 61.3565}
-    sprite: 11
-    scale: 0.977327
-    flip: 1
-    poiId: sample_01
-    shadow: 1
-  - pos: {x: 34.176926, y: 62.328457}
-    sprite: 12
-    scale: 0.9330471
-    flip: 0
-    poiId: sample_01
-    shadow: 1
-  - pos: {x: 35.242855, y: 58.508846}
-    sprite: 10
-    scale: 1.1811385
-    flip: 1
-    poiId: sample_01
-    shadow: 0
-  - pos: {x: 37.67442, y: 61.01738}
-    sprite: 10
-    scale: 0.9216493
-    flip: 1
-    poiId: sample_01
-    shadow: 0
-  - pos: {x: 34.242855, y: 59.610764}
-    sprite: 10
-    scale: 0.95605063
-    flip: 1
-    poiId: sample_01
-    shadow: 0
-  - pos: {x: 102.39399, y: -71.697075}
-    sprite: 1
-    scale: 2.2
-    flip: 1
-    poiId: ice_02
-    shadow: 0
-  - pos: {x: 99.9252, y: -74.5505}
-    sprite: 6
-    scale: 1.7
-    flip: 0
-    poiId: ice_02
-    shadow: 0
-  - pos: {x: 106.7915, y: -73.509735}
-    sprite: 0
-    scale: 1.1537207
-    flip: 1
-    poiId: ice_02
-    shadow: 1
-  - pos: {x: 101.33675, y: -75.375885}
-    sprite: 0
-    scale: 1.240486
-    flip: 0
-    poiId: ice_02
-    shadow: 1
-  - pos: {x: 106.63594, y: -70.35851}
-    sprite: 0
-    scale: 0.8634025
-    flip: 0
-    poiId: ice_02
-    shadow: 1
-  - pos: {x: 99.83696, y: -72.335075}
-    sprite: 0
-    scale: 1.0654092
-    flip: 1
-    poiId: ice_02
-    shadow: 1
-  - pos: {x: 97.43446, y: -72.05347}
-    sprite: 0
-    scale: 1.2266551
-    flip: 1
-    poiId: ice_02
-    shadow: 1
-  - pos: {x: 103.689064, y: -67.23536}
-    sprite: 7
-    scale: 0.9840028
-    flip: 1
-    poiId: ice_02
-    shadow: 1
-  - pos: {x: 98.07893, y: -70.51698}
-    sprite: 7
-    scale: 0.9513489
-    flip: 0
-    poiId: ice_02
     shadow: 1
   - pos: {x: 20.837778, y: -118.176926}
     sprite: 11
@@ -4645,72 +4405,312 @@ MonoBehaviour:
     flip: 0
     poiId: sample_03
     shadow: 1
-  - pos: {x: 20.085688, y: -119.97129}
+  - pos: {x: 22.735031, y: -117.19756}
     sprite: 11
-    scale: 0.8970164
-    flip: 1
+    scale: 0.9709556
+    flip: 0
     poiId: sample_03
     shadow: 1
-  - pos: {x: 18.890554, y: -117.70882}
+  - pos: {x: 19.197895, y: -116.279396}
     sprite: 12
-    scale: 0.876202
+    scale: 0.7584342
     flip: 1
     poiId: sample_03
     shadow: 1
-  - pos: {x: 20.438911, y: -116.7453}
+  - pos: {x: 19.413763, y: -118.23679}
     sprite: 10
-    scale: 1.0535768
+    scale: 0.9238812
+    flip: 0
+    poiId: sample_03
+    shadow: 0
+  - pos: {x: 22.451426, y: -116.772514}
+    sprite: 10
+    scale: 1.1166735
     flip: 1
     poiId: sample_03
     shadow: 0
-  - pos: {x: 20.092169, y: -116.79165}
+  - pos: {x: 22.386763, y: -119.29934}
     sprite: 10
-    scale: 1.0833948
-    flip: 0
+    scale: 1.1229508
+    flip: 1
     poiId: sample_03
     shadow: 0
-  - pos: {x: 22.41159, y: -119.385956}
-    sprite: 10
-    scale: 1.0016948
+  - pos: {x: 102.39399, y: -71.697075}
+    sprite: 1
+    scale: 2.2
     flip: 0
-    poiId: sample_03
+    poiId: ice_02
     shadow: 0
+  - pos: {x: 103.72139, y: -74.62051}
+    sprite: 6
+    scale: 1.7
+    flip: 1
+    poiId: ice_02
+    shadow: 0
+  - pos: {x: 102.23634, y: -74.11563}
+    sprite: 0
+    scale: 0.8577744
+    flip: 1
+    poiId: ice_02
+    shadow: 1
+  - pos: {x: 102.83536, y: -73.88884}
+    sprite: 0
+    scale: 1.0828927
+    flip: 1
+    poiId: ice_02
+    shadow: 1
+  - pos: {x: 104.76427, y: -70.02877}
+    sprite: 0
+    scale: 0.96324617
+    flip: 0
+    poiId: ice_02
+    shadow: 1
+  - pos: {x: 99.94754, y: -73.18713}
+    sprite: 0
+    scale: 1.0718584
+    flip: 1
+    poiId: ice_02
+    shadow: 1
+  - pos: {x: 106.20778, y: -72.39294}
+    sprite: 0
+    scale: 0.89815587
+    flip: 1
+    poiId: ice_02
+    shadow: 1
+  - pos: {x: 107.47167, y: -71.81001}
+    sprite: 7
+    scale: 1.1513541
+    flip: 1
+    poiId: ice_02
+    shadow: 1
+  - pos: {x: 102.764595, y: -66.48982}
+    sprite: 7
+    scale: 0.9779186
+    flip: 0
+    poiId: ice_02
+    shadow: 1
   - pos: {x: -93.55673, y: 16.496588}
+    sprite: 12
+    scale: 1.4
+    flip: 0
+    poiId: sample_02
+    shadow: 1
+  - pos: {x: -94.12657, y: 18.210758}
+    sprite: 11
+    scale: 0.93110996
+    flip: 0
+    poiId: sample_02
+    shadow: 1
+  - pos: {x: -92.16782, y: 15.317035}
+    sprite: 12
+    scale: 0.93772215
+    flip: 1
+    poiId: sample_02
+    shadow: 1
+  - pos: {x: -94.93361, y: 15.08684}
+    sprite: 10
+    scale: 1.0237464
+    flip: 1
+    poiId: sample_02
+    shadow: 0
+  - pos: {x: -95.82761, y: 17.893356}
+    sprite: 10
+    scale: 0.8781166
+    flip: 0
+    poiId: sample_02
+    shadow: 0
+  - pos: {x: -95.61113, y: 17.534414}
+    sprite: 10
+    scale: 1.1409345
+    flip: 0
+    poiId: sample_02
+    shadow: 0
+  - pos: {x: 34.999996, y: 60.62178}
+    sprite: 12
+    scale: 1.4
+    flip: 0
+    poiId: sample_01
+    shadow: 1
+  - pos: {x: 33.30149, y: 58.995903}
+    sprite: 11
+    scale: 0.83157694
+    flip: 0
+    poiId: sample_01
+    shadow: 1
+  - pos: {x: 34.445377, y: 62.212852}
+    sprite: 12
+    scale: 0.9284908
+    flip: 0
+    poiId: sample_01
+    shadow: 1
+  - pos: {x: 36.015137, y: 58.423767}
+    sprite: 10
+    scale: 0.8623096
+    flip: 1
+    poiId: sample_01
+    shadow: 0
+  - pos: {x: 36.323208, y: 60.608734}
+    sprite: 10
+    scale: 0.8806261
+    flip: 0
+    poiId: sample_01
+    shadow: 0
+  - pos: {x: 33.559494, y: 61.665257}
+    sprite: 10
+    scale: 0.9179126
+    flip: 0
+    poiId: sample_01
+    shadow: 0
+  - pos: {x: 125.573685, y: 72.50001}
     sprite: 11
     scale: 1.4
-    flip: 1
-    poiId: sample_02
+    flip: 0
+    poiId: sample_04
     shadow: 1
-  - pos: {x: -93.17727, y: 14.702412}
+  - pos: {x: 123.22177, y: 72.27897}
     sprite: 11
-    scale: 0.86750185
+    scale: 0.87544674
     flip: 1
-    poiId: sample_02
+    poiId: sample_04
     shadow: 1
-  - pos: {x: -94.88025, y: 14.920923}
+  - pos: {x: 126.54597, y: 70.86283}
     sprite: 12
-    scale: 0.99259114
-    flip: 1
-    poiId: sample_02
+    scale: 0.83039796
+    flip: 0
+    poiId: sample_04
     shadow: 1
-  - pos: {x: -95.06281, y: 17.114056}
+  - pos: {x: 127.429955, y: 72.91561}
     sprite: 10
-    scale: 0.8488772
+    scale: 0.978312
     flip: 1
-    poiId: sample_02
+    poiId: sample_04
     shadow: 0
-  - pos: {x: -91.87032, y: 18.274698}
+  - pos: {x: 123.9447, y: 70.617226}
     sprite: 10
-    scale: 0.89916855
-    flip: 1
-    poiId: sample_02
+    scale: 1.0170192
+    flip: 0
+    poiId: sample_04
     shadow: 0
-  - pos: {x: -93.56253, y: 15.065988}
+  - pos: {x: 127.73222, y: 71.292366}
     sprite: 10
-    scale: 1.1352267
-    flip: 1
-    poiId: sample_02
+    scale: 0.9731267
+    flip: 0
+    poiId: sample_04
     shadow: 0
+  - pos: {x: -33.646477, y: 125.57036}
+    sprite: 1
+    scale: 2.2
+    flip: 0
+    poiId: ice_03
+    shadow: 0
+  - pos: {x: -30.779715, y: 122.91106}
+    sprite: 6
+    scale: 1.7
+    flip: 1
+    poiId: ice_03
+    shadow: 0
+  - pos: {x: -32.6868, y: 123.39197}
+    sprite: 0
+    scale: 1.1665016
+    flip: 0
+    poiId: ice_03
+    shadow: 1
+  - pos: {x: -32.79263, y: 129.05988}
+    sprite: 0
+    scale: 1.0127033
+    flip: 0
+    poiId: ice_03
+    shadow: 1
+  - pos: {x: -29.094208, y: 125.306145}
+    sprite: 0
+    scale: 1.0120763
+    flip: 1
+    poiId: ice_03
+    shadow: 1
+  - pos: {x: -36.19346, y: 124.31392}
+    sprite: 0
+    scale: 0.92483693
+    flip: 1
+    poiId: ice_03
+    shadow: 1
+  - pos: {x: -36.151268, y: 125.77927}
+    sprite: 0
+    scale: 1.1216693
+    flip: 0
+    poiId: ice_03
+    shadow: 1
+  - pos: {x: -29.408384, y: 123.16387}
+    sprite: 7
+    scale: 1.0296013
+    flip: 1
+    poiId: ice_03
+    shadow: 1
+  - pos: {x: -36.112606, y: 129.24432}
+    sprite: 7
+    scale: 1.0208102
+    flip: 0
+    poiId: ice_03
+    shadow: 1
+  - pos: {x: -131.55696, y: -47.88282}
+    sprite: 1
+    scale: 2.2
+    flip: 1
+    poiId: ice_01
+    shadow: 0
+  - pos: {x: -132.44994, y: -44.67771}
+    sprite: 6
+    scale: 1.7
+    flip: 0
+    poiId: ice_01
+    shadow: 0
+  - pos: {x: -128.81682, y: -46.696934}
+    sprite: 0
+    scale: 0.9036646
+    flip: 0
+    poiId: ice_01
+    shadow: 1
+  - pos: {x: -135.78395, y: -49.908337}
+    sprite: 0
+    scale: 1.017945
+    flip: 0
+    poiId: ice_01
+    shadow: 1
+  - pos: {x: -126.8714, y: -48.93883}
+    sprite: 0
+    scale: 0.96041304
+    flip: 0
+    poiId: ice_01
+    shadow: 1
+  - pos: {x: -132.34879, y: -44.97622}
+    sprite: 0
+    scale: 0.9824182
+    flip: 0
+    poiId: ice_01
+    shadow: 1
+  - pos: {x: -136.31047, y: -46.591}
+    sprite: 0
+    scale: 0.9093523
+    flip: 1
+    poiId: ice_01
+    shadow: 1
+  - pos: {x: -131.26631, y: -44.14973}
+    sprite: 7
+    scale: 0.93925184
+    flip: 1
+    poiId: ice_01
+    shadow: 1
+  - pos: {x: -132.9152, y: -51.64073}
+    sprite: 7
+    scale: 0.9584487
+    flip: 0
+    poiId: ice_01
+    shadow: 1
+  - pos: {x: 48.605194, y: 18.786333}
+    sprite: 15
+    scale: 1
+    flip: 1
+    poiId: fact_01
+    shadow: 1
   - pos: {x: -41.08448, y: -121.249146}
     sprite: 10
     scale: 1.0705935
