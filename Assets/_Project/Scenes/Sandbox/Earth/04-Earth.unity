@@ -539,6 +539,22 @@ MonoBehaviour:
     texture: {fileID: 2800000, guid: 01ba0421cdac8524b8d34dc20af7612a, type: 3}
   - id: materials
     texture: {fileID: 2800000, guid: 3f8c66128c1fe944da5098a973be5960, type: 3}
+  - id: kit_habitat
+    texture: {fileID: 2800000, guid: 91766e3c4177444b9bea265aef03c21c, type: 3}
+  - id: kit_solar
+    texture: {fileID: 2800000, guid: c7bb38752ea84e2d8f408f5785460866, type: 3}
+  - id: kit_battery
+    texture: {fileID: 2800000, guid: bfb8efdcb2a54afead71486e5b6c3ca2, type: 3}
+  - id: kit_greenhouse
+    texture: {fileID: 2800000, guid: db4c80b02951485fb3d076a7795d9101, type: 3}
+  - id: kit_shelter
+    texture: {fileID: 2800000, guid: 8e47633e0f33f344aa785888ace7228c, type: 3}
+  - id: kit_medbay
+    texture: {fileID: 2800000, guid: 4c6dea224e034d6f93e80ed802625117, type: 3}
+  - id: kit_antenna
+    texture: {fileID: 2800000, guid: 1553ed83118445b8835428570aa4f2b0, type: 3}
+  - id: kit_lab
+    texture: {fileID: 2800000, guid: fe4a0720e73b4190a788bd6c789d8a82, type: 3}
   crewSuits:
   - role: 0
     walkRight:
