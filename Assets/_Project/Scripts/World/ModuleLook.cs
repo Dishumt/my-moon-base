@@ -76,6 +76,9 @@ public class ModuleLook : MonoBehaviour
         public float centerX;
     }
 
+    [Header("Написи світу поверх гри (UI Toolkit): «Увага, буря!» — ставить меню Moon → Напис «Увага, буря»")]
+    public UnityEngine.UIElements.PanelSettings uiPanel;
+
     [Header("Меблі (заповнює меню Moon → Налаштувати меблі)")]
     public List<FurnitureSprite> furniture = new List<FurnitureSprite>();
 

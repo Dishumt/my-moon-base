@@ -39,6 +39,8 @@ public class StormFx : MonoBehaviour
     readonly Dictionary<Transform, SpriteRenderer> glows = new Dictionary<Transform, SpriteRenderer>();
     readonly HashSet<Transform> glowUsed = new HashSet<Transform>();
     ModuleInterior calmRoom;
+    StormBanner banner;
+    bool bannerWarned;
     static Sprite arrowSprite;
 
     void Awake()
@@ -64,6 +66,9 @@ public class StormFx : MonoBehaviour
         float dt = Time.unscaledDeltaTime;
         stormK = Mathf.MoveTowards(stormK, phase == StormPhase.Active ? 1f : 0f, dt / 1.5f);
 
+        int hours = rad != null ? rad.HoursUntilStorm(game.State) : 3;
+        if (DebugMode == 1) hours = 3;
+        UpdateBanner(phase, hours);
         UpdateOverlay(phase, strength);
         UpdateProtons(strength);
         var shelter = BaseView.FindRoom(ModuleType.Shelter); // куди ховатися: укриття, а якщо його ще немає — житловий
@@ -71,6 +76,25 @@ public class StormFx : MonoBehaviour
         UpdateBeacons(phase, shelter);
         UpdateShelter(phase, shelter);
         UpdateGlows(phase);
+    }
+
+    // ---------- Напис «Увага, буря!» ----------
+
+    void UpdateBanner(StormPhase phase, int hours)
+    {
+        if (banner == null)
+        {
+            if (phase == StormPhase.None) return; // створюємо лише тоді, коли знадобився
+            var look = ModuleLook.Instance;
+            if (look == null || look.uiPanel == null)
+            {
+                if (!bannerWarned) Debug.LogWarning("StormFx: немає ModuleLook.uiPanel — напису «Увага, буря» не буде. Запусти меню Moon → Напис «Увага, буря».");
+                bannerWarned = true;
+                return;
+            }
+            banner = StormBanner.Create(look.uiPanel);
+        }
+        banner.Show(phase, hours);
     }
 
     // ---------- Екран: відтінок, червоні краї ----------
