@@ -1,0 +1,20 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Бур на кратері з льодом і переробник біля бази (IcePlantSystem, техлід). Лід → вода; частину води переробник розщеплює струмом на кисень (електроліз), як планує NASA. Швидкості — «на годину гри».",
+  "drillMaterials": 10,
+  "drillBuildHours": 8,
+  "processorMaterials": 10,
+  "processorBuildHours": 8,
+  "pipeMetersPerMaterial": 10,
+  "pipeMetersPerMaterial_note": "Кожні 10 м труби коштують 1 будматеріал: далекий модуль — дорожча труба.",
+  "icePerHour": 0.25,
+  "crewBonus": 2,
+  "crewBonus_note": "Якщо хтось із завданням «Лід» (найкраще геолог) стоїть біля бура, бур копає вдвічі швидше.",
+  "iceStorageMax": 10,
+  "processIcePerHour": 0.5,
+  "waterPerIce": 1,
+  "oxygenPerWater": 2,
+  "oxygenPerWater_note": "Як у життєзабезпеченні (03): 2 води на блок → 4 кисню на блок, тобто 1 вода = 2 кисню.",
+  "drillBatteryPerHour": 0.2,
+  "processorBatteryPerHour": 0.2
+}

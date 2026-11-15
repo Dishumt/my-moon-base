@@ -1,0 +1,30 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "items": [
+    { "key": "incident.hold_f", "text": "Hold F to fix it!" },
+    { "key": "incident.fixed", "text": "Fixed! +{0} science" },
+    { "key": "incident.fact_source", "text": "Real fact from NASA (ARCHIVE)" },
+    { "key": "incident.fixed_report", "text": "You fixed a breakdown: +{0} science." },
+    { "key": "incident.error_no_data", "text": "No breakdown data file." },
+    { "key": "incident.error_busy", "text": "Something is already broken. Fix it first." },
+    { "key": "incident.error_no_module", "text": "There is no finished module for this breakdown." },
+
+    { "key": "incident.toilet.title", "text": "The toilet broke! Water is leaking." },
+    { "key": "incident.toilet.hint", "text": "Walk into the Habitat (red sign) and hold F to fix it." },
+    { "key": "incident.toilet.fact", "text": "On the space station the toilet breaks sometimes, and astronauts fix it themselves. Water is precious: in 2023 the station learned to recycle 98% of its water, even from sweat and urine!" },
+    { "key": "incident.toilet.report", "text": "The toilet broke. Water leaks until the engineer fixes it." },
+    { "key": "incident.toilet.still", "text": "The toilet is still broken: {0} water leaked today." },
+
+    { "key": "incident.panel_dust.title", "text": "Moon dust covered a solar panel! The battery is draining." },
+    { "key": "incident.panel_dust.hint", "text": "Walk to the solar panel (red sign) and hold F to clean it." },
+    { "key": "incident.panel_dust.fact", "text": "Moon dust is sharp like tiny bits of glass and sticks to everything. Apollo astronauts (1969-1972) found it on their suits, tools and even in their noses." },
+    { "key": "incident.panel_dust.report", "text": "Moon dust covered a solar panel. The battery drains until it is cleaned." },
+    { "key": "incident.panel_dust.still", "text": "The solar panel is still dusty: the battery lost {0} today." },
+
+    { "key": "incident.meteor.title", "text": "A tiny space rock hit a module! Air is leaking." },
+    { "key": "incident.meteor.hint", "text": "Go into the module with the red sign and hold F to patch the hole." },
+    { "key": "incident.meteor.fact", "text": "Micrometeoroids are space rocks smaller than a grain of sand, but they fly faster than 10 km every second. In 2016 a tiny piece hit a window of the space station and left a 7 mm chip." },
+    { "key": "incident.meteor.report", "text": "A micrometeoroid made a hole. Oxygen leaks until it is patched." },
+    { "key": "incident.meteor.still", "text": "The hole is still open: {0} oxygen leaked today." }
+  ]
+}

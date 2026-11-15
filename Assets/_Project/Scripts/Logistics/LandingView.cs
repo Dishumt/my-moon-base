@@ -22,13 +22,16 @@ public class LandingView
     static readonly float[] ProfileAltM = { 15000f, 7000f, 2100f, 150f, 0f };
     static readonly float[] ProfileKmh = { 6000f, 2500f, 550f, 50f, 0f };
     const float RealSeconds = 720f;
-    const float BrakeSeconds = 3f, DescentSeconds = 3.6f;   // на екрані: гальмування + вертикальний спуск
+    const float BrakeSeconds = 4.2f, DescentSeconds = 5.2f;
 
     readonly VisualElement view, world;
     readonly Label title, status, fact, telemetry;
     readonly Button skipButton;
     VisualElement lander, flame, shadow;
     readonly List<Dust> dust = new List<Dust>();
+    readonly Stack<Dust> dustPool = new Stack<Dust>();
+    readonly System.Random visualRandom = new System.Random(19);
+    float dustRemainder, visualTime;
     bool skip;
     float W, H, groundY, padX, L, Lw, crewSize;
 
@@ -94,13 +97,14 @@ public class LandingView
         for (float t = 0f; t < BrakeSeconds && !skip; t += Time.unscaledDeltaTime)
         {
             float u = t / BrakeSeconds;
-            float e = 1f - (1f - u) * (1f - u);                              // швидко, потім повільніше
+            float e = 1f - Mathf.Pow(1f - u, 3f); // brake to a near-stop at the descent gate
             Vector2 pos = Quad(start, ctrl, gate, e);
             Place(pos, Mathf.Lerp(70f, 18f, e), 1f);
             Telemetry(u * BrakeSeconds / (BrakeSeconds + DescentSeconds));
             Tick(Time.unscaledDeltaTime, pos, 1f);
             yield return null;
         }
+        Place(gate, 18f, 0.8f);
 
         // 2) вертикальний спуск: вирівнюємось, підправляємо місце, сідаємо
         SetText(status, T("landing.event.vertical"));
@@ -110,11 +114,11 @@ public class LandingView
         for (float t = 0f; t < DescentSeconds && !skip; t += Time.unscaledDeltaTime)
         {
             float u = t / DescentSeconds;
-            float ex = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(u * 1.3f));
-            float ey = 1f - Mathf.Pow(1f - u, 3f);                           // що нижче, то повільніше
+            float ex = FlightMotion.Smooth01(u);
+            float ey = FlightMotion.Smooth01(u); // no velocity jump at gate; zero speed at contact
             Vector2 pos = new Vector2(Mathf.Lerp(gate.x, touch.x, ex), Mathf.Lerp(gate.y, touch.y, ey));
-            float sway = Mathf.Sin(t * 5f) * 2f * (1f - u);
-            Place(pos, Mathf.Lerp(18f, 0f, Mathf.Clamp01(u * 1.6f)) + sway, Mathf.Lerp(0.8f, 0.35f, u));
+            float sway = Mathf.Sin(t * 3f) * 0.5f * Mathf.Sin(u * Mathf.PI);
+            Place(pos, Mathf.Lerp(18f, 0f, FlightMotion.Smooth01(Mathf.Clamp01(u * 1.6f))) + sway, Mathf.Lerp(0.8f, 0.35f, u));
             Telemetry((BrakeSeconds + t) / (BrakeSeconds + DescentSeconds));
             if (!dustSaid && groundY - pos.y < L * 1.6f) { dustSaid = true; SetText(status, T("landing.event.dust")); SetText(fact, T("landing.fact.3")); }
             Tick(Time.unscaledDeltaTime, pos, Mathf.Lerp(0.8f, 0.35f, u));
@@ -128,12 +132,12 @@ public class LandingView
         SetText(status, T("landing.event.contact"));
         for (float t = 0f; t < 0.5f; t += Time.unscaledDeltaTime)
         {
-            float squash = 1f - 0.07f * Mathf.Sin(Mathf.Clamp01(t / 0.35f) * Mathf.PI);   // опори стискаються й розпрямляються
-            lander.style.scale = new Scale(new Vector3(1f, squash, 1f));
+            // Small suspension settle; a rigid metal cabin must not squash like a rubber toy.
+            lander.style.translate = new Translate(0f, 1.5f * Mathf.Sin(Mathf.Clamp01(t / 0.5f) * Mathf.PI));
             Tick(Time.unscaledDeltaTime, touch, 0f);
             yield return null;
         }
-        lander.style.scale = new Scale(Vector3.one);
+        lander.style.translate = new Translate(0f, 0f);
 
         // 4) екіпаж виходить і стрибає до бази
         SetText(status, T("landing.event.crew"));
@@ -150,9 +154,14 @@ public class LandingView
         view.style.display = DisplayStyle.None;
         world.Clear();
         dust.Clear();
+        dustPool.Clear();
     }
 
     // ---------- Сцена ----------
+
+    // Картинка бази (Resources/Art/Flight/landing_base.png, 1942×809): висота / ширина і де на ній поверхня ґрунту (частка висоти)
+    const float BaseArtAspect = 809f / 1942f;
+    const float BaseArtGround = 0.832f;
 
     void Build()
     {
@@ -162,6 +171,8 @@ public class LandingView
         if (float.IsNaN(H) || H < 10f) H = 720f;
         world.Clear();
         dust.Clear();
+        dustPool.Clear();
+        dustRemainder = visualTime = 0f;
 
         groundY = H * 0.8f;
         padX = W * 0.45f;
@@ -185,9 +196,13 @@ public class LandingView
 
         // Земля теж низько над горизонтом
         float er = H * 0.04f;
-        var earth = Circle(world, W * 0.84f, H * 0.3f, er, "#2F6FD0");
-        Circle(earth, er * 0.6f, er * 0.7f, er * 0.35f, "#3E9A55");
-        Circle(earth, er * 1.3f, er * 1.2f, er * 0.25f, "#EAF2FF").style.opacity = 0.8f;
+        var earthArt = FlightArt.Add(world, "Art/Flight/earth", "landing-earth");
+        if (earthArt != null) FlightArt.Rect(earthArt, W * 0.86f - er, groundY - H * 0.28f, er * 2f, er * 2f);
+        else
+        {
+            var earth = Circle(world, W * 0.84f, H * 0.3f, er, "#2F6FD0");
+            Circle(earth, er * 0.6f, er * 0.7f, er * 0.35f, "#3E9A55");
+        }
 
         // далекі пагорби — краї кратерів
         for (int i = 0; i < 6; i++)
@@ -219,19 +234,41 @@ public class LandingView
             Circle(world, x, y, s * 0.5f, "#A9A7A2");
         }
 
-        // наша база: дві сонячні панелі (стоять вертикально — світло падає збоку) і посадковий майданчик
-        foreach (float px in new[] { W * 0.74f, W * 0.8f })
+        // наша база: картинка (житловий модуль з антеною ліворуч, сонячні панелі й ще один модуль праворуч);
+        // поверхня реголіту на ній — на 83,2 % висоти, саме там ставимо лінію ґрунту. Немає картинки — малюємо панелі.
+        var baseArt = FlightArt.Add(world, "Art/Flight/landing_base", "landing-base");
+        if (baseArt != null)
         {
-            Box(world, px, groundY - H * 0.1f, 3f, H * 0.1f, "#7E8692");
-            var panel = Box(world, px - H * 0.018f, groundY - H * 0.2f, H * 0.036f, H * 0.12f, "#2D5FA8");
-            panel.style.borderTopWidth = panel.style.borderBottomWidth = panel.style.borderLeftWidth = panel.style.borderRightWidth = 2f;
-            panel.style.borderTopColor = panel.style.borderBottomColor = panel.style.borderLeftColor = panel.style.borderRightColor = new Color(0.75f, 0.8f, 0.9f);
-            Box(world, px + 3f, groundY - 2f, H * 0.25f, 4f, "#2A2A2E").style.opacity = 0.7f;   // тінь панелі
+            float bh = W * BaseArtAspect;
+            FlightArt.Rect(baseArt, 0f, groundY - bh * BaseArtGround, W, bh);
+        }
+        else
+        {
+            foreach (float px in new[] { W * 0.74f, W * 0.8f })
+            {
+                Box(world, px, groundY - H * 0.1f, 3f, H * 0.1f, "#7E8692");
+                var panel = Box(world, px - H * 0.018f, groundY - H * 0.2f, H * 0.036f, H * 0.12f, "#2D5FA8");
+                panel.style.borderTopWidth = panel.style.borderBottomWidth = panel.style.borderLeftWidth = panel.style.borderRightWidth = 2f;
+                panel.style.borderTopColor = panel.style.borderBottomColor = panel.style.borderLeftColor = panel.style.borderRightColor = new Color(0.75f, 0.8f, 0.9f);
+                Box(world, px + 3f, groundY - 2f, H * 0.25f, 4f, "#2A2A2E").style.opacity = 0.7f;   // тінь панелі
+            }
         }
         var pad = Box(world, padX - L * 0.75f, groundY - 3f, L * 1.5f, 6f, "#B5B3AD");
         Round(pad, 3f);
         Circle(world, padX - L * 0.75f, groundY - 2f, 3f, "#FF6A4D");
         Circle(world, padX + L * 0.75f, groundY - 2f, 3f, "#FF6A4D");
+
+        // Камені, бур і переробник льоду: з картинкою бази — у вільних місцях між модулями, щоб не налазили на них
+        bool withBase = baseArt != null;
+        if (!withBase)
+        {
+            var rocks = FlightArt.Add(world, "Art/Flight/moon_rocks", "landing-rocks");
+            FlightArt.Rect(rocks, W * 0.04f, groundY - L * 0.4f, L * 0.8f, L * 0.8f);
+        }
+        var drill = FlightArt.Add(world, "ISRU/ice_drill", "landing-ice-drill");
+        FlightArt.Rect(drill, W * (withBase ? 0.6f : 0.86f), groundY - L * 0.75f, L * 0.8f, L * 0.8f);
+        var processor = FlightArt.Add(world, "ISRU/ice_processor", "landing-ice-processor");
+        FlightArt.Rect(processor, W * (withBase ? 0.22f : 0.12f), groundY - L * 0.65f, L * 0.7f, L * 0.7f);
 
         // тінь посадкового модуля: витягнута праворуч, мчить до модуля, поки він знижується
         shadow = Box(world, 0f, groundY - 2f, Lw, 6f, "#1E1E22");
@@ -239,6 +276,13 @@ public class LandingView
         Round(shadow, 3f);
 
         BuildLander();
+        // Fixed pool: no element creation/removal in the animation loop, even at 144 Hz.
+        for (int i = 0; i < 64; i++)
+        {
+            var particle = Box(world, 0f, 0f, 3f, 2f, "#B5B2AC");
+            particle.style.display = DisplayStyle.None;
+            dustPool.Push(new Dust { e = particle });
+        }
     }
 
     /// <summary>Посадковий модуль: сріблястий відсік екіпажу, золотистий нижній ступінь, сопло, чотири опори (видно дві).</summary>
@@ -248,7 +292,7 @@ public class LandingView
         lander.style.position = Position.Absolute;
         lander.style.width = Lw;
         lander.style.height = L;
-        lander.style.transformOrigin = new TransformOrigin(Length.Percent(50f), Length.Percent(60f));
+        lander.style.transformOrigin = new TransformOrigin(Length.Percent(50f), Length.Percent(100f));
 
         // вогонь — під соплом (малюємо першим, щоб був позаду)
         flame = Box(lander, Lw * 0.4f, L * 0.72f, Lw * 0.2f, L * 0.4f, "#FF9A3D");
@@ -256,6 +300,20 @@ public class LandingView
         flame.style.borderBottomLeftRadius = flame.style.borderBottomRightRadius = Lw * 0.1f;
         var core = Box(flame, Lw * 0.05f, 0f, Lw * 0.1f, L * 0.22f, "#FFE58A");
         core.style.borderBottomLeftRadius = core.style.borderBottomRightRadius = Lw * 0.05f;
+
+        var art = FlightArt.Add(lander, "Art/Flight/lander", "landing-module-art");
+        if (art != null)
+        {
+            // Art is a square, bottom-aligned export. Keep feet at Place()'s ground anchor.
+            FlightArt.Rect(art, (Lw - L) * 0.5f, 0f, L, L);
+            flame.style.left = Lw * 0.5f - L * 0.055f;
+            flame.style.top = L * 0.79f;
+            flame.style.width = L * 0.11f;
+            core.style.left = L * 0.0275f;
+            core.style.width = L * 0.055f;
+            world.Add(lander);
+            return;
+        }
 
         // опори: від нижнього ступеня навскіс до «тарілок»
         Leg(new Vector2(Lw * 0.26f, L * 0.55f), new Vector2(Lw * 0.04f, L * 0.96f));
@@ -294,7 +352,7 @@ public class LandingView
         lander.style.top = feet.y - L;
         lander.style.rotate = new Rotate(new Angle(tilt));
         flame.style.opacity = throttle > 0.01f ? 1f : 0f;
-        float flicker = throttle > 0f ? Random.Range(0.85f, 1.15f) : 1f;
+        float flicker = 1f + 0.07f * Mathf.Sin(visualTime * 41f);
         flame.style.scale = new Scale(new Vector3(1f, Mathf.Max(0.01f, throttle * flicker), 1f));
         Sounds?.Engines(throttle * 0.8f);
 
@@ -309,22 +367,22 @@ public class LandingView
     /// <summary>Пил: летить прямо в боки й одразу падає (немає повітря). Нові порошинки — тільки коли двигун близько до ґрунту.</summary>
     void Tick(float dt, Vector2 feet, float throttle)
     {
+        dt = Mathf.Clamp(dt, 0f, 0.1f);
+        visualTime += dt;
         float height = groundY - feet.y;
         if (throttle > 0.05f && height < L * 1.6f)
         {
             float power = throttle * (1f - height / (L * 1.6f));
-            int n = Mathf.CeilToInt(6f * power);
+            int n = FlightMotion.EmitCount(ref dustRemainder, 90f * power, dt, dustPool.Count);
             for (int i = 0; i < n; i++)
             {
-                float dir = Random.value < 0.5f ? -1f : 1f;
-                var e = Box(world, 0f, 0f, 3f, 2f, "#C9C4B6");
-                dust.Add(new Dust
-                {
-                    e = e,
-                    p = new Vector2(feet.x + Random.Range(-Lw * 0.1f, Lw * 0.1f), groundY - 3f),
-                    v = new Vector2(dir * Random.Range(250f, 520f), -Random.Range(10f, 70f)),
-                    life = Random.Range(0.4f, 0.8f)
-                });
+                float dir = visualRandom.NextDouble() < 0.5 ? -1f : 1f;
+                var d = dustPool.Pop();
+                d.p = new Vector2(feet.x + Noise(-Lw * 0.1f, Lw * 0.1f), groundY - 3f);
+                d.v = new Vector2(dir * Noise(250f, 520f), -Noise(10f, 70f));
+                d.life = Noise(0.4f, 0.8f);
+                d.e.style.display = DisplayStyle.Flex;
+                dust.Add(d);
             }
         }
         for (int i = dust.Count - 1; i >= 0; i--)
@@ -333,12 +391,20 @@ public class LandingView
             d.life -= dt;
             d.v.y += 30f * dt;                 // слабке тяжіння і ніякого опору повітря: летить по прямій
             d.p += d.v * dt;
-            if (d.life <= 0f || d.p.y > groundY + 2f) { d.e.RemoveFromHierarchy(); dust.RemoveAt(i); continue; }
+            if (d.life <= 0f || d.p.y > groundY + 2f)
+            {
+                d.e.style.display = DisplayStyle.None;
+                dust.RemoveAt(i);
+                dustPool.Push(d);
+                continue;
+            }
             d.e.style.left = d.p.x;
             d.e.style.top = d.p.y;
             d.e.style.opacity = Mathf.Clamp01(d.life * 2f);
         }
     }
+
+    float Noise(float min, float max) => Mathf.Lerp(min, max, (float)visualRandom.NextDouble());
 
     // ---------- Екіпаж ----------
 

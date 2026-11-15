@@ -1075,6 +1075,14 @@
       "text": "Solar panels at the pole stand upright: the sunlight comes from the side, from just above the horizon."
     },
     {
+      "key": "flight.engine.burn",
+      "text": "ENGINE BURN"
+    },
+    {
+      "key": "flight.engine.coast",
+      "text": "COASTING · ENGINE OFF"
+    },
+    {
       "key": "map.tunnel_right",
       "text": "TUNNEL TO THE RIGHT →"
     },

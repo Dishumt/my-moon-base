@@ -172,7 +172,7 @@ public class GameAudio : MonoBehaviour
     /// <summary>Знаходить усі UIDocument у сцені й вішає на них «слухача» кліків (раз на півтори секунди — нові теж).</summary>
     void HookButtons()
     {
-        foreach (var doc in FindObjectsByType<UIDocument>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        foreach (var doc in FindObjectsByType<UIDocument>(FindObjectsInactive.Exclude))
         {
             var root = doc.rootVisualElement;
             if (root == null || !hooked.Add(root)) continue;

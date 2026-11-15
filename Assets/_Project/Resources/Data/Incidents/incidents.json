@@ -1,0 +1,14 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Випадкові поломки (IncidentSystem, техлід). Поки поломку не полагодили, база щогодини втрачає resource на lossPerHour. Лагодить гравець: інженер іде до модуля з червоним знаком і тримає F fixSeconds секунд. module: тип із ModuleType або AnyRoom (будь-яка кімната).",
+  "chancePerHour": 0.12,
+  "minHoursBetween": 10,
+  "firstHour": 10,
+  "dayStartHour": 7,
+  "dayEndHour": 20,
+  "items": [
+    { "id": "toilet",     "module": "Habitat", "resource": "Water",   "lossPerHour": 0.3, "fixSeconds": 4, "science": 2 },
+    { "id": "panel_dust", "module": "Solar",   "resource": "Battery", "lossPerHour": 0.5, "fixSeconds": 3, "science": 1 },
+    { "id": "meteor",     "module": "AnyRoom", "resource": "Oxygen",  "lossPerHour": 1.0, "fixSeconds": 5, "science": 3 }
+  ]
+}

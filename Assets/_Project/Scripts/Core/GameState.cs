@@ -29,6 +29,7 @@ public class GameState
     public CommsState Comms = new CommsState();              // поля додає роль 04
     public RadiationState Radiation = new RadiationState();  // поля додає роль 06
     public SimState Sim = new SimState();                    // поля додає роль 03 (що системи 03 пам'ятають між збереженнями)
+    public IcePlantState IcePlant = new IcePlantState();      // бур, переробник льоду і труби (01, IcePlantSystem)
 
     /// <summary>Модуль у слоті або null, якщо слот порожній.</summary>
     public ModuleState FindModule(int slotId)
