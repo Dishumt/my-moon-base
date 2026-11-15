@@ -1,34 +1,34 @@
 {
   "_ai": "AI-assisted (Claude)",
   "_note": "Short facts for kids 7-12 about astronaut health, based on NASA spaceflight research. Owner: role 06.",
-  "_status": "TO VERIFY: OSDR was not reachable from the build machine. For each fact open sourceUrl (OSDR search), pick the matching study and write its OSD-number into studyId, then set verified=true.",
+  "_status": "Checked 2026-11-15: for every fact, sourceUrl is a NASA page that was opened and contains the statement (verified=true). studyId is a related NASA OSDR dataset on the same topic (OSDR holds research data, mostly from mice and cells, so the kid-friendly sentence itself rests on the NASA page, not on the dataset). Empty studyId = no suitable OSDR dataset found.",
   "items": [
     {
       "id": "bone",
       "topic": "bone",
-      "en": "In space bones get weaker because they do not have to hold up the body. Astronauts can lose about 1% of hip bone every month!",
-      "uk": "У космосі кістки слабшають, бо їм не треба тримати тіло. Астронавт може втрачати близько 1% кістки стегна щомісяця!",
-      "studyId": "",
-      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=bone%20loss",
-      "verified": false
+      "en": "Without exercise, the bones that carry our weight can lose about 1% of their density every month in space!",
+      "uk": "Без вправ кістки, що тримають вагу тіла, у космосі можуть втрачати близько 1% щільності щомісяця!",
+      "studyId": "OSD-342",
+      "sourceUrl": "https://www.nasa.gov/missions/station/iss-research/counteracting-bone-and-muscle-loss-in-microgravity/",
+      "verified": true
     },
     {
       "id": "muscle",
       "topic": "muscle",
       "en": "Without gravity muscles shrink, so astronauts exercise about 2 hours every day.",
       "uk": "Без земного тяжіння м'язи меншають, тому астронавти тренуються близько 2 годин щодня.",
-      "studyId": "",
-      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=muscle%20atrophy",
-      "verified": false
+      "studyId": "OSD-21",
+      "sourceUrl": "https://www.nasa.gov/blogs/spacestation/2025/07/16/muscle-and-exercise-studies-to-maintain-crew-health-in-space/",
+      "verified": true
     },
     {
       "id": "sleep",
       "topic": "sleep",
-      "en": "On the space station the Sun rises 16 times a day, so astronauts sleep with eye masks in sleeping bags.",
-      "uk": "На космічній станції Сонце сходить 16 разів на день, тому астронавти сплять у масках для очей у спальниках.",
+      "en": "On the space station the Sun rises 16 times a day, and astronauts sleep in sleeping bags in small sleep stations.",
+      "uk": "На космічній станції Сонце сходить 16 разів на день, а астронавти сплять у спальниках у маленьких спальних відсіках.",
       "studyId": "",
-      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=sleep",
-      "verified": false
+      "sourceUrl": "https://www.nasa.gov/missions/station/seven-ways-astronauts-improve-sleep-may-help-you-snooze-better-on-earth/",
+      "verified": true
     },
     {
       "id": "radiation",
@@ -36,17 +36,17 @@
       "en": "Space has much more radiation than Earth. Astronauts wear small badges called dosimeters that count their dose.",
       "uk": "У космосі набагато більше радіації, ніж на Землі. Астронавти носять маленькі значки-дозиметри, що рахують дозу.",
       "studyId": "",
-      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=space%20radiation",
-      "verified": false
+      "sourceUrl": "https://srag.jsc.nasa.gov/SpaceRadiation/How/How.cfm",
+      "verified": true
     },
     {
       "id": "food",
       "topic": "nutrition",
-      "en": "Astronauts need extra vitamin D, because there is no sunshine on their skin inside the station.",
-      "uk": "Астронавтам потрібно більше вітаміну D, бо всередині станції на шкіру не світить сонце.",
+      "en": "Astronauts take vitamin D, because the sunlight that makes it in our skin cannot get inside the spacecraft.",
+      "uk": "Астронавти приймають вітамін D, бо сонячні промені, від яких він утворюється в шкірі, не потрапляють усередину космічного корабля.",
       "studyId": "",
-      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=nutrition",
-      "verified": false
+      "sourceUrl": "https://ntrs.nasa.gov/citations/20080026180",
+      "verified": true
     },
     {
       "id": "plants",
@@ -54,8 +54,8 @@
       "en": "Astronauts have grown lettuce in space and even eaten it!",
       "uk": "Астронавти вирощували салат у космосі і навіть їли його!",
       "studyId": "",
-      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=plant%20growth%20spaceflight",
-      "verified": false
+      "sourceUrl": "https://www.nasa.gov/technology/tech-transfer-spinoffs/plants-to-feed-this-and-other-worlds/",
+      "verified": true
     },
     {
       "id": "fluids",
@@ -63,17 +63,17 @@
       "en": "In space body fluids float up to the head, so astronauts' faces look puffy.",
       "uk": "У космосі рідини в тілі піднімаються до голови, тому обличчя астронавтів трохи опухлі.",
       "studyId": "",
-      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=fluid%20shift",
-      "verified": false
+      "sourceUrl": "https://www.nasa.gov/missions/station/cardiovascular-health-in-microgravity/",
+      "verified": true
     },
     {
       "id": "mice",
       "topic": "immune",
       "en": "Scientists send mice to the space station to learn how space changes the body's defence against illness.",
       "uk": "Науковці відправляють мишей на космічну станцію, щоб дізнатися, як космос змінює захист організму від хвороб.",
-      "studyId": "",
-      "sourceUrl": "https://osdr.nasa.gov/bio/repo/search?q=rodent%20research%20immune",
-      "verified": false
+      "studyId": "OSD-164",
+      "sourceUrl": "https://nasa.gov/general/rodent-research-12-ng-11",
+      "verified": true
     }
   ]
 }

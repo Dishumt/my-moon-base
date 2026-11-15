@@ -74,7 +74,13 @@ public class NasaDataTests
         {
             Assert.IsNotEmpty(f.en, f.id);
             Assert.IsNotEmpty(f.uk, f.id);
-            StringAssert.StartsWith("https://osdr.nasa.gov/", f.sourceUrl, f.id);
+            // Джерело — відкрита й перевірена сторінка NASA (твердження для дітей спирається на неї);
+            // studyId — пов'язаний набір даних OSDR, якщо він підходить (інакше порожньо).
+            StringAssert.StartsWith("https://", f.sourceUrl, f.id);
+            StringAssert.Contains("nasa.gov/", f.sourceUrl, f.id);
+            Assert.IsTrue(f.verified, f.id + ": факт має бути перевірений за джерелом");
+            if (!string.IsNullOrEmpty(f.studyId))
+                StringAssert.IsMatch(@"^OSD-\d+$", f.studyId, f.id);
         }
     }
 
