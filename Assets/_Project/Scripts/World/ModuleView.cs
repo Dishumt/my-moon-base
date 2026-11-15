@@ -82,6 +82,7 @@ public class ModuleView : MonoBehaviour
     {
         if (visual != null) Destroy(visual);
         visual = null;
+        furniture.Clear();
         scaffold = null;
         roomFront = float.NaN;
         shown = want;
@@ -158,6 +159,45 @@ public class ModuleView : MonoBehaviour
         float z = mid + ((i / 2) % 2 == 0 ? 0.6f : -0.5f);
         return Local(x, z);
     }
+    // ---------- Меблі (реєструє FurnitureLife, коли RoomBuilder їх ставить) ----------
+
+    readonly List<FurnitureLife> furniture = new List<FurnitureLife>();
+
+    /// <summary>Записати предмет кімнати (викликає FurnitureLife.Init).</summary>
+    public void AddFurniture(FurnitureLife f)
+    {
+        if (f != null) furniture.Add(f);
+    }
+
+    /// <summary>
+    /// i-й предмет з такою назвою картинки (по колу: у теплиці 4 полиці — астронавти розходяться по різних).
+    /// null — такого предмета в кімнаті немає.
+    /// </summary>
+    public FurnitureLife FindFurniture(string kind, int i)
+    {
+        int count = 0;
+        foreach (var f in furniture) if (f != null && f.Kind == kind) count++;
+        if (count == 0) return null;
+        int k = ((i % count) + count) % count;
+        foreach (var f in furniture)
+        {
+            if (f == null || f.Kind != kind) continue;
+            if (k == 0) return f;
+            k--;
+        }
+        return null;
+    }
+
+    /// <summary>Підсуває точку всередину кімнати, не ближче margin метрів до стін.</summary>
+    public Vector3 ClampInRoom(Vector3 world, float margin = 0.45f)
+    {
+        if (float.IsNaN(roomFront)) return world;
+        Vector3 p = transform.InverseTransformPoint(world);
+        p.x = Mathf.Clamp(p.x, -size.x / 2f + margin, size.x / 2f - margin);
+        p.z = Mathf.Clamp(p.z, roomFront + margin, roomBack - margin);
+        return transform.TransformPoint(p);
+    }
+
     /// <summary>Перед модулем надворі (обладнання, ремонт, будова).</summary>
     public Vector3 FrontPoint(int i) => Local((i - 1.5f) * 1.2f, -size.y / 2f - 0.8f);
     /// <summary>Місце для робота біля будови (по кутах квадратика).</summary>
@@ -250,5 +290,9 @@ public class ModuleView : MonoBehaviour
                 ModuleParts.Box(root, "Block", mat, new Vector3(0f, 1f, 0f), new Vector3(3f, 2f, 3f), tint: c);
                 break;
         }
+
+        // Відблиск на панелях (зникає в тіні від хребта) і лампочки заряду на батареях
+        if (type == ModuleType.Solar || type == ModuleType.Battery)
+            root.gameObject.AddComponent<EquipmentLife>().Init(type, size);
     }
 }

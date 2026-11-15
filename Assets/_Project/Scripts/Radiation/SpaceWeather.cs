@@ -34,8 +34,17 @@ public class SpaceWeatherResult
 /// </summary>
 public static class SpaceWeather
 {
-    /// <summary>Сервіс DONKI без ключа (api.nasa.gov вимагає ключ, а його не можна класти в гру).</summary>
-    public const string DonkiWs = "https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/";
+    /// <summary>
+    /// Сервіс DONKI без ключа (api.nasa.gov вимагає ключ, а його не можна класти в гру).
+    /// Хост ccmc.gsfc.nasa.gov віддає заголовок CORS «*», тож запит дозволений і з веб-збірки.
+    /// </summary>
+    public const string DonkiWs = "https://ccmc.gsfc.nasa.gov/DONKI/WS/get/";
+
+    /// <summary>
+    /// Старий хост того самого сервісу. У деяких мережах (наприклад, у мережі хакатону) він не відкривається,
+    /// тому гра ним не користується; його лише пробує інструмент перевірки DONKI як запасний.
+    /// </summary>
+    public const string DonkiWsLegacy = "https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/";
 
     /// <summary>Адреса: спалахи за останні days днів.</summary>
     public static string BuildUrl(DateTime todayUtc, int days = 7)

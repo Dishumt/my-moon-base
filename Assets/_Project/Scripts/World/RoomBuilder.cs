@@ -55,7 +55,8 @@ public static class RoomBuilder
         interior.Add(R(ModuleParts.Box(root, "Curb Right", solid, new Vector3(w / 2 - t / 2, curbH / 2, roomMid), new Vector3(t, curbH, roomDepth), false, curb)));
 
         // ----- Невидимі стіни (щоб не пройти крізь оболонку) -----
-        const float wallH = 2f;
+        // Вищі за саму кімнату: інакше місячним стрибком (2 м) можна заскочити всередину повз шлюз
+        const float wallH = 4.5f;
         Wall(root, "Block Back", new Vector3(0f, wallH / 2, L.roomBack - t / 2), new Vector3(w, wallH, t));
         Wall(root, "Block Left", new Vector3(-w / 2 + t / 2, wallH / 2, roomMid), new Vector3(t, wallH, roomDepth));
         Wall(root, "Block Right", new Vector3(w / 2 - t / 2, wallH / 2, roomMid), new Vector3(t, wallH, roomDepth));
@@ -65,7 +66,7 @@ public static class RoomBuilder
 
         // ----- Меблі -----
         var furniture = new List<Renderer>();
-        if (!FurnishWithSprites(root, look, type, roomMid, roomDepth, w, furniture))
+        if (!FurnishWithSprites(root, view, look, type, roomMid, roomDepth, w, furniture))
             Furnish(root, solid, type, roomMid, roomDepth, w, interior); // картинок ще немає — прості коробки
 
         // ----- Оболонка (видно надворі) -----
@@ -89,11 +90,22 @@ public static class RoomBuilder
         AddShell(shell, shellColors, ModuleParts.Box(root, "Airlock Roof", solid, new Vector3(0f, ah + 0.075f, airMid),
                                                      new Vector3(aw + 0.15f, 0.15f, airLen), collider: false, tint: airColor), airColor);
 
+        // Невидимі високі стінки навколо тамбура — щоб не перестрибнути збоку
+        Wall(root, "Block Airlock L", new Vector3(-aw / 2 + t / 2, wallH / 2, airMid), new Vector3(t, wallH, airLen));
+        Wall(root, "Block Airlock R", new Vector3(aw / 2 - t / 2, wallH / 2, airMid), new Vector3(t, wallH, airLen));
+        Wall(root, "Block Airlock Front L", new Vector3(-aw / 2 + jamb / 2, wallH / 2, L.airlockFront + t / 2), new Vector3(jamb, wallH, t));
+        Wall(root, "Block Airlock Front R", new Vector3(aw / 2 - jamb / 2, wallH / 2, L.airlockFront + t / 2), new Vector3(jamb, wallH, t));
+        // ...і над обома дверима (сам прохід на рівні підлоги лишається відкритим)
+        Wall(root, "Block Above Outer Door", new Vector3(0f, (ah + wallH) / 2, L.airlockFront + t / 2), new Vector3(aw, wallH - ah, t));
+        Wall(root, "Block Above Inner Door", new Vector3(0f, (ah + wallH) / 2, L.roomFront + t / 2), new Vector3(aw, wallH - ah, t));
+
         Color doorColor = new Color(0.35f, 0.38f, 0.44f);
         var outerDoor = DoubleDoor(root, "Door Outer", solid, new Vector3(0f, ah / 2, L.airlockFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
         var innerDoor = DoubleDoor(root, "Door Inner", solid, new Vector3(0f, ah / 2, L.roomFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
 
-        root.gameObject.AddComponent<ModuleInterior>().Setup(view, shell.ToArray(), shellColors.ToArray(), interior.ToArray(), furniture.ToArray());
+        var interiorView = root.gameObject.AddComponent<ModuleInterior>();
+        interiorView.Setup(view, shell.ToArray(), shellColors.ToArray(), interior.ToArray(), furniture.ToArray());
+        BuildAlarm(root, interiorView, roomMid, roomDepth, w, L.roomBack);
         // front = зовнішній край шлюзу, inner = середина внутрішніх дверей
         root.gameObject.AddComponent<Airlock>().Setup(outerDoor.transform, innerDoor.transform, door, aw,
                                                       L.airlockFront, L.roomFront + t / 2, ah);
@@ -170,22 +182,27 @@ public static class RoomBuilder
 
     struct Item
     {
-        public string name; public float x; public int row;
-        public Item(string name, float x, int row) { this.name = name; this.x = x; this.row = row; }
+        public string name; public float x; public int row; public float scale; public float dz;
+        // dz — зсув уперед (до камери, «нижче» на екрані), метри: велике ліжко інакше візуально заходить за стіну
+        public Item(string name, float x, int row, float scale = 1f, float dz = 0f)
+        { this.name = name; this.x = x; this.row = row; this.scale = scale; this.dz = dz; }
     }
+
+    // Ліжко-капсула більше за інші меблі: у ньому лежить людина звичайного розміру (AstronautView).
+    const float BedScale = 1.6f;
 
     static Item[] LayoutFor(ModuleType type)
     {
         switch (type)
         {
-            case ModuleType.Habitat:
-                return new[] { new Item("bunk_bed", -2.0f, 0), new Item("galley_kitchen", 0f, 0), new Item("wardrobe_storage", 2.0f, 0),
+            case ModuleType.Habitat: // генератор кисню тут: житловий модуль перший, і дитина одразу бачить, звідки кисень
+                return new[] { new Item("bunk_bed", -1.7f, 0, BedScale, -0.5f), new Item("galley_kitchen", 0.45f, 0), new Item("oxygen_generator", 2.1f, 0),
                                new Item("shower_toilet", -2.1f, 1), new Item("dining_table", 2.1f, 1) };
             case ModuleType.Greenhouse:
                 return new[] { new Item("hydroponic_rack", -2.0f, 0), new Item("hydroponic_rack", 0f, 0), new Item("hydroponic_rack", 2.0f, 0),
                                new Item("hydroponic_rack", -2.1f, 1), new Item("water_recycler", 2.1f, 1) };
             case ModuleType.Medbay:
-                return new[] { new Item("medical_cabinet", -2.0f, 0), new Item("bunk_bed", 0f, 0), new Item("wash_station", 2.0f, 0),
+                return new[] { new Item("medical_cabinet", -2.1f, 0), new Item("bunk_bed", 0f, 0, BedScale, -0.5f), new Item("wash_station", 2.1f, 0),
                                new Item("wardrobe_storage", -2.1f, 1) };
             case ModuleType.Lab:
                 return new[] { new Item("science_bench", -2.0f, 0), new Item("specimen_cabinet", 0f, 0), new Item("workstation_desk", 2.0f, 0),
@@ -198,7 +215,7 @@ public static class RoomBuilder
     }
 
     /// <summary>Розставляє меблі-спрайти і кладе їх у list. false — якщо картинок немає (тоді будуть коробки).</summary>
-    static bool FurnishWithSprites(Transform root, ModuleLook look, ModuleType type, float mid, float depth, float w, List<Renderer> list)
+    static bool FurnishWithSprites(Transform root, ModuleView view, ModuleLook look, ModuleType type, float mid, float depth, float w, List<Renderer> list)
     {
         if (look == null || !look.HasFurniture) return false;
         // Впритул до задньої стіни: поки гравець надворі, меблі сховані (ModuleInterior),
@@ -208,18 +225,99 @@ public static class RoomBuilder
         bool any = false;
         foreach (var it in LayoutFor(type))
         {
-            var sprite = look.Furniture(it.name);
-            if (sprite == null) continue;
+            var info = look.FurnitureInfo(it.name);
+            if (info == null || info.sprite == null) continue;
             var go = new GameObject("Furniture " + it.name);
             go.transform.SetParent(root, false);
-            go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.9f, w / 2 - 0.9f), 0.1f, it.row == 0 ? backZ : sideZ);
+            go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.9f, w / 2 - 0.9f), 0.1f, (it.row == 0 ? backZ : sideZ) + it.dz);
+            go.transform.localScale = Vector3.one * it.scale; // до Billboard: він запам'ятовує масштаб в Awake
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = sprite;
+            sr.sprite = info.sprite;
             go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
+            // Предмет разом з лампами й товщиною сортується як одне ціле: лампи поверх предмета, але не поверх людей перед ним
+            go.AddComponent<UnityEngine.Rendering.SortingGroup>();
             list.Add(sr);
+            // Ширина самого предмета (без прозорих країв) і зсув його середини — з урахуванням масштабу
+            float width = (info.width > 0f ? info.width : sr.sprite.bounds.size.x * 0.75f) * it.scale;
+            float centerX = info.centerX * it.scale;
+            AddDepth(root, go.transform, sr, width, centerX, it.scale, list);
+            // лампи, екрани, рослини (показують стан гри); ще й записує предмет у ModuleView, щоб астронавти знали, куди йти
+            go.AddComponent<FurnitureLife>().Init(it.name, view, type, sr, width, centerX);
             any = true;
         }
         return any;
+    }
+
+    static readonly Color ThicknessColor = new Color(0.12f, 0.12f, 0.16f, 1f);
+
+    /// <summary>
+    /// Щоб меблі не виглядали наліпками:
+    ///  - ТОВЩИНА — та сама картинка, темна, трохи правіше, нижче й далі від камери. Видно тонкий темний край,
+    ///    як у фігурки з товстого картону (світло падає зліва згори). Низ краю ховається під підлогою — так і має бути;
+    ///  - ТІНЬ — м'яка пляма на підлозі під предметом (та сама, що під персонажами, MoonHop.BlobSprite).
+    /// Обидві теж у списку list, тож ховаються разом з меблями, поки гравець надворі.
+    /// </summary>
+    static void AddDepth(Transform root, Transform item, SpriteRenderer sr, float width, float centerX, float scale, List<Renderer> list)
+    {
+        // Копія — дитина білборда, тож повертається разом з ним: x — вправо по екрану, y — вгору, z — від камери.
+        var back = new GameObject("Thickness");
+        back.transform.SetParent(item, false);
+        back.transform.localPosition = new Vector3(0.035f, -0.02f, 0.05f);
+        var bsr = back.AddComponent<SpriteRenderer>();
+        bsr.sprite = sr.sprite;
+        bsr.color = ThicknessColor;
+        bsr.sortingOrder = sr.sortingOrder - 1; // завжди позаду самого предмета
+        list.Add(bsr);
+
+        // Тінь лежить на підлозі (підлога на висоті 0,1 м). Ширина — як сам предмет, без прозорих країв картинки.
+        var shadow = new GameObject("Shadow");
+        shadow.transform.SetParent(root, false);
+        shadow.transform.localPosition = item.localPosition + new Vector3(centerX, 0.015f, 0.05f);
+        shadow.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        shadow.transform.localScale = new Vector3(width * 0.95f, 0.75f * scale, 1f); // пляма 1 м → овал під предметом
+        var ssr = shadow.AddComponent<SpriteRenderer>();
+        ssr.sprite = MoonHop.BlobSprite();
+        ssr.color = new Color(0f, 0f, 0f, 0.4f);
+        ssr.sortingOrder = sr.sortingOrder - 2; // під товщиною і під тінями людей
+        list.Add(ssr);
+    }
+
+    // ---------- Аварійна лампа (коли енергії забракло) ----------
+
+    /// <summary>
+    /// Червона лампа під «стелею» над задньою стіною (саму стелю всередині не видно), сяйво навколо неї
+    /// і червоні відблиски на підлозі. Спочатку вимкнені — вмикає ModuleInterior під час аварії.
+    /// </summary>
+    static void BuildAlarm(Transform root, ModuleInterior interiorView, float mid, float depth, float w, float back)
+    {
+        var lamp = AlarmSprite(root, "Alarm Lamp", WorldSprites.Disc, new Vector3(0f, 2.7f, back - 0.4f), 0.3f, 6);
+        var glow = AlarmSprite(root, "Alarm Glow", WorldSprites.Blob, new Vector3(0f, 2.7f, back - 0.42f), 1.8f, 5);
+
+        var floorGo = new GameObject("Alarm Floor Light");
+        floorGo.transform.SetParent(root, false);
+        floorGo.transform.localPosition = new Vector3(0f, 0.13f, mid);
+        floorGo.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); // лежить на підлозі
+        floorGo.transform.localScale = new Vector3(w * 0.95f, depth * 0.95f, 1f);
+        var floor = floorGo.AddComponent<SpriteRenderer>();
+        floor.sprite = WorldSprites.Blob;
+        floor.sortingOrder = -3; // під тінями меблів і людей
+        floor.enabled = false;
+
+        interiorView.SetupAlarm(lamp, glow, floor);
+    }
+
+    static SpriteRenderer AlarmSprite(Transform root, string name, Sprite sprite, Vector3 pos, float size, int order)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(root, false);
+        go.transform.localPosition = pos;
+        go.transform.localScale = new Vector3(size, size, 1f); // до Billboard: він запам'ятовує масштаб в Awake
+        var r = go.AddComponent<SpriteRenderer>();
+        r.sprite = sprite;
+        r.sortingOrder = order;
+        r.enabled = false;
+        go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
+        return r;
     }
 
     // ---------- Меблі-коробки (запасний варіант, якщо картинок немає) ----------

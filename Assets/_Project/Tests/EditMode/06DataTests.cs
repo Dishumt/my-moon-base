@@ -74,7 +74,13 @@ public class NasaDataTests
         {
             Assert.IsNotEmpty(f.en, f.id);
             Assert.IsNotEmpty(f.uk, f.id);
-            StringAssert.StartsWith("https://osdr.nasa.gov/", f.sourceUrl, f.id);
+            // Джерело — відкрита й перевірена сторінка NASA (твердження для дітей спирається на неї);
+            // studyId — пов'язаний набір даних OSDR, якщо він підходить (інакше порожньо).
+            StringAssert.StartsWith("https://", f.sourceUrl, f.id);
+            StringAssert.Contains("nasa.gov/", f.sourceUrl, f.id);
+            Assert.IsTrue(f.verified, f.id + ": факт має бути перевірений за джерелом");
+            if (!string.IsNullOrEmpty(f.studyId))
+                StringAssert.IsMatch(@"^OSD-\d+$", f.studyId, f.id);
         }
     }
 
@@ -114,6 +120,15 @@ public class NasaDataTests
     public void LiveWeather_UrlIsLast7Days()
     {
         string url = SpaceWeather.BuildUrl(new DateTime(2026, 11, 15, 12, 0, 0, DateTimeKind.Utc));
-        Assert.AreEqual("https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/FLR?startDate=2026-11-08&endDate=2026-11-15", url);
+        Assert.AreEqual("https://ccmc.gsfc.nasa.gov/DONKI/WS/get/FLR?startDate=2026-11-08&endDate=2026-11-15", url);
+    }
+
+    [Test]
+    public void LiveWeather_UsesHostThatIsOpenInHackathonNetwork_NotTheLegacyOne()
+    {
+        // kauai.* не відкривався в мережі хакатону; ccmc.* відкритий і віддає CORS «*» (потрібно для веб-збірки)
+        StringAssert.StartsWith("https://ccmc.gsfc.nasa.gov/", SpaceWeather.DonkiWs);
+        StringAssert.StartsWith("https://kauai.", SpaceWeather.DonkiWsLegacy);
+        StringAssert.DoesNotStartWith(SpaceWeather.DonkiWsLegacy, SpaceWeather.BuildUrl(DateTime.UtcNow));
     }
 }

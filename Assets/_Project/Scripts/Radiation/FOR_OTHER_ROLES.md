@@ -70,4 +70,4 @@
 - Сцену 06 не міняв: `RadiationDebug` сам з'являється в сцені `06-Radiation` (через `RuntimeInitializeOnLoadMethod`).
 - `Scripts/Radiation/Tools/DonkiCheckTool.cs` — меню **Moon → 06: Перевірити дані DONKI** (увесь файл під `#if UNITY_EDITOR`, у веб-збірку не потрапляє).
 - Moon Trek: для текстури поверхні шукай на https://trek.nasa.gov/moon/ «Shackleton» (мозаїки LRO LROC / LOLA південного полюса).
-- `SpaceWeatherFetcher` робить запит до `kauai.ccmc.gsfc.nasa.gov`. Перевір у веб-збірці: якщо браузер заблокує (CORS), гра покаже ARCHIVE — це правильна поведінка.
+- `SpaceWeatherFetcher` робить запит до `ccmc.gsfc.nasa.gov` (старий хост `kauai.…` не відкривався в мережі хакатону). Відповідь цього хоста має заголовок `Access-Control-Allow-Origin: *` (перевірено `curl` 15.11.2026), тож CORS у браузері не має заважати, але саму веб-збірку ще треба перевірити: якщо запит не вдасться, гра покаже ARCHIVE — це правильна поведінка.

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Робот-будівельник у світі: маленький ровер з простих фігур (у мультяшному стилі модулів).
+/// Робот-будівельник у світі: маленький ровер на гусеницях з простих фігур (у мультяшному стилі модулів).
+/// Їде по рельєфу й нахиляється разом зі схилом, з-під гусениць летить пил і лишається колія (Footprints);
+/// коли будує — з інструмента сиплються іскри зварювання, коли засипає модуль реголітом — летить пил.
 /// Читає з GameState свій RobotState:
 ///  - TargetSlot >= 0 → їде до цього модуля (в обхід інших) і стає біля нього;
 ///  - Working = true → «працює»: маніпулятор рухається, лампа блимає жовтим;
@@ -15,8 +17,15 @@ public class RobotView : MonoBehaviour
 {
     RobotState data;
     int index;
-    Transform model, arm, head;
+    Transform model, arm, head, tool;
     Renderer lamp;
+    readonly List<Transform> wheels = new List<Transform>();
+    float wheelSpin;
+    Quaternion heading = Quaternion.identity; // куди повернутий (без нахилу)
+    Vector3 moveDir = Vector3.forward;
+    float trackDist, dustTimer, sparkTimer;
+    ParticleSystem fx;      // і пил, і іскри (кожну частинку задаємо окремо)
+    bool fxTried;
     Vector3 target;
     bool hasTarget;
     List<Vector3> path;
@@ -45,12 +54,34 @@ public class RobotView : MonoBehaviour
 
         Color body = new Color(0.95f, 0.75f, 0.3f), dark = new Color(0.3f, 0.32f, 0.36f), metal = new Color(0.7f, 0.72f, 0.75f);
         ModuleParts.Box(model, "Body", mat, new Vector3(0f, 0.5f, 0f), new Vector3(0.9f, 0.45f, 1.2f), false, body);
-        foreach (float x in new[] { -0.5f, 0.5f })
-            foreach (float z in new[] { -0.4f, 0.4f })
+        // Гусениці: дві темні стрічки з заокругленими кінцями і котками збоку (котки крутяться, коли їде)
+        foreach (float x in new[] { -0.55f, 0.55f })
+        {
+            ModuleParts.Box(model, "Track", mat, new Vector3(x, 0.22f, 0f), new Vector3(0.3f, 0.36f, 1.2f), false, dark);
+            foreach (float z in new[] { -0.6f, 0.6f })
             {
-                var w = ModuleParts.Cylinder(model, "Wheel", mat, new Vector3(x, 0.25f, z), new Vector3(0.5f, 0.08f, 0.5f), false, dark);
-                w.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                var end = ModuleParts.Cylinder(model, "Track End", mat, new Vector3(x, 0.22f, z), new Vector3(0.36f, 0.15f, 0.36f), false, dark);
+                end.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
             }
+            foreach (float z in new[] { -0.4f, 0f, 0.4f })
+            {
+                var w = ModuleParts.Cylinder(model, "Road Wheel", mat, new Vector3(x + Mathf.Sign(x) * 0.16f, 0.22f, z),
+                                             new Vector3(0.26f, 0.02f, 0.26f), false, metal);
+                w.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                wheels.Add(w.transform);
+            }
+        }
+
+        // Тінь-пляма під ровером (як під людьми)
+        var sh = new GameObject("Shadow");
+        sh.transform.SetParent(transform, false);
+        sh.transform.localPosition = new Vector3(0f, 0.04f, 0f);
+        sh.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        sh.transform.localScale = new Vector3(1.6f, 2f, 1f);
+        var shadow = sh.AddComponent<SpriteRenderer>();
+        shadow.sprite = WorldSprites.Blob;
+        shadow.color = new Color(0f, 0f, 0f, 0.4f);
+        shadow.sortingOrder = -1;
         head = ModuleParts.Box(model, "Head", mat, new Vector3(0f, 0.95f, 0.25f), new Vector3(0.5f, 0.35f, 0.4f), false, metal).transform;
         ModuleParts.Box(head, "Eye", mat, new Vector3(0f, 0f, 0.51f), new Vector3(0.7f, 0.3f, 0.05f), false, new Color(0.15f, 0.2f, 0.35f));
         lamp = ModuleParts.Sphere(model, "Lamp", mat, new Vector3(0f, 1.2f, -0.2f), new Vector3(0.18f, 0.18f, 0.18f), false, Green)
@@ -61,7 +92,7 @@ public class RobotView : MonoBehaviour
         arm.SetParent(model, false);
         arm.localPosition = new Vector3(0.3f, 0.7f, 0.55f);
         ModuleParts.Box(arm, "Arm Part", mat, new Vector3(0f, 0f, 0.35f), new Vector3(0.12f, 0.12f, 0.7f), false, metal);
-        ModuleParts.Box(arm, "Tool", mat, new Vector3(0f, -0.08f, 0.72f), new Vector3(0.2f, 0.2f, 0.12f), false, dark);
+        tool = ModuleParts.Box(arm, "Tool", mat, new Vector3(0f, -0.08f, 0.72f), new Vector3(0.2f, 0.2f, 0.12f), false, dark).transform;
     }
 
     void Update()
@@ -90,6 +121,48 @@ public class RobotView : MonoBehaviour
             else driving = true;
         }
         bool atSite = !driving && mv != null;
+
+        var pos = transform.position;
+        pos.y = MoonTerrain.HeightAt(pos); // їде по рельєфу (біля бази земля рівна)
+        transform.position = pos;
+        // Нахиляється разом зі схилом, носом — куди їде
+        transform.rotation = Quaternion.FromToRotation(Vector3.up, MoonTerrain.NormalAt(pos.x, pos.z)) * heading;
+
+        // Котки крутяться, з-під гусениць летить пил
+        if (driving && dt > 0f)
+        {
+            wheelSpin += dt * 400f;
+            foreach (var w in wheels) w.localRotation = Quaternion.Euler(0f, 0f, 90f) * Quaternion.Euler(0f, wheelSpin, 0f);
+            dustTimer -= dt;
+            if (dustTimer <= 0f)
+            {
+                dustTimer = 0.07f;
+                Vector3 rear = transform.TransformPoint(new Vector3(Random.Range(-0.6f, 0.6f), 0.1f, -0.7f));
+                Emit(rear, Vector3.up * Random.Range(0.3f, 0.8f) - moveDir * 0.4f, Random.Range(0.12f, 0.28f), 1.3f,
+                     new Color(0.7f, 0.68f, 0.66f, 0.7f));
+            }
+        }
+
+        // Робота: іскри зварювання (будує) або пил (засипає модуль реголітом)
+        if (atSite && data.Working && dt > 0f && tool != null)
+        {
+            sparkTimer -= dt;
+            if (sparkTimer <= 0f)
+            {
+                bool build = data.Task == RobotTask.Build;
+                sparkTimer = build ? 0.1f : 0.12f;
+                Vector3 tip = tool.position;
+                for (int i = 0; i < (build ? 5 : 2); i++)
+                {
+                    Vector3 v = (transform.forward + Random.insideUnitSphere * 0.9f + Vector3.up * 0.6f).normalized;
+                    if (build)
+                        Emit(tip, v * Random.Range(1.5f, 3.5f), Random.Range(0.03f, 0.07f), Random.Range(0.25f, 0.5f),
+                             Color.Lerp(new Color(1f, 0.95f, 0.6f, 1f), new Color(1f, 0.55f, 0.15f, 1f), Random.value));
+                    else
+                        Emit(tip, v * Random.Range(0.4f, 1f), Random.Range(0.2f, 0.4f), 1.4f, new Color(0.68f, 0.66f, 0.64f, 0.75f));
+                }
+            }
+        }
 
         // Лампа: жовта — працює, червона — є завдання, але немає енергії, зелена — вільний
         Color c = data.Working ? Yellow : (data.Task != RobotTask.Idle ? Red : Green);
@@ -124,18 +197,67 @@ public class RobotView : MonoBehaviour
         if (dt <= 0f) return false;
         var cl = CrewLook.Instance;
         float speed = cl != null ? cl.robotSpeed : 2.5f;
-        transform.position += d / dist * Mathf.Min(dist, speed * dt);
+        float stepLen = Mathf.Min(dist, speed * dt);
+        transform.position += d / dist * stepLen;
+        moveDir = d / dist;
         FaceTowards(to, dt);
+
+        // Колія гусениць на реголіті — кожні півметра
+        trackDist += stepLen;
+        if (trackDist >= 0.5f)
+        {
+            trackDist = 0f;
+            Footprints.Track(transform.position, moveDir);
+        }
         return false;
     }
 
+    /// <summary>Повертаємо «курс» (без нахилу); нахил за схилом додає Update.</summary>
     void FaceTowards(Vector3 point, float dt)
     {
         Vector3 d = point - transform.position;
         d.y = 0f;
         if (d.sqrMagnitude < 0.001f) return;
         var want = Quaternion.LookRotation(d, Vector3.up);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, want, 360f * dt);
+        heading = Quaternion.RotateTowards(heading, want, 360f * dt);
+    }
+
+    /// <summary>Одна частинка (пил або іскра) у світі: звідки, швидкість, розмір, скільки живе, колір.</summary>
+    void Emit(Vector3 pos, Vector3 velocity, float size, float life, Color color)
+    {
+        if (!fxTried) { fxTried = true; CreateFx(); }
+        if (fx == null) return;
+        var ep = new ParticleSystem.EmitParams
+        {
+            position = pos,
+            velocity = velocity,
+            startSize = size,
+            startLifetime = life,
+            startColor = color,
+            applyShapeToPosition = false,
+        };
+        fx.Emit(ep, 1);
+    }
+
+    void CreateFx()
+    {
+        var look = ModuleLook.Instance;
+        if (look == null || look.dustMaterial == null) return; // без матеріалу частинки були б рожеві
+        var go = new GameObject("Robot Fx");
+        go.transform.SetParent(transform, false);
+        fx = go.AddComponent<ParticleSystem>();
+        fx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        var main = fx.main;
+        main.playOnAwake = false;
+        main.loop = false;
+        main.simulationSpace = ParticleSystemSimulationSpace.World; // пил лишається там, де здійнявся
+        main.gravityModifier = 0.35f;                               // іскри й пил падають повільно (Місяць)
+        main.maxParticles = 300;
+        var em = fx.emission;
+        em.rateOverTime = 0f;
+        var shape = fx.shape;
+        shape.enabled = false;
+        go.GetComponent<ParticleSystemRenderer>().sharedMaterial = look.dustMaterial;
     }
 
     Vector3 HomeSpot()

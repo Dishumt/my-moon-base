@@ -47,6 +47,16 @@ public class EngineerController : MonoBehaviour
     [Tooltip("Розгін і гальмування без скафандра (у модулі)")]
     [SerializeField] float indoorAccel = 16f, indoorStopAccel = 14f;
 
+    [Header("Стрибок (пробіл; тільки надворі, у скафандрі)")]
+    [Tooltip("На скільки метрів угору. На Місяці гравітація в 6 разів слабша — стрибаєш високо й повільно")]
+    [SerializeField] float jumpHeight = 2f;
+    [Tooltip("Скільки секунд у повітрі")]
+    [SerializeField] float jumpAirSeconds = 1.6f;
+    [Tooltip("Ціна стрибка: у повітрі майже не кермуєш (м/с²; на землі в скафандрі — 7)")]
+    [SerializeField] float airControl = 1.5f;
+    [Tooltip("Ціна стрибка: після приземлення стільки секунд не можна стрибнути знову")]
+    [SerializeField] float jumpCooldown = 0.5f;
+
     [Header("Спрайт")]
     [SerializeField] SpriteRenderer spriteRenderer;
     [Tooltip("У скафандрі (надворі)")]
@@ -62,6 +72,12 @@ public class EngineerController : MonoBehaviour
     Vector3 velocity;                      // швидкість зараз (м/с) — з інерцією
     MoonHop hop;
     bool suitOn = true;
+    bool airborne;         // летить у великому стрибку
+    float verticalSpeed;   // м/с угору (у стрибку)
+    float jumpCooldownLeft;
+
+    /// <summary>Чи інженер зараз у повітрі (великий стрибок на пробіл).</summary>
+    public bool IsJumping => airborne;
     Vector3 spriteBasePos;
 
     /// <summary>Чи інженер зараз іде (знадобиться для звуку кроків).</summary>
@@ -113,20 +129,30 @@ public class EngineerController : MonoBehaviour
         Vector2 input = Locked || paused ? Vector2.zero : ReadInput();
         bool wantMove = input.sqrMagnitude > 0.01f;
 
-        // Бажана швидкість і плавний розгін/гальмування до неї (інерція)
+        // Стрибок: пробіл, тільки надворі (у скафандрі), з землі і не одразу після приземлення
+        if (jumpCooldownLeft > 0f) jumpCooldownLeft -= dt;
+        if (!airborne && suitOn && !Locked && !paused && jumpCooldownLeft <= 0f && JumpPressed()) StartJump();
+
+        // Бажана швидкість і плавний розгін/гальмування до неї (інерція). У повітрі майже не кермуєш.
         Vector3 target = ScreenToGround(input) * speed;
-        float rate = wantMove ? (suitOn ? suitAccel : indoorAccel) : (suitOn ? suitStopAccel : indoorStopAccel);
+        float rate = airborne ? airControl
+                   : wantMove ? (suitOn ? suitAccel : indoorAccel) : (suitOn ? suitStopAccel : indoorStopAccel);
         velocity = Vector3.MoveTowards(velocity, target, rate * dt);
         if (Locked) velocity = Vector3.zero;
 
         if (velocity.sqrMagnitude > 0.0001f)
         {
-            controller.Move(velocity * dt);
+            Vector3 step = velocity * dt;
+            if (dt > 0f) step = airborne ? LimitInAir(step) : LimitBySlope(step); // надто круто вгору (хребет) — не пускаємо
+            controller.Move(step);
             ClampToMap();
         }
+        if (airborne) Fly(dt);
+        else FollowGround(dt);
         if (wantMove) facing = input;
 
         IsMoving = wantMove || velocity.sqrMagnitude > 0.25f;
+        hop.JumpHeight = airborne ? Mathf.Max(0f, transform.position.y - FootOffset - MoonTerrain.HeightAt(transform.position)) : 0f;
         hop.Step(wantMove && !Locked, suitOn, dt); // стрибає, поки тиснуть клавіші; відпустив — доземлюється і ковзає
         RefreshSprite();
     }
@@ -155,6 +181,137 @@ public class EngineerController : MonoBehaviour
         return dir;
     }
 
+    // ---------- Рельєф (MoonTerrain) ----------
+
+    /// <summary>Від низу капсули CharacterController до точки, де стоїть об'єкт інженера.</summary>
+    float FootOffset => controller.height * 0.5f - controller.center.y;
+
+    /// <summary>Ноги — на землі: висота рельєфу під інженером (у базі земля рівна, висота 0).</summary>
+    void FollowGround(float dt)
+    {
+        Vector3 p = transform.position;
+        if (p.y - FootOffset - MoonTerrain.HeightAt(p) > 0.35f)
+        {
+            // Стоїмо вище за землю — на валуні чи батареї? Пробуємо трохи опуститися:
+            // уперлися — стоїмо на ньому; ні — зійшли з краю і падаємо (повільно, по-місячному)
+            var hit = controller.Move(new Vector3(0f, -0.05f, 0f));
+            if ((hit & CollisionFlags.Below) == 0)
+            {
+                airborne = true;
+                verticalSpeed = 0f;
+                hop.TakeOff(false); // без пилу: ми ж не відштовхувались
+            }
+            return;
+        }
+        float want = MoonTerrain.HeightAt(p) + FootOffset;
+        if (Mathf.Abs(p.y - want) > 0.0005f) controller.Move(new Vector3(0f, want - p.y, 0f));
+        SlideIfTooSteep(dt);
+    }
+
+    /// <summary>Приземлився на круту стінку (хребет) — з'їжджаєш униз: на хребет не вистрибати.</summary>
+    void SlideIfTooSteep(float dt)
+    {
+        if (dt <= 0f || MoonTerrain.Instance == null) return;
+        Vector3 p = transform.position;
+        const float e = 0.5f;
+        float gx = (MoonTerrain.HeightAt(p.x + e, p.z) - MoonTerrain.HeightAt(p.x - e, p.z)) / (2f * e);
+        float gz = (MoonTerrain.HeightAt(p.x, p.z + e) - MoonTerrain.HeightAt(p.x, p.z - e)) / (2f * e);
+        float slope = Mathf.Sqrt(gx * gx + gz * gz);
+        if (slope <= Mathf.Tan(MoonTerrain.Instance.maxWalkSlope * Mathf.Deg2Rad)) return;
+        velocity += new Vector3(-gx, 0f, -gz) / slope * 9f * dt; // униз по схилу
+    }
+
+    // ---------- Стрибок ----------
+
+    static bool JumpPressed()
+    {
+        var k = Keyboard.current;
+        return k != null && k.spaceKey.wasPressedThisFrame;
+    }
+
+    /// <summary>Злетіти: швидкість угору така, щоб піднятися на jumpHeight і пробути в повітрі jumpAirSeconds.</summary>
+    void StartJump()
+    {
+        airborne = true;
+        verticalSpeed = 4f * jumpHeight / Mathf.Max(0.2f, jumpAirSeconds);
+        hop.TakeOff(suitOn);
+    }
+
+    /// <summary>
+    /// Політ: «гравітація» тягне вниз повільно (парабола). Ноги торкнулися землі — приземлення.
+    /// (Справжня місячна g = 1,62 м/с²; у грі трохи сильніша, щоб стрибок тривав ≈1,6 с, а не 3.)
+    /// </summary>
+    void Fly(float dt)
+    {
+        if (dt <= 0f) return;
+        float t = Mathf.Max(0.2f, jumpAirSeconds);
+        float gravity = 8f * jumpHeight / (t * t);
+        verticalSpeed -= gravity * dt;
+        var hit = controller.Move(new Vector3(0f, verticalSpeed * dt, 0f));
+        if ((hit & CollisionFlags.Above) != 0 && verticalSpeed > 0f) verticalSpeed = 0f; // ударився головою
+
+        Vector3 p = transform.position;
+        float ground = MoonTerrain.HeightAt(p);
+        bool onSomething = (hit & CollisionFlags.Below) != 0; // приземлився на обладнання (батарея, ящик)
+        if (verticalSpeed <= 0f && (onSomething || p.y - FootOffset <= ground))
+        {
+            if (onSomething) ground = p.y - FootOffset; // лишаємось там, де стоїмо
+            controller.Move(new Vector3(0f, ground + FootOffset - p.y, 0f));
+            airborne = false;
+            verticalSpeed = 0f;
+            jumpCooldownLeft = jumpCooldown;
+            hop.Land(suitOn);
+        }
+    }
+
+    /// <summary>У повітрі: якщо попереду земля вища за ноги (схил хребта, вал) — врізався, далі не летиш.</summary>
+    Vector3 LimitInAir(Vector3 step)
+    {
+        float feet = transform.position.y - FootOffset;
+        if (MoonTerrain.HeightAt(transform.position + step) > feet + 0.25f)
+        {
+            velocity = Vector3.zero;
+            return Vector3.zero;
+        }
+        return step;
+    }
+
+    /// <summary>
+    /// Крок по рельєфу: якщо попереду надто круто вгору (стінка хребта), іти туди не можна.
+    /// Тоді пробуємо ковзнути вздовж схилу (по горизонталі), як по стіні; не виходить — зупиняємось.
+    /// </summary>
+    Vector3 LimitBySlope(Vector3 step)
+    {
+        Vector3 p = transform.position;
+        if (CanGo(p, step)) return step;
+
+        // Уздовж схилу = перпендикулярно до напрямку, куди земля росте найшвидше
+        const float e = 0.5f;
+        float gx = MoonTerrain.HeightAt(p.x + e, p.z) - MoonTerrain.HeightAt(p.x - e, p.z);
+        float gz = MoonTerrain.HeightAt(p.x, p.z + e) - MoonTerrain.HeightAt(p.x, p.z - e);
+        var along = new Vector3(-gz, 0f, gx);
+        if (along.sqrMagnitude > 1e-6f)
+        {
+            along.Normalize();
+            Vector3 slide = along * Vector3.Dot(step, along);
+            if (CanGo(p, slide))
+            {
+                velocity = along * Vector3.Dot(velocity, along);
+                return slide;
+            }
+        }
+        velocity = Vector3.zero;
+        return Vector3.zero;
+    }
+
+    static bool CanGo(Vector3 p, Vector3 step)
+    {
+        float len = step.magnitude;
+        if (len < 0.0001f) return true;
+        Vector3 ahead = p + step / len * Mathf.Max(len, 0.4f); // міряємо схил на 0,4 м уперед — так надійніше
+        return MoonTerrain.CanWalk(p, ahead);
+    }
+
     /// <summary>WASD або стрілки → вектор від (-1,-1) до (1,1).</summary>
     static Vector2 ReadInput()
     {
@@ -180,6 +337,9 @@ public class EngineerController : MonoBehaviour
         Vector3 p = transform.position;
         float x = Mathf.Clamp(p.x, -mapHalfSize, mapHalfSize);
         float z = Mathf.Clamp(p.z, -mapHalfSize, mapHalfSize);
+        // Запобіжник: далі підніжжя хребта не відходимо, навіть якщо схил десь виявився пологим
+        float r = Mathf.Sqrt(x * x + z * z), max = MoonTerrain.MaxRadius;
+        if (r > max) { x *= max / r; z *= max / r; }
         if (x != p.x || z != p.z)
         {
             controller.enabled = false; // CharacterController не дає просто так міняти позицію

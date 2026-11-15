@@ -1,7 +1,7 @@
 {
   "_ai": "AI-assisted (Claude)",
   "_note": "Real radiation numbers the game is built on. Owner: role 06. Plain words: 1 mSv (millisievert) is a unit of how much radiation the body got. On Earth a person gets about 2-3 mSv in a WHOLE YEAR from nature. On the ISS an astronaut gets about 0.5 mSv EVERY DAY, so in ~5 days as much as on Earth in a year.",
-  "_status": "TO VERIFY: RadLab API (https://visualization.osdr.nasa.gov/radlab/gui/data-api/) was not reachable from the build machine. Numbers below come from NASA public reports; check them against RadLab ISS data (queries listed in radlabQueries) and update dates.",
+  "_status": "Checked 2026-11-15 against NASA documents (see sources): ISS crews get about 0.5 mSv per day (NASA LSAH newsletter 2023), 80-160 mSv in a 6-month stay depending on solar activity (NASA-STD-3001 radiation technical brief), career limit 600 mSv (NASA-STD-3001 Vol.1 Rev B). NOT checked against the RadLab time series: the RadLab site (visualization.osdr.nasa.gov/radlab/) answered HTTP 500 on that day, so the numbers are NASA's published typical values, not a RadLab query.",
   "dailyDose_mSv": 0.5,
   "dailyDose_note": "Typical ISS dose equivalent per day. NASA: ISS crew receive about 80-160 mSv in a 6-month stay = about 0.44-0.88 mSv per day; we use 0.5.",
   "dailyDoseMin_mSv": 0.44,
@@ -23,6 +23,18 @@
     {
       "name": "NASA Human Research Program: space radiation",
       "url": "https://www.nasa.gov/hrp/"
+    },
+    {
+      "name": "NASA-STD-3001 technical brief: radiation protection (80 mSv at solar maximum, 160 mSv at solar minimum per 6 months on ISS)",
+      "url": "https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf"
+    },
+    {
+      "name": "NASA Lifetime Surveillance of Astronaut Health newsletter 2023 (ISS dose of the order of 0.5 mSv per day)",
+      "url": "https://www.nasa.gov/wp-content/uploads/2023/10/lsah-newsletter-2023-vol28-issue2.pdf"
+    },
+    {
+      "name": "NASA SRAG: how astronauts are protected (dosimeters log each astronaut's dose)",
+      "url": "https://srag.jsc.nasa.gov/SpaceRadiation/How/How.cfm"
     }
   ],
   "radlabQueries": [

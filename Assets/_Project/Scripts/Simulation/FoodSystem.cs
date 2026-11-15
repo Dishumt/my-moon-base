@@ -35,6 +35,9 @@ public class FoodSystem : ISimSystem
 
     public void Tick(GameState s, float hours, DayReport r)
     {
+        // Таймер голоду живе в GameState.Sim, щоб пережити збереження й завантаження гри.
+        HoursWithoutFood = s.Sim.HoursWithoutFood;
+
         float left = hours;
         while (left > Eps)
         {
@@ -42,6 +45,8 @@ public class FoodSystem : ISimSystem
             Step(s, step, r);
             left -= step;
         }
+
+        s.Sim.HoursWithoutFood = HoursWithoutFood;
     }
 
     public void OnDayEnd(GameState s, DayReport r)

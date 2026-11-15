@@ -46,3 +46,6 @@ Thumbs.db
 *.key
 secrets.json
 moon-company-iasasus.slnx
+
+# Тимчасові файли Burst, які веб-збірка кладе в корінь проєкту (не комітимо)
+/[Dd]ata/
