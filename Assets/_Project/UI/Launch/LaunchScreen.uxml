@@ -79,6 +79,10 @@
                         <ui:Label name="days-title" text="SUPPLIES WILL LAST" class="t-label mb-4" />
                         <ui:VisualElement name="days-list" />
                     </ui:VisualElement>
+                    <ui:VisualElement name="plan-box" class="plan-box">
+                        <ui:Label name="plan-title" text="3. SUPPLY SHIPS" class="t-label mb-4" />
+                        <ui:VisualElement name="plan-list" class="plan-list" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
             </ui:VisualElement>

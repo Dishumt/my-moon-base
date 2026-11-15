@@ -8,7 +8,7 @@
   "greenMargin": 1.1,
   "redMargin": 0.9,
   "margin_note": "Запас = паливо / потрібне паливо. >= greenMargin зелений, < redMargin червоний, між ними жовтий.",
-  "yellowMinChance": 0.30,
+  "yellowMinChance": 0.3,
   "yellowMaxChance": 0.95,
   "personMassKg": 150,
   "firstMissionSeats": 4,
@@ -22,5 +22,39 @@
   "commsOpenHours": 30,
   "commsClosedHours": 18,
   "commsOffsetHours": 0,
-  "comms_note": "Вікно зв'язку: 30 годин є, 18 немає, і так по колу. Offset зсуває початок шаблону."
+  "comms_note": "Вікно зв'язку: 30 годин є, 18 немає, і так по колу. Offset зсуває початок шаблону.",
+  "defaultPlanId": "normal",
+  "supplyPlans_note": "Плани поставок, які гравець обирає перед першим стартом. everyDays — як часто летить поставка; rockets — які ракети (id з rockets.json) встигають підготувати за цей час. Ціна вибору: часто = тільки мала ракета; рідко = будь-яка, але база довше чекає.",
+  "supplyPlans": [
+    {
+      "id": "often",
+      "nameKey": "plan.often",
+      "hintKey": "plan.often.hint",
+      "everyDays": 2,
+      "rockets": [
+        "small"
+      ]
+    },
+    {
+      "id": "normal",
+      "nameKey": "plan.normal",
+      "hintKey": "plan.normal.hint",
+      "everyDays": 3,
+      "rockets": [
+        "small",
+        "medium"
+      ]
+    },
+    {
+      "id": "rare",
+      "nameKey": "plan.rare",
+      "hintKey": "plan.rare.hint",
+      "everyDays": 4,
+      "rockets": [
+        "small",
+        "medium",
+        "heavy"
+      ]
+    }
+  ]
 }

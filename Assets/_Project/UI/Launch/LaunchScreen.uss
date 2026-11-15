@@ -382,3 +382,15 @@
 .report-text { white-space: normal; }
 .goal-text { white-space: normal; }
 #goals-title { white-space: normal; }
+
+/* --- план поставок (роль 04) --- */
+.legend { display: none; }               /* кольори смужки маси пояснює підпис «вантаж / екіпаж» у тексті */
+.ship-area { height: 100px; }
+.ship { height: 98px; }
+.plan-box { margin-top: 6px; }
+.plan-list { flex-direction: row; }
+.plan-btn { flex-grow: 1; flex-basis: 0; height: 30px; margin: 0 4px 0 0; padding: 0 4px; font-size: 12px; letter-spacing: 0; white-space: normal;
+            color: var(--color-soft); background-color: var(--color-card); border-width: 2px; border-color: var(--color-line); border-radius: 0; }
+.plan-btn:hover { border-color: var(--color-accent); }
+.plan-btn--on { border-color: var(--color-energy); color: var(--color-energy); background-color: var(--color-card-selected); }
+.rocket-card--locked { opacity: 0.4; }

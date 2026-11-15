@@ -78,8 +78,48 @@ public class SupplySystem : ISimSystem
 
     // ---------- Ракета ----------
 
-    /// <summary>Вибрана ракета. null — у rockets.json немає ракет (тоді числа з launch.json).</summary>
-    public RocketData GetRocket(GameState s) => rockets.FindOrDefault(s.Supply.RocketId);
+    /// <summary>
+    /// Вибрана ракета. null — у rockets.json немає ракет (тоді числа з launch.json).
+    /// Для поставок: якщо вибрана ракета не входить у план, береться найбільша з дозволених.
+    /// </summary>
+    public RocketData GetRocket(GameState s)
+    {
+        var r = rockets.FindOrDefault(s.Supply.RocketId);
+        if (r == null || RocketAllowed(s, r.id)) return r;
+        RocketData best = null;
+        foreach (var x in rockets.items)
+            if (RocketAllowed(s, x.id) && (best == null || x.emptyMassKg > best.emptyMassKg)) best = x;
+        return best ?? r;
+    }
+
+    // ---------- План поставок ----------
+
+    /// <summary>Вибраний план поставок. null — планів у launch.json немає.</summary>
+    public SupplyPlanData GetPlan(GameState s) => data.FindPlan(s.Supply.PlanId) ?? data.FindPlan(data.defaultPlanId);
+
+    /// <summary>Кожні скільки днів летить поставка (з плану, інакше supplyEveryDays).</summary>
+    public int EveryDays(GameState s)
+    {
+        var p = GetPlan(s);
+        return p != null && p.everyDays > 0 ? p.everyDays : data.supplyEveryDays;
+    }
+
+    /// <summary>Вибрати план. Тільки до першого старту: потім розклад уже складено.</summary>
+    public string SetPlan(GameState s, string planId)
+    {
+        if (s.Supply.FirstMissionDone) return "error.plan_locked";
+        if (data.FindPlan(planId) == null) return "error.unknown_plan";
+        s.Supply.PlanId = planId;
+        return null;
+    }
+
+    /// <summary>Чи можна цю ракету для поставки за планом. Перша місія — будь-яка.</summary>
+    public bool RocketAllowed(GameState s, string rocketId)
+    {
+        if (!s.Supply.FirstMissionDone) return true;
+        var p = GetPlan(s);
+        return p == null || p.rockets == null || p.rockets.Count == 0 || p.rockets.Contains(rocketId);
+    }
 
     /// <summary>Найбільший бак вибраної ракети.</summary>
     public float MaxFuel(GameState s)
@@ -100,6 +140,7 @@ public class SupplySystem : ISimSystem
     {
         if (s.Supply.FirstMissionDone && s.Supply.Status != SupplyStatus.Draft) return "error.order_locked";
         if (rockets.Find(rocketId) == null) return "error.unknown_rocket";
+        if (!RocketAllowed(s, rocketId)) return "error.rocket_not_in_plan";
         s.Supply.RocketId = rocketId;
         s.Supply.FuelKg = Math.Min(GetFuel(s), MaxFuel(s));
         return null;
@@ -219,7 +260,7 @@ public class SupplySystem : ISimSystem
 
     void ScheduleFrom(GameState s, int fromHour)
     {
-        int day = fromHour / 24 + data.supplyEveryDays;
+        int day = fromHour / 24 + EveryDays(s);
         s.Supply.NextLaunchAt = day * 24 + data.launchHour;
         s.Supply.Scheduled = true;
         s.Supply.MissedReported = false;

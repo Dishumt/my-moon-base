@@ -1,5 +1,6 @@
 // AI-assisted: written with Claude. See docs/AI_USE.md
 using System;
+using System.Collections.Generic;
 
 /// <summary>Числа з Launch/launch.json: запуск, поставки, зв'язок.</summary>
 [Serializable]
@@ -25,5 +26,21 @@ public class LaunchData
     public int commsClosedHours = 18;
     public int commsOffsetHours = 0;
 
+    public string defaultPlanId = "normal";
+    public List<SupplyPlanData> supplyPlans = new List<SupplyPlanData>();
+
+    public SupplyPlanData FindPlan(string id) => string.IsNullOrEmpty(id) ? null : supplyPlans.Find(p => p.id == id);
+
     public static LaunchData Load() => DataLoader.Load<LaunchData>("Launch/launch");
+}
+
+/// <summary>План поставок: як часто летить корабель і які ракети за цей час встигають підготувати.</summary>
+[Serializable]
+public class SupplyPlanData
+{
+    public string id;
+    public string nameKey;
+    public string hintKey;
+    public int everyDays = 3;
+    public List<string> rockets = new List<string>();   // порожньо — будь-яка ракета
 }

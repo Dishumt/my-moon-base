@@ -92,6 +92,9 @@ public class LaunchScreen : MonoBehaviour
     CargoItemData infoItem;
     RocketData infoRocket;
     bool infoMass;            // показати «чому корабель такий легкий»
+    SupplyPlanData infoPlan;  // показати пояснення плану поставок
+    Label planTitle;
+    VisualElement planList;
 
     GameState State => GameBootstrap.Instance != null ? GameBootstrap.Instance.State : null;
     SupplySystem Supply => GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<SupplySystem>() : null;
@@ -146,8 +149,10 @@ public class LaunchScreen : MonoBehaviour
         hold = root.Q("hold");
         holdTitle = root.Q<Label>("hold-title");
         massLike = root.Q<Label>("mass-like");
+        planTitle = root.Q<Label>("plan-title");
+        planList = root.Q("plan-list");
         // навели на масу корабля — пояснюємо, чому він важить лише тонни, а не тисячі тонн
-        root.Q("ship-panel")?.RegisterCallback<PointerEnterEvent>(_ => { infoItem = null; infoRocket = null; infoMass = true; RefreshInfo(); });
+        root.Q("ship-panel")?.RegisterCallback<PointerEnterEvent>(_ => { infoItem = null; infoRocket = null; infoPlan = null; infoMass = true; RefreshInfo(); });
         report = root.Q("report");
         reportStars = root.Q("report-stars");
         reportList = root.Q("report-list");
@@ -294,11 +299,13 @@ public class LaunchScreen : MonoBehaviour
         infoItem = null;
         infoRocket = null;
         infoMass = false;
+        infoPlan = null;
         failedTries = 0;
         report?.AddToClassList("report--hidden");
         BuildRocketCards();
         BuildCargoRows();
         BuildDaysRows();
+        BuildPlanButtons();
         Refresh();
         PlaceShip(0f, false);
     }
@@ -471,6 +478,7 @@ public class LaunchScreen : MonoBehaviour
     void ShowInfo(CargoItemData item, RocketData rocket)
     {
         infoMass = false;
+        infoPlan = null;
         infoItem = item;
         infoRocket = item == null ? rocket : null;
         RefreshInfo();
@@ -493,6 +501,12 @@ public class LaunchScreen : MonoBehaviour
             SetText(infoTitle, T(infoRocket.nameKey));
             SetText(infoText, T(infoRocket.hintKey) + " " + T("rocket.why"));
             SetText(infoGives, T("rocket.stats", (infoRocket.maxFuelKg / 1000f).ToString("0.#"), infoRocket.flightHours));
+        }
+        else if (infoPlan != null)
+        {
+            SetText(infoTitle, T(infoPlan.nameKey));
+            SetText(infoText, T(infoPlan.hintKey) + (IsFirstMission ? "" : " " + T("plan.locked_hint")));
+            SetText(infoGives, T("plan.rockets", RocketNames(infoPlan)));
         }
         else if (infoMass)
         {
@@ -592,9 +606,13 @@ public class LaunchScreen : MonoBehaviour
             {
                 if (!(card.userData is RocketData rd)) continue;
                 card.Q<Label>("name").text = T(rd.nameKey);
-                card.Q<Label>("stats").text = T("rocket.stats", (rd.maxFuelKg / 1000f).ToString("0.#"), rd.flightHours);
+                bool allowed = Supply.RocketAllowed(s, rd.id);   // поставка: тільки ракети з плану
+                card.Q<Label>("stats").text = allowed
+                    ? T("rocket.stats", (rd.maxFuelKg / 1000f).ToString("0.#"), rd.flightHours)
+                    : T("rocket.not_in_plan");
                 card.EnableInClassList("rocket-card--on", rocket == rd);
-                card.SetEnabled(editable);
+                card.EnableInClassList("rocket-card--locked", !allowed);
+                card.SetEnabled(editable && allowed);
             }
         }
         if (!animating) ApplyShipLook(rocket);
@@ -648,8 +666,66 @@ public class LaunchScreen : MonoBehaviour
         }
         SetText(hintLabel, T("launch.hint." + r.Light));
 
+        RefreshPlan(editable);
         RefreshMission(r);
         RefreshInfo();
+    }
+
+    // ---------- План поставок ----------
+
+    void BuildPlanButtons()
+    {
+        if (planList == null) return;
+        planList.Clear();
+        foreach (var plan in Supply.Data.supplyPlans)
+        {
+            var p = plan;
+            var b = new Button(() => SelectPlan(p)) { userData = p };
+            b.AddToClassList("plan-btn");
+            b.RegisterCallback<PointerEnterEvent>(_ => ShowPlanInfo(p));
+            planList.Add(b);
+        }
+        planList.parent?.EnableInClassList("launch-hidden", Supply.Data.supplyPlans.Count == 0);
+    }
+
+    void SelectPlan(SupplyPlanData plan)
+    {
+        if (animating) return;
+        SetResult(Supply.SetPlan(State, plan.id));
+        ShowPlanInfo(plan);
+        Refresh();
+    }
+
+    void ShowPlanInfo(SupplyPlanData plan)
+    {
+        infoItem = null;
+        infoRocket = null;
+        infoMass = false;
+        infoPlan = plan;
+        RefreshInfo();
+    }
+
+    void RefreshPlan(bool editable)
+    {
+        if (planList == null) return;
+        SetText(planTitle, T("plan.title"));
+        var current = Supply.GetPlan(State);
+        foreach (var child in planList.Children())
+        {
+            if (!(child is Button b) || !(b.userData is SupplyPlanData p)) continue;
+            b.text = T(p.nameKey);
+            b.EnableInClassList("plan-btn--on", p == current);
+            b.SetEnabled(editable && IsFirstMission);   // план обирають перед першим стартом
+        }
+    }
+
+    /// <summary>«Бджола, Пелікан» — назви ракет плану.</summary>
+    string RocketNames(SupplyPlanData plan)
+    {
+        var names = new List<string>();
+        foreach (var r in Supply.Rockets.items)
+            if (plan.rockets == null || plan.rockets.Count == 0 || plan.rockets.Contains(r.id)) names.Add(T(r.nameKey));
+        return string.Join(", ", names);
     }
 
     // ---------- Трюм і «важить як…» ----------

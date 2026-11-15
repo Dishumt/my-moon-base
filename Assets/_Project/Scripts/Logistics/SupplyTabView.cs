@@ -14,6 +14,7 @@ public class SupplyTabView
 {
     readonly LaunchScreen owner;
     readonly VisualElement root, stepsRow, chips, rocketPic, lightDot, linkLed;
+    readonly Label planLabel;
     readonly Label nextTitle, nextValue, nextLands, statusChip, linkLabel, orderTitle, rocketName, massLabel, riskLabel, emptyLabel, tipLabel;
     readonly Button openButton;
     readonly List<(VisualElement box, Label title, Label sub)> steps = new List<(VisualElement, Label, Label)>();
@@ -40,6 +41,7 @@ public class SupplyTabView
         var link = New("sup-link", status);
         linkLed = New("led", link);
         linkLabel = NewLabel("t-body", link);
+        planLabel = NewLabel("t-body", status);
 
         New("grow", top);
         openButton = new Button(() => owner.OpenSupplyOrder());
@@ -114,6 +116,9 @@ public class SupplyTabView
         linkLabel.text = linkOk ? T("launch.link_ok")
                        : s.Power.Comms <= 0 ? T("supply.link_nopower")
                        : T("supply.link_none", comms != null ? comms.HoursUntilOpen(s) : 0);
+
+        var supplyPlan = sup.GetPlan(s);
+        planLabel.text = supplyPlan != null ? T("plan.current", T(supplyPlan.nameKey)) : "";
 
         openButton.text = !firstDone || supply.Status == SupplyStatus.Draft ? T("supply.open") : T("supply.view");
 

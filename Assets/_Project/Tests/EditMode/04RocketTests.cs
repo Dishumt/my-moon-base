@@ -317,3 +317,57 @@ public class SupplyScheduleTests
         Assert.AreEqual(94, sup.ExpectedArrivalAt(s));
     }
 }
+
+/// <summary>Тести плану поставок: частота і дозволені ракети (роль 04).</summary>
+public class SupplyPlanTests
+{
+    SupplySystem sup;
+    GameState s;
+
+    [SetUp]
+    public void Setup()
+    {
+        var data = new LaunchData { supplyEveryDays = 3, launchHour = 8, flightHours = 12, defaultPlanId = "normal" };
+        data.supplyPlans.Add(new SupplyPlanData { id = "often", everyDays = 2, rockets = new System.Collections.Generic.List<string> { "small" } });
+        data.supplyPlans.Add(new SupplyPlanData { id = "normal", everyDays = 3, rockets = new System.Collections.Generic.List<string> { "small", "medium" } });
+        data.supplyPlans.Add(new SupplyPlanData { id = "rare", everyDays = 4, rockets = new System.Collections.Generic.List<string> { "small", "medium", "heavy" } });
+        var rockets = new RocketCatalog { defaultId = "medium" };
+        rockets.items.Add(new RocketData { id = "small", emptyMassKg = 600f, maxFuelKg = 3500f, flightHours = 8 });
+        rockets.items.Add(new RocketData { id = "medium", emptyMassKg = 1000f, maxFuelKg = 6000f, flightHours = 12 });
+        rockets.items.Add(new RocketData { id = "heavy", emptyMassKg = 2000f, maxFuelKg = 10000f, flightHours = 24 });
+        sup = new SupplySystem(data, new CargoCatalog(), rockets) { Random01 = () => 0.5f };
+        s = new GameState { Day = 1, Hour = 0 };
+        s.Power.Comms = 1;
+    }
+
+    [TearDown]
+    public void Clean() => GameEvents.ClearAll();
+
+    [Test]
+    public void PlanSetsTheSchedule()
+    {
+        Assert.IsNull(sup.SetPlan(s, "often"));
+        sup.LaunchFirstMission(s);
+        Assert.AreEqual(2 * 24 + 8, s.Supply.NextLaunchAt);   // кожні 2 дні
+        Assert.AreEqual("error.plan_locked", sup.SetPlan(s, "rare"));
+    }
+
+    [Test]
+    public void OftenPlan_OnlySmallRocket()
+    {
+        sup.SetPlan(s, "often");
+        sup.SetRocket(s, "heavy");                 // перша місія — будь-яка ракета
+        sup.LaunchFirstMission(s);
+        Assert.AreEqual("small", sup.GetRocket(s).id);  // для поставок — найбільша з плану
+        Assert.AreEqual("error.rocket_not_in_plan", sup.SetRocket(s, "medium"));
+    }
+
+    [Test]
+    public void RarePlan_AllowsHeavy()
+    {
+        sup.SetPlan(s, "rare");
+        sup.LaunchFirstMission(s);
+        Assert.IsNull(sup.SetRocket(s, "heavy"));
+        Assert.AreEqual(4 * 24 + 8, s.Supply.NextLaunchAt);
+    }
+}

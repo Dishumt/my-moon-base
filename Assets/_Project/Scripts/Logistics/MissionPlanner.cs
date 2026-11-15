@@ -119,7 +119,7 @@ public static class MissionPlanner
         int now = CommsSystem.AbsHour(s);
         int flight = sup.FlightHours(s);
         int from = firstMission ? now : sup.ExpectedArrivalAt(s);         // коли сяде цей корабель
-        int nextLaunch = (from / 24 + data.supplyEveryDays) * 24 + data.launchHour;
+        int nextLaunch = (from / 24 + sup.EveryDays(s)) * 24 + data.launchHour;
         if (!firstMission && nextLaunch < from) nextLaunch += 24;
         int nextArrival = nextLaunch + flight;
         return Math.Max(0f, (nextArrival - now) / 24f);

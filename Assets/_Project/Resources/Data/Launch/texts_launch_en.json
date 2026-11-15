@@ -833,6 +833,62 @@
     {
       "key": "mission.title.3",
       "text": "MISSION STAGE 3 GOALS"
+    },
+    {
+      "key": "plan.title",
+      "text": "3. HOW OFTEN DO SHIPS COME?"
+    },
+    {
+      "key": "plan.often",
+      "text": "EVERY 2 DAYS"
+    },
+    {
+      "key": "plan.normal",
+      "text": "EVERY 3 DAYS"
+    },
+    {
+      "key": "plan.rare",
+      "text": "EVERY 4 DAYS"
+    },
+    {
+      "key": "plan.often.hint",
+      "text": "Ships come often, but only the small Bee rocket: big rockets need more time to get ready for launch."
+    },
+    {
+      "key": "plan.normal.hint",
+      "text": "A ship every 3 days: the Bee or the Pelican."
+    },
+    {
+      "key": "plan.rare.hint",
+      "text": "A ship only every 4 days, but it can even be the heavy Whale. The wait is long, so take more supplies now!"
+    },
+    {
+      "key": "plan.rockets",
+      "text": "Rockets: {0}"
+    },
+    {
+      "key": "plan.current",
+      "text": "Ships: {0}"
+    },
+    {
+      "key": "plan.locked_hint",
+      "text": "The plan was chosen before the first launch."
+    },
+    {
+      "key": "rocket.not_in_plan",
+      "text": "not in the supply plan"
+    },
+    {
+      "key": "error.rocket_not_in_plan",
+      "text": "This rocket is not in your supply plan. Choose a smaller one."
+    },
+    {
+      "key": "error.plan_locked",
+      "text": "The supply plan is chosen before the first launch."
+    },
+    {
+      "key": "error.unknown_plan",
+      "text": "Unknown supply plan."
     }
   ]
 }
