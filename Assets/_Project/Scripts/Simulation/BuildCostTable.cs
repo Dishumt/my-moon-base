@@ -27,6 +27,9 @@ public class BuildCostTable
     /// <summary>Ціна засипання модуля реголітом (стартово 12 годин / 0 матеріалів).</summary>
     public BuildCost Regolith = new BuildCost(12f, 0f);
 
+    // Тунель між сусідніми кімнатами (modules.json → "tunnel")
+    public BuildCost Tunnel = new BuildCost(6f, 10f);
+
     public void Set(ModuleType type, float buildHours, float materials)
     {
         _costs[type] = new BuildCost(buildHours, materials);
@@ -52,6 +55,7 @@ public class BuildCostTable
     public class JsonFile
     {
         public JsonItem regolith;
+        public JsonItem tunnel;
         public JsonItem[] items;
     }
 
@@ -79,6 +83,8 @@ public class BuildCostTable
 
         if (file.regolith != null)
             table.Regolith = new BuildCost(file.regolith.buildRobotHours, file.regolith.materials);
+        if (file.tunnel != null)
+            table.Tunnel = new BuildCost(file.tunnel.buildRobotHours, file.tunnel.materials);
 
         if (file.items == null) return table;
 

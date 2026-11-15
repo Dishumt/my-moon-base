@@ -19,4 +19,4 @@ public enum PoiType { Ice, Sample, Fact, LandingPad }
 public enum ModuleType { Habitat, Solar, Battery, Greenhouse, Shelter, Medbay, Antenna, Lab, Relay, Reactor }
 
 /// <summary>Що робить робот.</summary>
-public enum RobotTask { Idle, Build, Shield }
+public enum RobotTask { Idle, Build, Shield, Tunnel }   // Tunnel — будує тунель (TargetSlot = лівий модуль)

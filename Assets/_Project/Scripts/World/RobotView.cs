@@ -149,7 +149,7 @@ public class RobotView : MonoBehaviour
             sparkTimer -= dt;
             if (sparkTimer <= 0f)
             {
-                bool build = data.Task == RobotTask.Build;
+                bool build = data.Task == RobotTask.Build || data.Task == RobotTask.Tunnel;   // тунель теж зварюють
                 sparkTimer = build ? 0.1f : 0.12f;
                 Vector3 tip = tool.position;
                 for (int i = 0; i < (build ? 5 : 2); i++)
