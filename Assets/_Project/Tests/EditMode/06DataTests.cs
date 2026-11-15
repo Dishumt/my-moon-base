@@ -13,7 +13,7 @@ public class NasaDataTests
         foreach (var e in list.items)
         {
             Assert.IsNotEmpty(e.id);
-            Assert.That(e.type, Is.AnyOf("FLR", "SEP", "GST"), e.id);
+            Assert.That(e.type, Is.EqualTo("FLR").Or.EqualTo("SEP").Or.EqualTo("GST"), e.id); // Is.AnyOf немає в NUnit з Unity 6.6
             Assert.That(e.strength, Is.InRange(1, 3), e.id);
             StringAssert.StartsWith("https://", e.sourceUrl, e.id);
             StringAssert.StartsWith("2024-", e.date, e.id);
