@@ -1073,6 +1073,82 @@
     {
       "key": "landing.fact.5",
       "text": "Solar panels at the pole stand upright: the sunlight comes from the side, from just above the horizon."
+    },
+    {
+      "key": "map.tunnel_right",
+      "text": "TUNNEL TO THE RIGHT →"
+    },
+    {
+      "key": "map.tunnel_left",
+      "text": "← TUNNEL TO THE LEFT"
+    },
+    {
+      "key": "map.tunnel_desc",
+      "text": "The crew walks between the rooms inside: no spacesuit, no airlock, no radiation outside."
+    },
+    {
+      "key": "map.side_right",
+      "text": "to the right"
+    },
+    {
+      "key": "map.side_left",
+      "text": "to the left"
+    },
+    {
+      "key": "map.tunnel_built",
+      "text": "Tunnel {0}: ready"
+    },
+    {
+      "key": "map.tunnel_building",
+      "text": "Tunnel {0}: building, {1} h left"
+    },
+    {
+      "key": "map.tunnel_ordered",
+      "text": "Tunnel ordered! Robots are on their way."
+    },
+    {
+      "key": "error.tunnel_place",
+      "text": "A tunnel can only go to the next square in the same row."
+    },
+    {
+      "key": "error.tunnel_rooms",
+      "text": "A tunnel joins only rooms: habitat, greenhouse, lab, medbay or shelter."
+    },
+    {
+      "key": "error.tunnel_not_built",
+      "text": "Finish building both modules first."
+    },
+    {
+      "key": "error.tunnel_exists",
+      "text": "There is already a tunnel here."
+    },
+    {
+      "key": "report.tunnel_built",
+      "text": "Robots finished a tunnel! Now the crew walks between the modules without spacesuits."
+    },
+    {
+      "key": "error.tunnel_no_neighbor",
+      "text": "There is no room in this row on this side yet. Build one: a tunnel can go across several empty squares."
+    },
+    {
+      "key": "map.tunnel_cells",
+      "text": "{0} sq."
+    },
+    {
+      "key": "map.tunnel_here",
+      "text": "TUNNEL"
+    },
+    {
+      "key": "map.tunnel_here_building",
+      "text": "TUNNEL · BUILDING"
+    },
+    {
+      "key": "error.place_tunnel",
+      "text": "A tunnel runs through this square, so you can't build here."
+    },
+    {
+      "key": "error.tunnel_blocked",
+      "text": "Something already stands between the rooms. A tunnel needs empty squares."
     }
   ]
 }
