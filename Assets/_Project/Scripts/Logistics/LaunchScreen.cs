@@ -49,6 +49,12 @@ public class LaunchScreen : MonoBehaviour
     [Tooltip("Скафандри для пускового майданчика. Якщо в сцені є CrewLook (головна сцена), картинки беруться з нього — такі самі, як на Місяці.")]
     [SerializeField] List<CrewSuit> crewSuits = new List<CrewSuit>();
 
+    [Tooltip("Фон пускового майданчика (Art/Earth/Pixel Art Rocket Launch Site at Sunset). Порожньо — небо й будівлі малюються кодом.")]
+    [SerializeField] Texture2D padBackground;
+
+    [Tooltip("Автобус для екіпажу (Art/Earth/Pixel Art Blue-Stripe Bus Sprite). Порожньо — автобус із прямокутників.")]
+    [SerializeField] Texture2D padBus;
+
     [Tooltip("Показувати пусковий майданчик (екіпаж, відлік, злет) після ПІДТВЕРДИТИ")]
     [SerializeField] bool showLaunchPad = true;
 
@@ -165,6 +171,7 @@ public class LaunchScreen : MonoBehaviour
         if (tasks == null) tasks = TasksData.Load();
         pad = new LaunchPadView(root);
         if (!pad.Ready) pad = null; // у UXML немає майданчика — буде тільки політ по дузі
+        else pad.SetArt(padBackground, padBus);
         flight = new FlightMapView(root);
         if (!flight.Ready) flight = null;
 

@@ -64,6 +64,14 @@ public class LaunchPadView
                          && rocket != null && trail != null && smokeLayer != null && crewLayer != null
                          && title != null && count != null && status != null && fact != null;
 
+    /// <summary>Картинки Юлі з Art/Earth: фон майданчика й автобус. null — малюємо кодом.</summary>
+    public void SetArt(Texture2D background, Texture2D bus)
+    {
+        if (scenery == null) return;
+        scenery.Background = background;
+        scenery.Bus = bus;
+    }
+
     public void Show(bool visible) => view?.EnableInClassList("pad-view--hidden", !visible);
 
     // ---------- Головна послідовність ----------
@@ -187,11 +195,13 @@ public class LaunchPadView
         if (aspect <= 0.01f) aspect = 0.3f;
 
         groundTop = H * 0.86f;
+        cx = W * 0.62f;
+        bool art = scenery != null && scenery.HasArt;
+        if (art) scenery.ArtAnchors(W, H, out cx, out groundTop, out _); // ракета — на пусковому столі з картинки
         CrewSize = Mathf.Clamp(H * 0.075f, 36f, 64f);
         size = Mathf.Min(CrewSize * heightInCrew, groundTop - H * 0.06f);   // висота ракети
         CrewSize = Mathf.Min(CrewSize, size / heightInCrew);                 // якщо ракету обрізали — менші й люди
         rocketW = size * aspect;
-        cx = W * 0.62f;
         float left = cx - rocketW * 0.5f;
         towerX = left - 16f - 36f;
 
@@ -211,6 +221,9 @@ public class LaunchPadView
 
         Place(ground, 0f, groundTop, W, H - groundTop);
         Place(platform, cx - rocketW * 0.75f, groundTop - 12f, rocketW * 1.5f, 12f);
+        // на картинці вже є і земля з дорогою, і пусковий стіл
+        ground.style.display = art ? DisplayStyle.None : DisplayStyle.Flex;
+        platform.style.display = art ? DisplayStyle.None : DisplayStyle.Flex;
 
         // ракета
         Place(rocket, left, top, rocketW, size);
