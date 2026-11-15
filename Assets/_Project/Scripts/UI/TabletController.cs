@@ -70,6 +70,7 @@ public class TabletController : MonoBehaviour
             return;
         }
         bound = true;
+        root.pickingMode = PickingMode.Ignore; // the empty root must not catch clicks meant for the HUD below
 
         Instance = this;
         balance = DataLoader.Load<TabletBalance>("Balance/balance");
@@ -136,6 +137,7 @@ public class TabletController : MonoBehaviour
         var keyboard = Keyboard.current;
         if (!bound || keyboard == null) return;
 
+        if (!IsOpen && UiKit.Blocked) return; // start menu, report or launch screen is on top
         if (keyboard.tabKey.wasPressedThisFrame) Toggle();
         else if (IsOpen && keyboard.escapeKey.wasPressedThisFrame) Close();
     }
@@ -149,7 +151,7 @@ public class TabletController : MonoBehaviour
 
     public void Open()
     {
-        if (!bound || IsOpen) return;
+        if (!bound || IsOpen || UiKit.Blocked) return;
         IsOpen = true;
         GameBootstrap.Instance?.Clock?.PushModal();
 

@@ -139,7 +139,9 @@ public class GameBootstrap : MonoBehaviour
 
     void OnDayEnded(DayReport report)
     {
-        if (autoSave && !IsDemo) SaveSystem.Save(State);
+        // демо не зберігаємо; пройдений чи програний розділ теж (інакше «Продовжити» поверне його)
+        var chapters = GetSystem<ChapterSystem>();
+        if (autoSave && !IsDemo && (chapters == null || !chapters.IsFinished)) SaveSystem.Save(State);
     }
 
     void OnDestroy()

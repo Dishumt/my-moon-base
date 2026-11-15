@@ -55,6 +55,10 @@ public static class UiKit
     public static T Sys<T>() where T : class, ISimSystem
         => GameBootstrap.Instance != null && GameBootstrap.Instance.Clock != null ? GameBootstrap.Instance.GetSystem<T>() : null;
 
+    /// <summary>A window that must stay on top is open: start menu, report, launch screen. The tablet waits.</summary>
+    public static bool Blocked =>
+        StartMenu.IsShown || GameWindows.IsShown || (LaunchScreen.Instance != null && LaunchScreen.Instance.IsOpen);
+
     /// <summary>Number for the player: 12, 3.5 (no long tails).</summary>
     public static string Num(float value) => Math.Abs(value - Math.Round(value)) < 0.05f ? Math.Round(value).ToString("0") : value.ToString("0.0");
 }
