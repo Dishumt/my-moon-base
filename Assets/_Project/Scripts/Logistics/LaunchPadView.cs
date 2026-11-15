@@ -29,6 +29,9 @@ public class LaunchPadView
     bool skip;
     float W, H, groundTop, size, rocketW, cx, towerX, armY, doorX, rocketTop, mountTop;
     readonly LaunchPadScenery scenery;   // небо, океан, будівлі, автобус, вода під ракетою
+
+    /// <summary>Звуки відліку й двигунів (LaunchScreen ставить сюди). null — тиша.</summary>
+    public LaunchSounds Sounds;
     float CrewSize = 56f;             // розмір астронавта на екрані, px (рахується від висоти екрана)
 
     const float WalkSpeed = 200f;     // px за секунду
@@ -116,6 +119,7 @@ public class LaunchPadView
         for (int n = 10; n >= 1 && !skip; n--)
         {
             SetText(count, n.ToString());
+            Sounds?.Count(n);
             // факти під час відліку: як летить ракета → скільки летіти → коли можна летіти; на старті — перевантаження
             if (n == 10) SetText(fact, T("pad.fact.1"));
             else if (n == 8) SetText(fact, T("pad.fact.6"));   // справжня ракета — як 600 слонів
@@ -128,6 +132,7 @@ public class LaunchPadView
                 if (n <= 3) { Smoke(0.25f + (3 - n + t) / 3f * 0.5f); Shake(rocket, 1.5f + (3 - n) * 1.2f); }
                 if (n <= 2) Flame(0.4f + (2 - n + t) * 0.3f);
                 if (scenery != null) scenery.Ignition = n <= 2 ? 0.3f + (2 - n + t) * 0.35f : 0f;
+                Sounds?.Engines(n <= 2 ? 0.2f + (2 - n + t) * 0.25f : 0f);   // двигуни прокидаються за 2 с до старту
                 yield return null;
             }
         }
@@ -141,6 +146,7 @@ public class LaunchPadView
         trail.style.display = DisplayStyle.Flex;
         float baseTop = rocketTop;
         if (scenery != null) scenery.Ignition = 1f;
+        if (!skip) Sounds?.Liftoff();
         float rise = 0f, speed = 0f;
         for (float t = 0f; t < 4f && !skip; t += Time.unscaledDeltaTime)
         {
@@ -148,6 +154,7 @@ public class LaunchPadView
             speed += (t < 0.6f ? 60f : 420f) * dt;   // спершу ледве відривається, потім розганяється
             rise += speed * dt;
             if (!success && t > 2.2f) break;         // невдача: двигуни глохнуть на висоті
+            Sounds?.Engines(Mathf.Lerp(1f, 0.3f, t / 4f));   // ракета відлітає — гул тихішає
             rocket.style.top = baseTop - rise;
             rocket.style.translate = new Translate(UnityEngine.Random.Range(-2f, 2f), 0f);
             Flame(1f);
@@ -168,11 +175,13 @@ public class LaunchPadView
         status.EnableInClassList("c-ok", success);
         status.EnableInClassList("c-bad", !success);
         if (!success) Flame(0f);
+        Sounds?.Engines(0f);
         float wait = skip ? 0.6f : 1.8f;
         for (float t = 0f; t < wait; t += Time.unscaledDeltaTime) yield return null;
         status.RemoveFromClassList("c-ok");
         status.RemoveFromClassList("c-bad");
         if (scenery != null) { scenery.Ignition = 0f; scenery.Stop(); }
+        Sounds?.StopAll();
         Show(false);
     }
 

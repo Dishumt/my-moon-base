@@ -55,6 +55,18 @@ public class LaunchScreen : MonoBehaviour
     [Tooltip("Автобус для екіпажу (Art/Earth/Pixel Art Blue-Stripe Bus Sprite). Порожньо — автобус із прямокутників.")]
     [SerializeField] Texture2D padBus;
 
+    [Tooltip("Звук на кожну секунду відліку. Порожньо — простий «біп», згенерований кодом.")]
+    [SerializeField] AudioClip countdownBeep;
+
+    [Tooltip("Звук «СТАРТ!». Порожньо — сигнал, згенерований кодом.")]
+    [SerializeField] AudioClip liftoffSound;
+
+    [Tooltip("Гул двигунів (грає по колу). Порожньо — низький шум, згенерований кодом.")]
+    [SerializeField] AudioClip engineRumble;
+
+    [Tooltip("Гучність звуків майданчика (0 — без звуку)")]
+    [Range(0f, 1f)] [SerializeField] float padVolume = 0.8f;
+
     [Tooltip("Показувати пусковий майданчик (екіпаж, відлік, злет) після ПІДТВЕРДИТИ")]
     [SerializeField] bool showLaunchPad = true;
 
@@ -93,6 +105,7 @@ public class LaunchScreen : MonoBehaviour
     bool usedAdvice;          // гравець натискав «Порадь мені» — у звіті максимум 2 зірки
     VisualElement tablet;
     LaunchPadView pad;
+    LaunchSounds sounds;      // біп відліку, «СТАРТ!», гул двигунів
     FlightMapView flight;     // політ Дніпро → південний полюс Місяця
     bool animating, modalPushed, ready;
 
@@ -174,7 +187,14 @@ public class LaunchScreen : MonoBehaviour
         if (tasks == null) tasks = TasksData.Load();
         pad = new LaunchPadView(root);
         if (!pad.Ready) pad = null; // у UXML немає майданчика — буде тільки політ по дузі
-        else pad.SetArt(padBackground, padBus);
+        else
+        {
+            pad.SetArt(padBackground, padBus);
+            // звуки створюємо один раз (OnEnable може викликатися кілька разів)
+            if (padVolume > 0f && sounds == null)
+                sounds = new LaunchSounds(gameObject, countdownBeep, liftoffSound, engineRumble, padVolume);
+            pad.Sounds = sounds;
+        }
         flight = new FlightMapView(root);
         if (!flight.Ready) flight = null;
 
