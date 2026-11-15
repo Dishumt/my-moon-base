@@ -2,9 +2,12 @@
 using UnityEngine;
 
 /// <summary>
-/// Тунель між двома сусідніми кімнатами (TunnelState.SlotA і SlotA + 1) — роль 04 з дозволу техліда.
+/// Тунель між двома кімнатами в одному ряду (TunnelState.SlotA і SlotB, можна через кілька порожніх квадратиків) —
+/// роль 04 з дозволу техліда.
 /// Будується: напівпрозорий каркас росте від 10% до 100%. Готовий: труба між оболонками модулів, люки в бічних стінах,
 /// прохід у невидимих стінах кімнат (щоб пройти й гравцю), бічні стінки тунелю (щоб не вийти крізь нього надвір).
+/// Дах (труба й ребра) плавно зникає, коли інженер у тунелі або в одній із з'єднаних кімнат — як у модулів (ModuleInterior):
+/// тоді видно підлогу, бортики й людей у тунелі.
 /// Створює BaseView для кожного тунелю в GameState.Tunnels.
 /// </summary>
 public class TunnelView : MonoBehaviour
@@ -21,6 +24,17 @@ public class TunnelView : MonoBehaviour
     float totalHours;
     GameObject cutA, cutB;               // яким об'єктам модулів ми вже прорізали прохід
 
+    // дах, що зникає
+    readonly System.Collections.Generic.List<Renderer> roof = new System.Collections.Generic.List<Renderer>();
+    readonly System.Collections.Generic.List<Color> roofColors = new System.Collections.Generic.List<Color>();
+    float roofAlpha = 1f, appliedAlpha = -1f;
+    MaterialPropertyBlock block;
+    static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+    static Transform engineer;
+
+    /// <summary>Чи дах тунелю зараз прибраний (видно людей усередині).</summary>
+    public bool IsOpen => roofAlpha < 0.6f;
+
     public void Init(int slotA)
     {
         SlotA = slotA;
@@ -35,7 +49,7 @@ public class TunnelView : MonoBehaviour
         if (game == null || game.State == null) return;
         var t = game.State.FindTunnel(SlotA);
         var a = BaseView.Find(SlotA);
-        var b = BaseView.Find(SlotA + 1);
+        var b = t != null ? BaseView.Find(t.SlotB) : null;
         bool rooms = t != null && a != null && b != null && a.IsEnterableRoom && b.IsEnterableRoom;
         Shown want = !rooms ? Shown.Nothing : (t.IsBuilt ? Shown.Built : Shown.Building);
 
@@ -46,7 +60,53 @@ public class TunnelView : MonoBehaviour
             // модуль перебудувався (нова «картинка») — прорізаємо прохід знову
             if (a.Visual != cutA) { CutDoor(a, +1); cutA = a.Visual; }
             if (b.Visual != cutB) { CutDoor(b, -1); cutB = b.Visual; }
+            UpdateRoof(a, b);
         }
+    }
+
+    /// <summary>Дах зникає, коли інженер у тунелі або в одній із з'єднаних кімнат.</summary>
+    void UpdateRoof(ModuleView a, ModuleView b)
+    {
+        if (engineer == null)
+        {
+            var go = GameObject.FindGameObjectWithTag("Player");
+            if (go != null) engineer = go.transform;
+        }
+        bool inside = false;
+        if (engineer != null)
+        {
+            Vector3 p = engineer.position;
+            inside = a.Contains(p) || b.Contains(p) || (Footprint(SlotA, out var r) && r.Contains(new Vector2(p.x, p.z)));
+        }
+        var look = ModuleLook.Instance;
+        float fade = look != null ? look.roofFadeSeconds : 0.4f;
+        roofAlpha = Mathf.MoveTowards(roofAlpha, inside ? 0f : 1f, fade > 0f ? Time.unscaledDeltaTime / fade : 1f);
+        if (Mathf.Approximately(roofAlpha, appliedAlpha)) return;
+        appliedAlpha = roofAlpha;
+        if (block == null) block = new MaterialPropertyBlock();
+        for (int i = 0; i < roof.Count; i++)
+        {
+            var rend = roof[i];
+            if (rend == null) continue;
+            rend.enabled = roofAlpha > 0.01f;   // зовсім прозорий дах просто вимикаємо
+            var c = roofColors[i];
+            c.a *= roofAlpha;
+            if (look != null)
+            {
+                var mat = c.a > 0.99f ? look.wallMaterial : look.roofMaterial;   // напівпрозоре — скляним матеріалом
+                if (mat != null && rend.sharedMaterial != mat) rend.sharedMaterial = mat;
+            }
+            rend.GetPropertyBlock(block);
+            block.SetColor(BaseColor, c);
+            rend.SetPropertyBlock(block);
+        }
+    }
+
+    GameObject Roof(GameObject go, Color c)
+    {
+        roof.Add(go.GetComponent<Renderer>());
+        roofColors.Add(c);
+        return go;
     }
 
     // ---------- Геометрія (спільна з BaseView) ----------
@@ -55,8 +115,11 @@ public class TunnelView : MonoBehaviour
     public static bool Footprint(int slotA, out Rect rect)
     {
         rect = default;
+        var state = GameBootstrap.Instance != null ? GameBootstrap.Instance.State : null;
+        var t = state != null ? state.FindTunnel(slotA) : null;
+        if (t == null) return false;
         var a = BaseView.Find(slotA);
-        var b = BaseView.Find(slotA + 1);
+        var b = BaseView.Find(t.SlotB);
         if (a == null || b == null || !a.IsEnterableRoom || !b.IsEnterableRoom) return false;
         float x0 = a.transform.position.x + a.Size.x / 2f, x1 = b.transform.position.x - b.Size.x / 2f;
         float z = a.transform.position.z + a.RoomMidZ;
@@ -70,6 +133,10 @@ public class TunnelView : MonoBehaviour
         visual = null;
         scaffold = null;
         cutA = cutB = null;
+        roof.Clear();
+        roofColors.Clear();
+        roofAlpha = 1f;
+        appliedAlpha = -1f;
         shown = want;
         if (want == Shown.Nothing) { totalHours = 0f; return; }
 
@@ -90,12 +157,20 @@ public class TunnelView : MonoBehaviour
         // труба: світла оболонка з темнішими ребрами, підлога всередині
         var shell = new Color(0.9f, 0.91f, 0.93f);
         var rib = new Color(0.55f, 0.58f, 0.64f);
-        ModuleParts.Box(visual.transform, "Tube", look.wallMaterial, c + Vector3.up * Height / 2f, new Vector3(len, Height, Width), false, shell);
-        for (int i = -1; i <= 1; i += 2)
-            ModuleParts.Box(visual.transform, "Rib", look.wallMaterial, c + new Vector3(i * r.width * 0.25f, Height / 2f, 0f),
-                            new Vector3(0.18f, Height + 0.12f, Width + 0.12f), false, rib);
+        Roof(ModuleParts.Box(visual.transform, "Tube", look.wallMaterial, c + Vector3.up * Height / 2f, new Vector3(len, Height, Width), false, shell), shell);
+        int ribs = Mathf.Max(2, Mathf.RoundToInt(r.width / 2.5f));   // ребро приблизно кожні 2.5 м
+        for (int i = 0; i < ribs; i++)
+        {
+            float x = r.xMin + r.width * (i + 0.5f) / ribs;
+            Roof(ModuleParts.Box(visual.transform, "Rib", look.wallMaterial, new Vector3(x, Height / 2f, c.z),
+                                 new Vector3(0.18f, Height + 0.12f, Width + 0.12f), false, rib), rib);
+        }
+        // підлога й бортики — лишаються, коли дах зникає: видно коридор
         ModuleParts.Box(visual.transform, "Floor", look.wallMaterial, c + Vector3.up * 0.06f, new Vector3(len, 0.1f, Width - 0.2f), false,
                         new Color(0.7f, 0.72f, 0.75f));
+        foreach (int side in new[] { -1, 1 })
+            ModuleParts.Box(visual.transform, "Curb", look.wallMaterial, c + new Vector3(0f, 0.15f, side * (Width / 2f - 0.08f)),
+                            new Vector3(len, 0.3f, 0.12f), false, new Color(0.55f, 0.56f, 0.6f));
 
         // бічні стінки (невидимі, вищі за стрибок): з тунелю не вийти надвір
         foreach (int side in new[] { -1, 1 })

@@ -1076,7 +1076,27 @@
     },
     {
       "key": "error.tunnel_no_neighbor",
-      "text": "This square is empty. First build a room here (in the same row), then join them with a tunnel."
+      "text": "There is no room in this row on this side yet. Build one: a tunnel can go across several empty squares."
+    },
+    {
+      "key": "map.tunnel_cells",
+      "text": "{0} sq."
+    },
+    {
+      "key": "map.tunnel_here",
+      "text": "TUNNEL"
+    },
+    {
+      "key": "map.tunnel_here_building",
+      "text": "TUNNEL · BUILDING"
+    },
+    {
+      "key": "error.place_tunnel",
+      "text": "A tunnel runs through this square, so you can't build here."
+    },
+    {
+      "key": "error.tunnel_blocked",
+      "text": "Something already stands between the rooms. A tunnel needs empty squares."
     }
   ]
 }

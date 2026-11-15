@@ -7,7 +7,7 @@ using System.Collections.Generic;
 ///
 ///  Order(state, type, slotId)            — замовити модуль у слот.
 ///  ShieldWithRegolith(state, slotId)     — окреме замовлення: засипати збудований модуль реголітом.
-///  OrderTunnel(state, slotA)             — тунель між сусідніми кімнатами slotA і slotA + 1 (додано роллю 04).
+///  OrderTunnel(state, slotA, length)     — тунель між кімнатами slotA і slotA + length у ряду (додано роллю 04).
 ///
 /// Обидва методи повертають null, якщо все гаразд, або КЛЮЧ ТЕКСТУ з причиною відмови
 /// (наприклад "error.no_materials"); інтерфейс (роль 05) показує його через Loc.Get.
@@ -102,19 +102,24 @@ public class ConstructionSystem : ISimSystem
         return null;
     }
 
+    /// <summary>Ціна тунелю довжиною length квадратиків: modules.json → "tunnel" за кожен квадратик.</summary>
+    public BuildCost TunnelCost(int length) =>
+        new BuildCost(_costs.Tunnel.BuildHours * Math.Max(1, length), _costs.Tunnel.Materials * Math.Max(1, length));
+
     /// <summary>
-    /// Прокласти тунель від кімнати slotA до сусідньої праворуч (slotA + 1). Ціна — modules.json → "tunnel".
-    /// null = прийнято; інакше ключ тексту з причиною (BaseGrid.CanConnect або нестача матеріалів/роботів).
+    /// Прокласти тунель від кімнати slotA до кімнати slotA + length праворуч (крізь порожні квадратики між ними).
+    /// Ціна — modules.json → "tunnel" × length. null = прийнято; інакше ключ тексту з причиною.
     /// </summary>
-    public string OrderTunnel(GameState s, int slotA)
+    public string OrderTunnel(GameState s, int slotA, int length = 1)
     {
-        string err = BaseGrid.CanConnect(s, slotA);
+        string err = BaseGrid.CanConnect(s, slotA, length);
         if (err != null) return err;
         if (s.Robots.Count == 0) return "build.err.no_robots";
-        if (s.Res.Materials + Eps < _costs.Tunnel.Materials) return "error.no_materials";
+        var cost = TunnelCost(length);
+        if (s.Res.Materials + Eps < cost.Materials) return "error.no_materials";
 
-        s.Res.Materials -= _costs.Tunnel.Materials;
-        s.Tunnels.Add(new TunnelState { SlotA = slotA, BuildHoursLeft = _costs.Tunnel.BuildHours });
+        s.Res.Materials -= cost.Materials;
+        s.Tunnels.Add(new TunnelState { SlotA = slotA, Length = Math.Max(1, length), BuildHoursLeft = cost.BuildHours });
         AssignWork(s);
         return null;
     }

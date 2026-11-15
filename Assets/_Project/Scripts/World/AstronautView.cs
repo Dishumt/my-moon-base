@@ -117,7 +117,7 @@ public class AstronautView : MonoBehaviour
 
         // У закритому модулі (гравець надворі) людину не видно — тільки іконку стану над дахом
         var room = Data.InsideSlot >= 0 ? BaseView.Find(Data.InsideSlot) : null;
-        bool visible = room == null || room.InteriorOpen;
+        bool visible = room == null || room.InteriorOpen || BaseView.TunnelOpenAt(transform.position); // у тунелі без даху теж видно
         bodyVisible = visible;
         foreach (var r in bodyParts) if (r != null) r.enabled = visible;
         hop.Step(moving, suit, dt);
@@ -259,8 +259,8 @@ public class AstronautView : MonoBehaviour
     }
 
     /// <summary>
-    /// Кімнати від from до to, якщо всі вони в одному ряду, усі — готові кімнати і між кожною парою є готовий тунель.
-    /// Інакше null (тоді йдемо надвір через шлюзи, як раніше).
+    /// Кімнати від from до to, якщо всі вони в одному ряду і від кімнати до кімнати ведуть готові тунелі
+    /// (тунель може йти крізь кілька порожніх квадратиків). Інакше null — тоді йдемо надвір через шлюзи, як раніше.
     /// </summary>
     static List<ModuleView> IndoorRoute(int from, int to)
     {
@@ -268,14 +268,19 @@ public class AstronautView : MonoBehaviour
         if (state == null || BaseGrid.Row(from) != BaseGrid.Row(to)) return null;
         int dir = to > from ? 1 : -1;
         var route = new List<ModuleView>();
-        for (int slot = from; ; slot += dir)
+        int slot = from;
+        for (int guard = 0; guard <= BaseGrid.Width; guard++)
         {
             var mv = BaseView.Find(slot);
             if (mv == null || !mv.IsEnterableRoom) return null;
             route.Add(mv);
             if (slot == to) return route;
-            if (!state.HasBuiltTunnel(slot, slot + dir)) return null;
+            var t = dir > 0 ? state.FindTunnel(slot) : state.FindTunnelEndingAt(slot);
+            if (t == null || !t.IsBuilt) return null;
+            slot = dir > 0 ? t.SlotB : t.SlotA;
+            if ((dir > 0 && slot > to) || (dir < 0 && slot < to)) return null;   // проскочили
         }
+        return null;
     }
 
     void Add(Kind kind, Vector3 pos, float seconds = 0f, Airlock airlock = null)

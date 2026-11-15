@@ -114,6 +114,16 @@ public class BaseView : MonoBehaviour
         return m != null && m.IsBuilt && view.Contains(worldPos) ? id : -1;
     }
 
+    /// <summary>Чи точка в тунелі, з якого зараз прибрано дах (інженер поруч) — тоді людей у ньому видно.</summary>
+    public static bool TunnelOpenAt(Vector3 worldPos)
+    {
+        if (instance == null) return false;
+        foreach (var pair in instance.tunnels)
+            if (pair.Value.IsOpen && TunnelView.Footprint(pair.Key, out var r) && r.Contains(new Vector2(worldPos.x, worldPos.z)))
+                return true;
+        return false;
+    }
+
     /// <summary>Якщо точка в готовому тунелі — номер його лівого модуля, інакше -1.</summary>
     static int TunnelAt(Vector3 worldPos)
     {

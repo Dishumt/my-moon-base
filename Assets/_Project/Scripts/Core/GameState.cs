@@ -36,19 +36,30 @@ public class GameState
         return Modules.Find(m => m.SlotId == slotId);
     }
 
-    /// <summary>Тунель, що починається в модулі slotA (і йде праворуч, до slotA + 1), або null.</summary>
+    /// <summary>Тунель, що починається в модулі slotA (і йде праворуч), або null.</summary>
     public TunnelState FindTunnel(int slotA)
     {
         return Tunnels.Find(t => t.SlotA == slotA);
     }
 
-    /// <summary>Чи два сусідні модулі з'єднані ГОТОВИМ тунелем.</summary>
+    /// <summary>Тунель, що закінчується в модулі slotB (прийшов зліва), або null.</summary>
+    public TunnelState FindTunnelEndingAt(int slotB)
+    {
+        return Tunnels.Find(t => t.SlotB == slotB);
+    }
+
+    /// <summary>Тунель, під яким лежить порожній квадратик (між кімнатами), або null.</summary>
+    public TunnelState FindTunnelCovering(int slot)
+    {
+        return Tunnels.Find(t => t.Covers(slot));
+    }
+
+    /// <summary>Чи два модулі з'єднані ГОТОВИМ тунелем напряму (у будь-якому порядку).</summary>
     public bool HasBuiltTunnel(int slot1, int slot2)
     {
-        int a = Math.Min(slot1, slot2);
-        if (Math.Abs(slot1 - slot2) != 1) return false;
+        int a = Math.Min(slot1, slot2), b = Math.Max(slot1, slot2);
         var t = FindTunnel(a);
-        return t != null && t.IsBuilt && FindModule(a) != null && FindModule(a + 1) != null;
+        return t != null && t.SlotB == b && t.IsBuilt && FindModule(a) != null && FindModule(b) != null;
     }
 
     /// <summary>Точка за id або null.</summary>

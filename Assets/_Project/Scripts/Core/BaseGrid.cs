@@ -48,20 +48,33 @@ public static class BaseGrid
     }
 
     /// <summary>
-    /// Чи можна прокласти тунель від кімнати slotA до сусідньої праворуч (slotA + 1) в тому ж ряду.
+    /// Чи можна прокласти тунель від кімнати slotA до кімнати slotA + length праворуч, у тому ж ряду.
+    /// Квадратики між ними мають бути порожні (тунель пройде крізь них). length = 1 — сусіди.
     /// Тільки праворуч-ліворуч: спереду в модуля шлюз, тож спереду й ззаду тунель не приєднати.
     /// null = можна, інакше ключ тексту з причиною.
     /// </summary>
-    public static string CanConnect(GameState s, int slotA)
+    public static string CanConnect(GameState s, int slotA, int length = 1)
     {
-        if (!IsValid(slotA) || Column(slotA) >= Width - 1) return "error.tunnel_place";
+        if (!IsValid(slotA) || length < 1 || Column(slotA) + length >= Width) return "error.tunnel_place";
+        int slotB = slotA + length;
         var a = s.FindModule(slotA);
-        var b = s.FindModule(slotA + 1);
+        var b = s.FindModule(slotB);
         if (a == null || b == null) return "error.tunnel_no_neighbor";   // з одного боку порожній квадратик
         if (!ModuleKinds.IsRoom(a.Type) || !ModuleKinds.IsRoom(b.Type)) return "error.tunnel_rooms";
         if (!a.IsBuilt || !b.IsBuilt) return "error.tunnel_not_built";
-        if (s.FindTunnel(slotA) != null) return "error.tunnel_exists";
+        if (s.FindTunnel(slotA) != null || s.FindTunnelEndingAt(slotB) != null) return "error.tunnel_exists";
+        for (int x = slotA + 1; x < slotB; x++)   // квадратики під тунелем: порожні й не під іншим тунелем
+            if (s.FindModule(x) != null || s.FindTunnelCovering(x) != null) return "error.tunnel_blocked";
         return null;
+    }
+
+    /// <summary>Найближчий модуль праворуч (dir = 1) чи ліворуч (-1) у тому ж ряду: номер квадратика або -1.</summary>
+    public static int NextModuleInRow(GameState s, int slot, int dir)
+    {
+        int row = Row(slot);
+        for (int x = slot + dir; IsValid(x) && Row(x) == row; x += dir)
+            if (s.FindModule(x) != null) return x;
+        return -1;
     }
 
     /// <summary>
@@ -72,6 +85,7 @@ public static class BaseGrid
     {
         if (!IsValid(slotId)) return "error.place_outside";
         if (s.FindModule(slotId) != null) return "error.place_taken";
+        if (s.FindTunnelCovering(slotId) != null) return "error.place_tunnel";   // тут пролягає тунель
         return null;
     }
 }

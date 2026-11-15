@@ -83,4 +83,39 @@ public class TunnelTests
         Assert.IsFalse(s.HasBuiltTunnel(0, 2));
         Assert.IsFalse(s.HasBuiltTunnel(0, 1));
     }
+
+    // ---------- Довгі тунелі (крізь порожні квадратики) ----------
+
+    [Test]
+    public void LongTunnel_AcrossEmptySquares()
+    {
+        s.Modules.Add(new ModuleState { Type = ModuleType.Habitat, SlotId = 3 });   // 1 (лабораторія) _ 3 (житло)
+        Assert.IsNull(BaseGrid.CanConnect(s, 1, 2));
+        Assert.AreEqual(3, BaseGrid.NextModuleInRow(s, 1, +1));
+        Assert.AreEqual(1, BaseGrid.NextModuleInRow(s, 3, -1));
+
+        Assert.IsNull(build.OrderTunnel(s, 1, 2));
+        Assert.AreEqual(30f, s.Res.Materials, 0.01f);                               // 10 × 2 квадратики
+        Assert.AreEqual(12f, s.FindTunnel(1).BuildHoursLeft, 0.01f);                 // 6 × 2
+        Assert.AreEqual("error.place_tunnel", BaseGrid.CanPlace(s, 2));             // під тунелем не будуємо
+        Assert.AreEqual(s.FindTunnel(1), s.FindTunnelEndingAt(3));
+
+        for (int h = 0; h < 12; h++) build.Tick(s, 1f, r);
+        Assert.IsTrue(s.HasBuiltTunnel(3, 1));
+        Assert.IsFalse(s.HasBuiltTunnel(1, 2));
+    }
+
+    [Test]
+    public void LongTunnel_BlockedBySomethingBetween()
+    {
+        s.Modules.Add(new ModuleState { Type = ModuleType.Solar, SlotId = 2 });
+        s.Modules.Add(new ModuleState { Type = ModuleType.Habitat, SlotId = 3 });
+        Assert.AreEqual("error.tunnel_blocked", BaseGrid.CanConnect(s, 1, 2));
+    }
+
+    [Test]
+    public void LongTunnel_CannotLeaveTheRow()
+    {
+        Assert.AreEqual("error.tunnel_place", BaseGrid.CanConnect(s, 4, 2));         // колонка 4 + 2 = за краєм
+    }
 }
