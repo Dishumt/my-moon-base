@@ -27,7 +27,8 @@ public class LaunchPadView
     readonly List<VisualElement> puffs = new List<VisualElement>();
 
     bool skip;
-    float W, H, groundTop, size, rocketW, cx, towerX, armY, doorX;
+    float W, H, groundTop, size, rocketW, cx, towerX, armY, doorX, rocketTop, mountTop;
+    readonly LaunchPadScenery scenery;   // небо, океан, будівлі, автобус, вода під ракетою
     float CrewSize = 56f;             // розмір астронавта на екрані, px (рахується від висоти екрана)
 
     const float WalkSpeed = 200f;     // px за секунду
@@ -54,6 +55,7 @@ public class LaunchPadView
         fact = root.Q<Label>("pad-fact");
         skipButton = root.Q<Button>("pad-skip");
         if (skipButton != null) skipButton.clicked += () => skip = true;
+        if (view != null && scene != null && rocket != null) scenery = new LaunchPadScenery(view, scene, rocket, crewLayer, smokeLayer);
         Show(false);
     }
 
@@ -85,11 +87,14 @@ public class LaunchPadView
         yield return null;
         Layout(rocketTex, hasTex, aspect, rocketData);
 
-        // 1) екіпаж іде до ракети
+        // 1) автобус привозить екіпаж, астронавти йдуть до ракети
+        SetText(fact, T("pad.fact.7"));   // космодроми стоять біля океану
+        if (!skip && scenery != null) yield return scenery.DriveVan(() => skip);
         if (!skip) yield return Boarding(crew);
 
         // 2) місток відходить
         SetText(status, T("pad.arm"));
+        SetText(fact, T("pad.fact.2"));   // найбільше важить паливо
         for (float t = 0f; t < 1f && !skip; t += Time.unscaledDeltaTime)
         {
             arm.style.width = Mathf.Lerp(doorX - (towerX + 36f), 0f, t);
@@ -106,12 +111,14 @@ public class LaunchPadView
             if (n == 10) SetText(fact, T("pad.fact.1"));
             else if (n == 8) SetText(fact, T("pad.fact.6"));   // справжня ракета — як 600 слонів
             else if (n == 6) SetText(fact, T("pad.fact.4"));
-            else if (n == 3) SetText(fact, T("pad.fact.5"));
+            else if (n == 4) SetText(fact, T("pad.fact.5"));
+            else if (n == 2) SetText(fact, T("pad.fact.8"));   // вода під ракетою
             for (float t = 0f; t < 1f && !skip; t += Time.unscaledDeltaTime)
             {
                 count.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.4f, 1f, Mathf.Clamp01(t * 4f)));
                 if (n <= 3) { Smoke(0.25f + (3 - n + t) / 3f * 0.5f); Shake(rocket, 1.5f + (3 - n) * 1.2f); }
                 if (n <= 2) Flame(0.4f + (2 - n + t) * 0.3f);
+                if (scenery != null) scenery.Ignition = n <= 2 ? 0.3f + (2 - n + t) * 0.35f : 0f;
                 yield return null;
             }
         }
@@ -122,7 +129,8 @@ public class LaunchPadView
         SetText(status, "");
         count.style.scale = new Scale(Vector3.one);
         trail.style.display = DisplayStyle.Flex;
-        float baseTop = groundTop - size;
+        float baseTop = rocketTop;
+        if (scenery != null) scenery.Ignition = 1f;
         float rise = 0f, speed = 0f;
         for (float t = 0f; t < 4f && !skip; t += Time.unscaledDeltaTime)
         {
@@ -136,7 +144,7 @@ public class LaunchPadView
             Smoke(Mathf.Clamp01(0.8f + t * 0.2f));
             float bottom = baseTop - rise + size * 0.97f;
             trail.style.top = bottom;
-            trail.style.height = Mathf.Max(0f, groundTop - bottom);
+            trail.style.height = Mathf.Max(0f, mountTop - bottom);
             trail.style.opacity = Mathf.Clamp01(1.2f - t * 0.3f);
             Shake(scene, Mathf.Lerp(7f, 0f, t / 3f));
             yield return null;
@@ -154,6 +162,7 @@ public class LaunchPadView
         for (float t = 0f; t < wait; t += Time.unscaledDeltaTime) yield return null;
         status.RemoveFromClassList("c-ok");
         status.RemoveFromClassList("c-bad");
+        if (scenery != null) { scenery.Ignition = 0f; scenery.Stop(); }
         Show(false);
     }
 
@@ -181,10 +190,22 @@ public class LaunchPadView
         CrewSize = Mathf.Min(CrewSize, size / heightInCrew);                 // якщо ракету обрізали — менші й люди
         rocketW = size * aspect;
         cx = W * 0.62f;
-        float left = cx - rocketW * 0.5f, top = groundTop - size;
+        float left = cx - rocketW * 0.5f;
+        towerX = left - 16f - 36f;
+
+        // декорації (небо, океан, будівлі, пусковий стіл, автобус); ракета стоїть на пусковому столі
+        smokeLayer.Clear();
+        float mountH = 0f;
+        if (scenery != null)
+        {
+            scenery.Build(W, H, groundTop, cx, rocketW, size, towerX);
+            mountH = scenery.MountHeight;
+        }
+        mountTop = groundTop - mountH;
+        float top = mountTop - size;
+        rocketTop = top;
         doorX = left + doorFx * rocketW;
         armY = top + doorFy * size;
-        towerX = left - 16f - 36f;
 
         Place(ground, 0f, groundTop, W, H - groundTop);
         Place(platform, cx - rocketW * 0.75f, groundTop - 12f, rocketW * 1.5f, 12f);
@@ -217,10 +238,10 @@ public class LaunchPadView
         // слід вогню (видно після старту)
         trail.style.display = DisplayStyle.None;
         float tw = Mathf.Max(18f, rocketW * 0.4f);
-        Place(trail, cx - tw * 0.5f, groundTop, tw, 0f);
+        Place(trail, cx - tw * 0.5f, mountTop, tw, 0f);
 
-        // клуби диму
-        smokeLayer.Clear();
+        // клуби диму (поверх декорацій; бризки води scenery вже додала в цей шар)
+        foreach (var old in puffs) old.RemoveFromHierarchy();
         puffs.Clear();
         for (int i = 0; i < 12; i++)
         {
@@ -249,7 +270,8 @@ public class LaunchPadView
     {
         crewLayer.Clear();
         var walkers = new List<IEnumerator>();
-        for (int i = 0; i < crew.Count; i++) walkers.Add(Walker(crew[i].name, crew[i].frames, i * 1.1f));
+        float startX = scenery != null ? scenery.VanDoorX : -CrewSize;
+        for (int i = 0; i < crew.Count; i++) walkers.Add(Walker(crew[i].name, crew[i].frames, i * 0.9f, startX));
 
         // усі астронавти рухаються одночасно, кожен зі своєю затримкою
         bool any = true;
@@ -262,7 +284,7 @@ public class LaunchPadView
         crewLayer.Clear();
     }
 
-    IEnumerator Walker(string name, PadCrewFrames frames, float delay)
+    IEnumerator Walker(string name, PadCrewFrames frames, float delay, float startX)
     {
         var body = new VisualElement();
         body.AddToClassList("pad-astronaut");
@@ -276,7 +298,7 @@ public class LaunchPadView
         crewLayer.Add(body);
         crewLayer.Add(label);
 
-        float x = -CrewSize, y = groundTop;
+        float x = startX, y = groundTop;
         float liftX = towerX + 18f;
         float anim = 0f;
 

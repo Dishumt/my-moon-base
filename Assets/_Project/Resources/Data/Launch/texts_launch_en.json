@@ -456,7 +456,7 @@
     },
     {
       "key": "pad.boarding",
-      "text": "The crew is boarding the rocket..."
+      "text": "The crew bus has arrived. The astronauts are boarding the rocket..."
     },
     {
       "key": "pad.arm",
@@ -745,6 +745,14 @@
     {
       "key": "pad.fact.6",
       "text": "A real Moon rocket weighs about 2,900 tonnes at launch, like 600 elephants! Only a small capsule reaches the Moon."
+    },
+    {
+      "key": "pad.fact.7",
+      "text": "Launch pads stand by the ocean: used rocket parts fall into the water, far from people."
+    },
+    {
+      "key": "pad.fact.8",
+      "text": "At launch, water pours under the rocket. It makes the roar quieter and protects the pad."
     }
   ]
 }
