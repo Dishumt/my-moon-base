@@ -144,7 +144,7 @@ public class WorldDebugButtons : MonoBehaviour
     static readonly CrewTask[] TaskCycle =
     {
         CrewTask.None, CrewTask.Rest, CrewTask.MineIce, CrewTask.CollectSamples,
-        CrewTask.Greenhouse, CrewTask.Lab, CrewTask.Medbay, CrewTask.Shelter,
+        CrewTask.Greenhouse, CrewTask.Lab, CrewTask.Medbay, CrewTask.Heal, CrewTask.Shelter,
     };
 
     /// <summary>Наступне завдання по колу. TaskTarget порожній — світ сам знайде перше відповідне місце.</summary>

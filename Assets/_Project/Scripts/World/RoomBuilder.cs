@@ -222,7 +222,8 @@ public static class RoomBuilder
             go.AddComponent<UnityEngine.Rendering.SortingGroup>();
             list.Add(sr);
             AddDepth(root, go.transform, sr, info, list);
-            go.AddComponent<FurnitureLife>().Init(it.name, view, type, sr); // лампи, екрани, рослини (показують стан гри)
+            // лампи, екрани, рослини (показують стан гри); ще й записує предмет у ModuleView, щоб астронавти знали, куди йти
+            go.AddComponent<FurnitureLife>().Init(it.name, view, type, sr, info.width, info.centerX);
             any = true;
         }
         return any;

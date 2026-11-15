@@ -42,8 +42,13 @@ public class FurnitureLife : MonoBehaviour
     float roomLight = 1f; // яскравість світла в кімнаті (ModuleInterior.Light): рослини й аптечки темнішають разом з нею
     float seed;  // щоб однакові предмети мерехтіли не в такт
 
+    /// <summary>Ширина самого предмета, метри (без прозорих країв картинки).</summary>
+    public float Width { get; private set; }
+    /// <summary>На скільки середина предмета зсунута вбік від точки, де він стоїть, метри.</summary>
+    public float CenterX { get; private set; }
+
     /// <summary>Викликає RoomBuilder одразу після створення предмета (після товщини й тіні).</summary>
-    public void Init(string kind, ModuleView view, ModuleType room, SpriteRenderer main)
+    public void Init(string kind, ModuleView view, ModuleType room, SpriteRenderer main, float width, float centerX)
     {
         Kind = kind;
         this.view = view;
@@ -54,6 +59,9 @@ public class FurnitureLife : MonoBehaviour
         pivotPx = sp.pivot;
         heightPx = sp.rect.height;
         seed = Mathf.Repeat(transform.position.x * 0.37f + transform.position.z * 0.61f, 1f);
+        Width = width > 0f ? width : sp.bounds.size.x * 0.75f;
+        CenterX = centerX;
+        if (view != null) view.AddFurniture(this); // астронавти шукають «свої» меблі через ModuleView
 
         switch (kind)
         {
@@ -91,6 +99,28 @@ public class FurnitureLife : MonoBehaviour
             case "science_bench": UpdateScreen(powered); break;
             case "galley_kitchen": UpdateKitchen(powered); break;
         }
+    }
+
+    // =====================================================================
+    // Для астронавтів: де стати біля предмета і де на картинці лягти
+    // =====================================================================
+
+    /// <summary>Точка картинки (пікселі, відлік зліва згори) → точка у світі (на площині картинки).</summary>
+    public Vector3 PixelToWorld(float x, float y) => transform.TransformPoint(Px(x, y, 0));
+
+    /// <summary>Середина предмета на підлозі (туди дивиться людина, що з ним працює).</summary>
+    public Vector3 FloorCenter => new Vector3(transform.position.x + CenterX, 0f, transform.position.z);
+
+    /// <summary>
+    /// Де стати людині, що працює з предметом (на підлозі, трохи перед ним).
+    /// side: -1 — біля лівого краю, +1 — біля правого (так людина не закриває предмет), 0 — посередині перед ним.
+    /// </summary>
+    public Vector3 StandPoint(int side)
+    {
+        Vector3 c = FloorCenter;
+        float x = c.x + side * Mathf.Max(0.2f, Width * 0.5f - 0.15f);
+        float z = c.z - (side == 0 ? 0.75f : 0.45f);
+        return new Vector3(x, 0f, z);
     }
 
     // =====================================================================
