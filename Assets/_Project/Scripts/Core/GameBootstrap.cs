@@ -37,12 +37,30 @@ public class GameBootstrap : MonoBehaviour
         }
         Instance = this;
 
-        State = continueFromSave ? SaveSystem.Load() : null;
+        // Запит старту з меню чи вікна перемоги (GameStart) важливіший за поля в інспекторі.
+        DemoData demo = null;
+        bool fromSave = continueFromSave;
+        string file = chapterFile;
+        if (GameStart.HasRequest)
+        {
+            fromSave = GameStart.Mode == StartMode.Continue;
+            int chapter = GameStart.Chapter;
+            if (GameStart.Mode == StartMode.Demo)
+            {
+                demo = DataLoader.Load<DemoData>("Demo/demo");
+                chapter = demo.chapter;
+            }
+            file = "Chapters/chapter_" + chapter.ToString("00");
+        }
+        IsDemo = demo != null;
+
+        State = fromSave ? SaveSystem.Load() : null;
         bool freshGame = State == null;
-        if (State == null) State = GameStateFactory.FromChapter(DataLoader.Load<ChapterStartData>(chapterFile));
+        if (State == null) State = GameStateFactory.FromChapter(DataLoader.Load<ChapterStartData>(file));
 
         var balance = DataLoader.Load<CoreBalance>("Balance/balance");
-        Clock = new GameClock(State, balance.realSecondsPerDay);
+        float secondsPerDay = demo != null && demo.realSecondsPerDay > 0f ? demo.realSecondsPerDay : balance.realSecondsPerDay;
+        Clock = new GameClock(State, secondsPerDay);
         RegisterSystems();
 
         // 03: відкрити модулі розділу (які можна замовляти). Для нової гри ChapterSystem ще й ставить
@@ -50,7 +68,36 @@ public class GameBootstrap : MonoBehaviour
         var chapters = GetSystem<ChapterSystem>();
         if (chapters != null) chapters.StartChapter(State, State.Chapter, freshGame);
 
+        // Перша місія з Землі (екран запуску 04) — тільки на початку розділу 1.
+        // Розділи 2–3 і демо починаються вже на Місяці.
+        if (freshGame && (State.Chapter > 1 || demo != null)) State.Supply.FirstMissionDone = true;
+        if (demo != null) ApplyDemo(demo);
+
         GameEvents.DayEnded += OnDayEnded;
+    }
+
+    /// <summary>Чи це «Demo for judges» (тоді не зберігаємо гру).</summary>
+    public bool IsDemo { get; private set; }
+
+    /// <summary>Демо: щедрі запаси і справжня буря NASA DONKI за хвилину після старту.</summary>
+    void ApplyDemo(DemoData demo)
+    {
+        State.Hour = Mathf.Clamp(demo.startHour, 0, 23);
+        if (demo.resources != null)
+        {
+            State.Res.Battery = demo.resources.Battery;
+            State.Res.Water = demo.resources.Water;
+            State.Res.Oxygen = demo.resources.Oxygen;
+            State.Res.Food = demo.resources.Food;
+            State.Res.Materials = demo.resources.Materials;
+            State.Res.MedKits = demo.resources.MedKits;
+        }
+        var radiation = GetSystem<RadiationSystem>();
+        if (radiation != null && !string.IsNullOrEmpty(demo.stormEventId))
+        {
+            string err = radiation.ForceStorm(State, demo.stormEventId, demo.stormInHours, Clock.Report);
+            if (err != null) Debug.LogWarning("GameBootstrap: демо-буря не почалась: " + err);
+        }
     }
 
     /// <summary>Порядок систем — як у CLAUDE.md. Не міняй без техліда!</summary>
@@ -92,7 +139,7 @@ public class GameBootstrap : MonoBehaviour
 
     void OnDayEnded(DayReport report)
     {
-        if (autoSave) SaveSystem.Save(State);
+        if (autoSave && !IsDemo) SaveSystem.Save(State);
     }
 
     void OnDestroy()

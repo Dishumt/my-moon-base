@@ -9,7 +9,7 @@
   "resources": {
     "Battery": 10,
     "Water": 60,
-    "Oxygen": 70,
+    "Oxygen": 25,
     "Food": 40,
     "Materials": 40,
     "MedKits": 0
@@ -86,7 +86,7 @@
   "start": {
     "water": 60,
     "food": 40,
-    "oxygen": 70,
+    "oxygen": 25,
     "battery": 10,
     "materials": 40,
     "medKits": 0,
@@ -122,7 +122,7 @@
     {
       "id": "survive",
       "type": "SurviveDays",
-      "target": 5,
+      "target": 2,
       "target_note": "Скільки днів треба прожити в цьому розділі.",
       "module": "",
       "titleKey": "goal.survive_days"
