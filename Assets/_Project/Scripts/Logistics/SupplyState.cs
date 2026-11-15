@@ -18,6 +18,7 @@ public class SupplyState
 {
     public SupplyStatus Status = SupplyStatus.Draft;
     public List<CargoLine> Cargo = new List<CargoLine>();       // вантаж поточного замовлення
+    public string RocketId = "";                                // яка ракета летить ("" = ракета за замовчуванням)
     public float FuelKg = -1f;                                  // -1 = ще не задано, візьмемо startFuelKg
     public List<string> Passengers = new List<string>();        // імена людей з резерву, що летять на заміну
 

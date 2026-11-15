@@ -1,24 +1,41 @@
 // AI-assisted: written with Claude. See docs/AI_USE.md
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
 /// Екран запуску на UI Toolkit (розкладка UI/Launch/LaunchScreen.uxml).
-/// Зліва вантажі (− / +), справа корабель і смужка маси (екіпаж окремо), внизу паливо,
-/// світлофор, «Ризик: N%» і кнопка ЗАПУСК. Кожна зміна одразу перераховує світлофор.
+/// 1) зліва вибір ракети (rockets.json), 2) посередині вантажі по групах (запаси, набори модулів) з − / + і «?»,
+/// 3) справа ракета, смужка маси і поле «Навіщо це?» з підказкою для дітей.
+/// Внизу паливо, світлофор, «Ризик: N%» і кнопка ЗАПУСК. Кожна зміна одразу перераховує світлофор.
 /// Поки екран відкритий — гра на паузі (Clock.PushModal / PopModal).
 /// Режими: перша місія (4 місця екіпажу, політ з анімацією) і поставка (замовлення йде у вікно зв'язку).
-/// Числа — з Launch/launch.json через SupplySystem, тексти — через Loc.Get.
+/// Числа — з Launch/*.json через SupplySystem, тексти — через LaunchText (Loc + запасні тексти ролі 04).
 /// </summary>
 [RequireComponent(typeof(UIDocument))]
 public class LaunchScreen : MonoBehaviour
 {
-    [Tooltip("Відкрити екран одразу після старту сцени")]
+    /// <summary>Картинка для ракети чи вантажу за id (заповнюється в інспекторі).</summary>
+    [Serializable]
+    public class Look
+    {
+        public string id;
+        public Texture2D texture;
+    }
+
+    [Tooltip("Відкрити екран одразу після старту сцени (для першої місії — так)")]
     [SerializeField] bool openOnStart = true;
 
-    [Tooltip("Картинка ракети (Art/Launch/rocket.png від ролі 02). Порожньо — ракета з прямокутників.")]
+    [Tooltip("Запасна картинка ракети, якщо для вибраної ракети немає своєї. Порожньо — ракета з прямокутників.")]
     [SerializeField] Texture2D rocketTexture;
+
+    [Tooltip("Картинки ракет: id як у Launch/rockets.json (small, medium, heavy)")]
+    [SerializeField] List<Look> rocketLooks = new List<Look>();
+
+    [Tooltip("Іконки вантажів: id як у Launch/cargo_items.json (water, food, oxygen...)")]
+    [SerializeField] List<Look> cargoIcons = new List<Look>();
 
     [Tooltip("Скільки секунд летить ракета")]
     [SerializeField] float flightSeconds = 3f;
@@ -26,22 +43,31 @@ public class LaunchScreen : MonoBehaviour
     public bool IsOpen { get; private set; }
     public bool IsFirstMission { get; private set; }
 
-    VisualElement stage, cargoList, ship, massBar, massCrew, massCargo, lightRed, lightYellow, lightGreen, linkLed;
-    Label titleLabel, statusLabel, cargoTitle, shipTitle, legendCrew, legendCargo;
-    Label seatsLabel, massLabel, fuelLabel, riskLabel, hintLabel, resultLabel;
+    VisualElement stage, cargoList, rocketList, ship, massBar, massCrew, massCargo, lightRed, lightYellow, lightGreen, linkLed;
+    Label titleLabel, statusLabel, rocketTitle, rocketWhy, cargoTitle, shipTitle, legendCrew, legendCargo;
+    Label seatsLabel, massLabel, fuelLabel, fuelWhy, riskLabel, hintLabel, resultLabel;
+    Label infoTitle, infoText, infoGives;
     Slider fuelSlider;
     Button launchButton, closeButton;
     bool animating, modalPushed, ready;
 
+    // що зараз показано в полі «Навіщо це?»: вантаж або ракета (null — загальна підказка)
+    CargoItemData infoItem;
+    RocketData infoRocket;
+
     GameState State => GameBootstrap.Instance != null ? GameBootstrap.Instance.State : null;
     SupplySystem Supply => GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<SupplySystem>() : null;
     CommsSystem Comms => GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<CommsSystem>() : null;
+
+    static string T(string key) => LaunchText.Get(key);
+    static string T(string key, params object[] args) => LaunchText.Get(key, args);
 
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
         stage = root.Q("launch-stage");
         cargoList = root.Q("cargo-list");
+        rocketList = root.Q("rocket-list");
         ship = root.Q("ship");
         massBar = root.Q(className: "mass-bar");
         massCrew = root.Q("mass-crew");
@@ -52,6 +78,8 @@ public class LaunchScreen : MonoBehaviour
         linkLed = root.Q("link-led");
         titleLabel = root.Q<Label>("title-label");
         statusLabel = root.Q<Label>("status-label");
+        rocketTitle = root.Q<Label>("rocket-title");
+        rocketWhy = root.Q<Label>("rocket-why");
         cargoTitle = root.Q<Label>("cargo-title");
         shipTitle = root.Q<Label>("ship-title");
         legendCrew = root.Q<Label>("legend-crew");
@@ -59,9 +87,13 @@ public class LaunchScreen : MonoBehaviour
         seatsLabel = root.Q<Label>("seats-label");
         massLabel = root.Q<Label>("mass-label");
         fuelLabel = root.Q<Label>("fuel-label");
+        fuelWhy = root.Q<Label>("fuel-why");
         riskLabel = root.Q<Label>("risk-label");
         hintLabel = root.Q<Label>("hint-label");
         resultLabel = root.Q<Label>("result-label");
+        infoTitle = root.Q<Label>("info-title");
+        infoText = root.Q<Label>("info-text");
+        infoGives = root.Q<Label>("info-gives");
         fuelSlider = root.Q<Slider>("fuel-slider");
         launchButton = root.Q<Button>("launch-button");
         closeButton = root.Q<Button>("close-button");
@@ -71,12 +103,6 @@ public class LaunchScreen : MonoBehaviour
         {
             Debug.LogError("LaunchScreen: не знайдено елементи. Перевір, що в UIDocument вказано LaunchScreen.uxml.");
             return;
-        }
-
-        if (rocketTexture != null)
-        {
-            ship.style.backgroundImage = new StyleBackground(rocketTexture);
-            ship.AddToClassList("ship--image");
         }
 
         fuelSlider.RegisterValueChangedCallback(OnFuelChanged);
@@ -120,9 +146,12 @@ public class LaunchScreen : MonoBehaviour
         if (!modalPushed) { GameBootstrap.Instance.Clock.PushModal(); modalPushed = true; }
         SetVisible(true);
         SetResult(null);
-        PlaceShip(0f, false);
+        infoItem = null;
+        infoRocket = null;
+        BuildRocketCards();
         BuildCargoRows();
         Refresh();
+        PlaceShip(0f, false);
     }
 
     public void Close()
@@ -148,35 +177,115 @@ public class LaunchScreen : MonoBehaviour
 
     void SetVisible(bool visible) => stage.EnableInClassList("launch-stage--hidden", !visible);
 
-    void SetResult(string key) { if (resultLabel != null) resultLabel.text = string.IsNullOrEmpty(key) ? "" : Loc.Get(key); }
+    void SetResult(string key) { if (resultLabel != null) resultLabel.text = string.IsNullOrEmpty(key) ? "" : T(key); }
 
     static void SetText(Label l, string text) { if (l != null) l.text = text; }
+
+    static Texture2D FindLook(List<Look> looks, string id)
+    {
+        var look = looks.Find(l => l != null && l.id == id);
+        return look != null ? look.texture : null;
+    }
+
+    // ---------- Ракети ----------
+
+    void BuildRocketCards()
+    {
+        if (rocketList == null) return;
+        rocketList.Clear();
+        foreach (var rocket in Supply.Rockets.items)
+        {
+            var data = rocket;
+            var card = new VisualElement { userData = data };
+            card.AddToClassList("rocket-card");
+
+            var pic = new VisualElement();
+            pic.AddToClassList("rocket-pic");
+            var tex = FindLook(rocketLooks, data.id) ?? rocketTexture;
+            if (tex != null) pic.style.backgroundImage = new StyleBackground(tex);
+
+            var texts = new VisualElement();
+            texts.AddToClassList("rocket-texts");
+            var nameLabel = new Label { name = "name" };
+            nameLabel.AddToClassList("rocket-name");
+            var stats = new Label { name = "stats" };
+            stats.AddToClassList("rocket-stats");
+            texts.Add(nameLabel); texts.Add(stats);
+
+            card.Add(pic); card.Add(texts);
+            card.RegisterCallback<ClickEvent>(_ => SelectRocket(data));
+            card.RegisterCallback<PointerEnterEvent>(_ => ShowInfo(null, data));
+            rocketList.Add(card);
+        }
+    }
+
+    void SelectRocket(RocketData rocket)
+    {
+        if (animating || !Supply.CanEdit(State, IsFirstMission)) return;
+        SetResult(Supply.SetRocket(State, rocket.id));
+        ShowInfo(null, rocket);
+        Refresh();
+        PlaceShip(0f, false);
+    }
+
+    /// <summary>Вигляд ракети на кораблі: картинка вибраної ракети і її розмір.</summary>
+    void ApplyShipLook(RocketData rocket)
+    {
+        var tex = rocket != null ? FindLook(rocketLooks, rocket.id) : null;
+        if (tex == null) tex = rocketTexture;
+        bool hasImage = tex != null;
+        ship.EnableInClassList("ship--image", hasImage);
+        ship.style.backgroundImage = hasImage ? new StyleBackground(tex) : new StyleBackground(StyleKeyword.None);
+        float k = rocket != null && rocket.scale > 0f ? rocket.scale : 1f;
+        ship.style.scale = new Scale(new Vector3(k, k, 1f));
+    }
 
     // ---------- Вантажі ----------
 
     void BuildCargoRows()
     {
         cargoList.Clear();
+        string group = null;
         foreach (var item in Supply.Catalog.items)
         {
             if (item.crewSeats > 0) continue; // місця людей показуємо на кораблі окремо
-            string id = item.id;
 
+            // заголовок групи: «Запаси», «Набори модулів»
+            string g = string.IsNullOrEmpty(item.group) ? "supplies" : item.group;
+            if (g != group)
+            {
+                group = g;
+                var header = new Label { userData = "launch.group." + g };
+                header.AddToClassList("cargo-group");
+                cargoList.Add(header);
+            }
+
+            var data = item;
+            string id = item.id;
             var row = new VisualElement { userData = item };
             row.AddToClassList("cargo-row");
+
+            var icon = new VisualElement();
+            icon.AddToClassList("cargo-icon");
+            var tex = FindLook(cargoIcons, id);
+            if (tex != null) icon.style.backgroundImage = new StyleBackground(tex);
+            else icon.AddToClassList("cargo-icon--none");
 
             var nameLabel = new Label { name = "name" };
             nameLabel.AddToClassList("cargo-name");
             var massText = new Label { name = "mass" };
             massText.AddToClassList("cargo-mass");
-            var minus = new Button(() => ChangeCargo(id, -1)) { text = "−" };
+            var help = new Button(() => ShowInfo(data, null)) { text = "?" };
+            help.AddToClassList("help-btn");
+            var minus = new Button(() => ChangeCargo(id, -1)) { text = "−", name = "minus" };
             minus.AddToClassList("small-btn");
             var count = new Label { name = "count" };
             count.AddToClassList("cargo-count");
-            var plus = new Button(() => ChangeCargo(id, +1)) { text = "+" };
+            var plus = new Button(() => ChangeCargo(id, +1)) { text = "+", name = "plus" };
             plus.AddToClassList("small-btn");
 
-            row.Add(nameLabel); row.Add(massText); row.Add(minus); row.Add(count); row.Add(plus);
+            row.Add(icon); row.Add(nameLabel); row.Add(massText); row.Add(help); row.Add(minus); row.Add(count); row.Add(plus);
+            row.RegisterCallback<PointerEnterEvent>(_ => ShowInfo(data, null));
             cargoList.Add(row);
         }
     }
@@ -184,7 +293,9 @@ public class LaunchScreen : MonoBehaviour
     void ChangeCargo(string id, int delta)
     {
         if (animating) return;
+        var item = Supply.Catalog.Find(id);
         SetResult(Supply.ChangeCargo(State, id, delta));
+        if (item != null) ShowInfo(item, null);
         Refresh();
     }
 
@@ -195,6 +306,55 @@ public class LaunchScreen : MonoBehaviour
         Refresh();
     }
 
+    // ---------- Поле «Навіщо це?» ----------
+
+    void ShowInfo(CargoItemData item, RocketData rocket)
+    {
+        infoItem = item;
+        infoRocket = item == null ? rocket : null;
+        RefreshInfo();
+    }
+
+    void RefreshInfo()
+    {
+        SetText(infoTitle, T("launch.info_title"));
+        if (infoItem != null)
+        {
+            string text = T(infoItem.nameKey) + ". " + T(infoItem.hintKey);
+            if (infoItem.IsKit) text += " " + T("launch.kit_note");
+            SetText(infoText, text);
+            SetText(infoGives, T("launch.gives", GivesText(infoItem)));
+        }
+        else if (infoRocket != null)
+        {
+            SetText(infoText, T(infoRocket.nameKey) + ". " + T(infoRocket.hintKey));
+            SetText(infoGives, T("rocket.stats", infoRocket.maxFuelKg.ToString("0"), infoRocket.flightHours));
+        }
+        else
+        {
+            SetText(infoText, T("launch.info_default"));
+            SetText(infoGives, "");
+        }
+
+        foreach (var row in cargoList.Children())
+            row.EnableInClassList("cargo-row--on", infoItem != null && row.userData == infoItem);
+    }
+
+    /// <summary>Що вантаж дає базі, словами: «+20 вода» або «новий модуль: теплиця».</summary>
+    static string GivesText(CargoItemData item)
+    {
+        if (item.TryGetModule(out var type)) return T("launch.res.module", T("launch.module." + type));
+        if (item.crewSeats > 0) return T("launch.res.seat");
+
+        var parts = new List<string>();
+        if (item.water > 0f) parts.Add("+" + item.water.ToString("0") + " " + T("launch.res.water"));
+        if (item.food > 0f) parts.Add("+" + item.food.ToString("0") + " " + T("launch.res.food"));
+        if (item.oxygen > 0f) parts.Add("+" + item.oxygen.ToString("0") + " " + T("launch.res.oxygen"));
+        if (item.materials > 0f) parts.Add("+" + item.materials.ToString("0") + " " + T("launch.res.materials"));
+        if (item.medKits > 0) parts.Add("+" + item.medKits + " " + T("launch.res.medkits"));
+        return string.Join(", ", parts);
+    }
+
     // ---------- Перерахунок ----------
 
     void Refresh()
@@ -202,16 +362,20 @@ public class LaunchScreen : MonoBehaviour
         if (!ready || !IsOpen || State == null || Supply == null) return;
         var s = State;
         var data = Supply.Data;
+        var rocket = Supply.GetRocket(s);
         var r = Supply.Evaluate(s, IsFirstMission);
         bool editable = !animating && Supply.CanEdit(s, IsFirstMission);
 
         // заголовки
-        SetText(titleLabel, Loc.Get(IsFirstMission ? "launch.title_first" : "launch.title_supply"));
-        SetText(cargoTitle, Loc.Get("launch.cargo"));
-        SetText(shipTitle, Loc.Get("launch.ship"));
-        SetText(legendCrew, Loc.Get("launch.legend_crew"));
-        SetText(legendCargo, Loc.Get("launch.legend_cargo"));
-        launchButton.text = Loc.Get(IsFirstMission ? "launch.go" : "launch.send");
+        SetText(titleLabel, T(IsFirstMission ? "launch.title_first" : "launch.title_supply"));
+        SetText(rocketTitle, T("rocket.title"));
+        SetText(rocketWhy, T("rocket.why"));
+        SetText(cargoTitle, T("launch.cargo"));
+        SetText(shipTitle, rocket != null ? T(rocket.nameKey) : T("launch.ship"));
+        SetText(legendCrew, T("launch.legend_crew"));
+        SetText(legendCargo, T("launch.legend_cargo"));
+        SetText(fuelWhy, T("launch.fuel_why"));
+        launchButton.text = T(IsFirstMission ? "launch.go" : "launch.send");
         launchButton.SetEnabled(editable);
         fuelSlider.SetEnabled(editable);
 
@@ -223,47 +387,67 @@ public class LaunchScreen : MonoBehaviour
             linkLed.EnableInClassList("led--bad", !link);
         }
         SetText(statusLabel, IsFirstMission
-            ? Loc.Get("launch.link_ok")
-            : Loc.Get("launch.status." + s.Supply.Status) + " · " + Loc.Get(link ? "launch.link_ok" : "launch.link_off"));
+            ? T("launch.link_ok")
+            : T("launch.status." + s.Supply.Status) + " · " + T(link ? "launch.link_ok" : "launch.link_off"));
+
+        // ракети
+        if (rocketList != null)
+        {
+            foreach (var card in rocketList.Children())
+            {
+                if (!(card.userData is RocketData rd)) continue;
+                card.Q<Label>("name").text = T(rd.nameKey);
+                card.Q<Label>("stats").text = T("rocket.stats", rd.maxFuelKg.ToString("0"), rd.flightHours);
+                card.EnableInClassList("rocket-card--on", rocket == rd);
+                card.SetEnabled(editable);
+            }
+        }
+        if (!animating) ApplyShipLook(rocket);
 
         // вантажі
         foreach (var row in cargoList.Children())
         {
+            if (row.userData is string groupKey && row is Label header) { header.text = T(groupKey); continue; }
             if (!(row.userData is CargoItemData item)) continue;
-            row.Q<Label>("name").text = Loc.Get(item.nameKey);
-            row.Q<Label>("mass").text = Loc.Get("launch.kg", item.massKg.ToString("0"));
+            row.Q<Label>("name").text = T(item.nameKey);
+            row.Q<Label>("mass").text = T("launch.kg", item.massKg.ToString("0"));
             row.Q<Label>("count").text = s.Supply.Count(item.id).ToString();
-            row.SetEnabled(editable);
+            row.Q<Button>("minus").SetEnabled(editable);
+            row.Q<Button>("plus").SetEnabled(editable);
         }
 
-        // паливо
+        // паливо: повзунок до бака вибраної ракети
+        float maxFuel = Supply.MaxFuel(s);
         fuelSlider.lowValue = 0f;
-        fuelSlider.highValue = data.maxFuelKg;
+        fuelSlider.highValue = maxFuel;
         fuelSlider.SetValueWithoutNotify(r.FuelKg);
-        SetText(fuelLabel, Loc.Get("launch.fuel_value", r.FuelKg.ToString("0"), r.FuelNeededKg.ToString("0")));
+        SetText(fuelLabel, T("launch.fuel_value", r.FuelKg.ToString("0"), r.FuelNeededKg.ToString("0")));
 
         // смужка маси: шкала = найбільша маса, яку повний бак ще піднімає (жовта межа)
-        float scaleKg = data.maxFuelKg / (data.fuelPerKg * data.redMargin) - data.emptyShipMassKg;
+        float emptyKg = rocket != null ? rocket.emptyMassKg : data.emptyShipMassKg;
+        float scaleKg = Mathf.Max(1f, maxFuel / (data.fuelPerKg * data.redMargin) - emptyKg);
         float crewPct = Mathf.Clamp01(r.PeopleKg / scaleKg) * 100f;
         float cargoPct = Mathf.Clamp(r.CargoKg / scaleKg * 100f, 0f, 100f - crewPct);
         if (massCrew != null) massCrew.style.width = Length.Percent(crewPct);
         if (massCargo != null) massCargo.style.width = Length.Percent(cargoPct);
         massBar?.EnableInClassList("mass-bar--over", r.PeopleKg + r.CargoKg > scaleKg);
-        SetText(seatsLabel, Loc.Get("launch.seats", Supply.People(s, IsFirstMission), data.personMassKg.ToString("0")));
-        SetText(massLabel, Loc.Get("launch.mass", r.TotalMassKg.ToString("0"), r.CargoKg.ToString("0")));
+        SetText(seatsLabel, T("launch.seats", Supply.People(s, IsFirstMission), data.personMassKg.ToString("0")));
+        SetText(massLabel, T("launch.mass", r.TotalMassKg.ToString("0"), r.CargoKg.ToString("0")));
 
         // світлофор
         lightRed?.EnableInClassList("light--red-on", r.Light == LaunchLight.Red);
         lightYellow?.EnableInClassList("light--yellow-on", r.Light == LaunchLight.Yellow);
         lightGreen?.EnableInClassList("light--green-on", r.Light == LaunchLight.Green);
-        SetText(riskLabel, Loc.Get("launch.risk", r.RiskPercent));
+        SetText(riskLabel, T("launch.risk", r.RiskPercent));
         if (riskLabel != null)
         {
             riskLabel.EnableInClassList("c-ok", r.Light == LaunchLight.Green);
             riskLabel.EnableInClassList("c-warn", r.Light == LaunchLight.Yellow);
             riskLabel.EnableInClassList("c-bad", r.Light == LaunchLight.Red);
         }
-        SetText(hintLabel, Loc.Get("launch.hint." + r.Light));
+        SetText(hintLabel, T("launch.hint." + r.Light));
+
+        RefreshInfo();
     }
 
     // ---------- Кнопка ЗАПУСК ----------

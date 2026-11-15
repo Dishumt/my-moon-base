@@ -481,7 +481,7 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: cde0efc48e2b92445acffd13c0ab7a61, type: 2}
+  m_PanelSettings: {fileID: 11400000, guid: 0aa68ad65012a754f8f4da55da2c7bb6, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: 0e725d850b9ed324a8b3e74b762295c2, type: 3}
   m_SortingOrder: 0
@@ -519,6 +519,89 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 017692bf8c25245428e419def745a1ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game::LaunchScreen
+  openOnStart: 1
+  rocketTexture: {fileID: 2800000, guid: a3e03e572903e8244b5afb7545ec841f, type: 3}
+  rocketLooks:
+  - id: small
+    texture: {fileID: 2800000, guid: 633fc6a773d7ea9409236edb9bf7feb4, type: 3}
+  - id: medium
+    texture: {fileID: 2800000, guid: a3e03e572903e8244b5afb7545ec841f, type: 3}
+  - id: heavy
+    texture: {fileID: 2800000, guid: 782cb7b51109cba4b9d0cbf2d4010457, type: 3}
+  cargoIcons:
+  - id: water
+    texture: {fileID: 2800000, guid: eab93be6d4f3f49459dbcc2b2994bbfd, type: 3}
+  - id: food
+    texture: {fileID: 2800000, guid: 0396f6a7407191e429edf35274ce86a5, type: 3}
+  - id: oxygen
+    texture: {fileID: 2800000, guid: 2fe5396e6190f674baea8fde95a89a57, type: 3}
+  - id: medkits
+    texture: {fileID: 2800000, guid: 01ba0421cdac8524b8d34dc20af7612a, type: 3}
+  - id: materials
+    texture: {fileID: 2800000, guid: 3f8c66128c1fe944da5098a973be5960, type: 3}
+  flightSeconds: 3
+--- !u!1 &2100000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2100000002}
+  - component: {fileID: 2100000003}
+  - component: {fileID: 2100000004}
+  m_Layer: 0
+  m_Name: Game
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2100000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e014cf4541324c98a6287945628dc954, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game::GameBootstrap
+  chapterFile: Chapters/chapter_01
+  continueFromSave: 0
+  autoSave: 0
+--- !u!114 &2100000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d4200fff2044f479aff2caaf1d3e503, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game::DebugPanel
+  visible: 1
+  scale: 1.3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -527,3 +610,4 @@ SceneRoots:
   - {fileID: 376229644}
   - {fileID: 1342412060}
   - {fileID: 1570994827}
+  - {fileID: 2100000002}

@@ -10,18 +10,28 @@ public class SupplySystem : ISimSystem
 {
     readonly LaunchData data;
     readonly CargoCatalog catalog;
+    readonly RocketCatalog rockets;
     readonly LaunchCalculator calc;
     readonly CommsSystem comms;
 
     /// <summary>«Кубик» для жовтої зони. У тестах можна підмінити.</summary>
     public Func<float> Random01 = () => UnityEngine.Random.value;
 
-    public SupplySystem() : this(LaunchData.Load(), CargoCatalog.Load()) { }
+    /// <summary>
+    /// Будівництво (роль 03): набори модулів після посадки замовляють будівництво через нього.
+    /// У грі береться з GameBootstrap само, у тестах можна підставити своє.
+    /// </summary>
+    public ConstructionSystem Construction;
 
-    public SupplySystem(LaunchData data, CargoCatalog catalog)
+    public SupplySystem() : this(LaunchData.Load(), CargoCatalog.Load(), RocketCatalog.Load()) { }
+
+    public SupplySystem(LaunchData data, CargoCatalog catalog) : this(data, catalog, null) { }
+
+    public SupplySystem(LaunchData data, CargoCatalog catalog, RocketCatalog rockets)
     {
         this.data = data ?? new LaunchData();
         this.catalog = catalog ?? new CargoCatalog();
+        this.rockets = rockets ?? new RocketCatalog();
         calc = new LaunchCalculator(this.data);
         comms = new CommsSystem(this.data);
     }
@@ -29,6 +39,7 @@ public class SupplySystem : ISimSystem
     public LaunchData Data => data;
     public CargoCatalog Catalog => catalog;
     public LaunchCalculator Calculator => calc;
+    public RocketCatalog Rockets => rockets;
 
     static int Now(GameState s) => CommsSystem.AbsHour(s);
 
@@ -57,16 +68,47 @@ public class SupplySystem : ISimSystem
         return null;
     }
 
+    // ---------- Ракета ----------
+
+    /// <summary>Вибрана ракета. null — у rockets.json немає ракет (тоді числа з launch.json).</summary>
+    public RocketData GetRocket(GameState s) => rockets.FindOrDefault(s.Supply.RocketId);
+
+    /// <summary>Найбільший бак вибраної ракети.</summary>
+    public float MaxFuel(GameState s)
+    {
+        var r = GetRocket(s);
+        return r != null ? r.maxFuelKg : data.maxFuelKg;
+    }
+
+    /// <summary>Скільки годин летить вибрана ракета.</summary>
+    public int FlightHours(GameState s)
+    {
+        var r = GetRocket(s);
+        return r != null ? r.flightHours : data.flightHours;
+    }
+
+    /// <summary>Вибрати ракету. Паливо, якщо не влазить у новий бак, зменшується до повного бака.</summary>
+    public string SetRocket(GameState s, string rocketId)
+    {
+        if (s.Supply.FirstMissionDone && s.Supply.Status != SupplyStatus.Draft) return "error.order_locked";
+        if (rockets.Find(rocketId) == null) return "error.unknown_rocket";
+        s.Supply.RocketId = rocketId;
+        s.Supply.FuelKg = Math.Min(GetFuel(s), MaxFuel(s));
+        return null;
+    }
+
+    // ---------- Паливо ----------
+
     public float GetFuel(GameState s)
     {
-        if (s.Supply.FuelKg < 0f) s.Supply.FuelKg = data.startFuelKg;
+        if (s.Supply.FuelKg < 0f) s.Supply.FuelKg = Math.Min(data.startFuelKg, MaxFuel(s));
         return s.Supply.FuelKg;
     }
 
     public string SetFuel(GameState s, float kg)
     {
         if (s.Supply.FirstMissionDone && s.Supply.Status != SupplyStatus.Draft) return "error.order_locked";
-        s.Supply.FuelKg = Math.Max(0f, Math.Min(kg, data.maxFuelKg));
+        s.Supply.FuelKg = Math.Max(0f, Math.Min(kg, MaxFuel(s)));
         return null;
     }
 
@@ -79,7 +121,7 @@ public class SupplySystem : ISimSystem
     /// <summary>Розрахунок світлофора для поточного замовлення.</summary>
     public LaunchResult Evaluate(GameState s, bool firstMission)
     {
-        return calc.Evaluate(s.Supply.Cargo, catalog, People(s, firstMission), GetFuel(s));
+        return calc.Evaluate(s.Supply.Cargo, catalog, People(s, firstMission), GetFuel(s), GetRocket(s));
     }
 
     // ---------- Перша місія ----------
@@ -172,13 +214,13 @@ public class SupplySystem : ISimSystem
         if (ok)
         {
             sup.Status = SupplyStatus.Launched;
-            sup.ArrivalAt = now + data.flightHours;
+            sup.ArrivalAt = now + FlightHours(s);
             r.Add("report.supply_launched");
         }
         else
         {
             sup.Status = SupplyStatus.Returned;
-            sup.ArrivalAt = now + data.flightHours + data.failedDelayDays * 24;
+            sup.ArrivalAt = now + FlightHours(s) + data.failedDelayDays * 24;
             r.Add("report.supply_returned", data.failedDelayDays, "", true);
         }
         GameEvents.RaiseStateChanged();
@@ -209,10 +251,19 @@ public class SupplySystem : ISimSystem
             if (item == null) continue;
             res.Water += item.water * line.count;
             res.Food += item.food * line.count;
+            res.Oxygen += item.oxygen * line.count;
             res.Materials += item.materials * line.count;
             res.MedKits += item.medKits * line.count;
             s.Supply.SolarPanelKits += item.solarPanelKits * line.count;
             s.Supply.BatteryKits += item.batteryKits * line.count;
+        }
+
+        // набори модулів: будматеріали вже додані вище, тепер роботи одразу починають будувати
+        foreach (var line in s.Supply.Cargo)
+        {
+            var item = catalog.Find(line.itemId);
+            if (item == null || !item.TryGetModule(out var type)) continue;
+            for (int i = 0; i < line.count; i++) BuildKit(s, r, type);
         }
 
         // хто досяг ліміту — летить додому тим самим кораблем
@@ -238,6 +289,46 @@ public class SupplySystem : ISimSystem
             s.Crew.Add(a);
             r?.Add("report.crew_arrived", 0f, a.Name);
         }
+    }
+
+    // ---------- Набори модулів ----------
+
+    /// <summary>
+    /// Замовити будівництво модуля з набору у вільному квадратику біля бази.
+    /// Не вийшло (модуль ще не відкритий, немає місця чи роботів) — будматеріали лишаються на складі.
+    /// </summary>
+    void BuildKit(GameState s, DayReport r, ModuleType type)
+    {
+        var construction = Construction;
+        if (construction == null && GameBootstrap.Instance != null) construction = GameBootstrap.Instance.GetSystem<ConstructionSystem>();
+
+        string name = LaunchText.Get("launch.module." + type);
+        int slot = PickSlot(s);
+        string err = construction == null || slot < 0 ? "error.place_taken" : construction.Order(s, type, slot);
+        r?.Add(err == null ? "report.kit_building" : "report.kit_unpacked", 0f, name);
+    }
+
+    /// <summary>
+    /// Вільний квадратик BaseGrid: спершу поруч із наявними модулями (щоб база була цілою), інакше перший вільний.
+    /// -1 — вільних немає.
+    /// </summary>
+    public static int PickSlot(GameState s)
+    {
+        int firstFree = -1;
+        for (int slot = 0; slot < BaseGrid.Count; slot++)
+        {
+            if (BaseGrid.CanPlace(s, slot) != null) continue;
+            if (firstFree < 0) firstFree = slot;
+            int c = BaseGrid.Column(slot), row = BaseGrid.Row(slot);
+            if (HasModule(s, c - 1, row) || HasModule(s, c + 1, row) || HasModule(s, c, row - 1) || HasModule(s, c, row + 1)) return slot;
+        }
+        return firstFree;
+    }
+
+    static bool HasModule(GameState s, int column, int row)
+    {
+        int slot = BaseGrid.ToSlot(column, row);
+        return slot >= 0 && s.FindModule(slot) != null;
     }
 
     public void OnDayEnd(GameState s, DayReport r) { }

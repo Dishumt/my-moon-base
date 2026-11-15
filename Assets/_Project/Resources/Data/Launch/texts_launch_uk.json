@@ -1,0 +1,450 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Texts of the launch screen (role 04). Loc reads texts_en/uk.json (role 05); LaunchText looks here only when a key is missing there. Role 05 can move these keys into the main files at any time.",
+  "items": [
+    {
+      "key": "cargo.water",
+      "text": "Баки з водою"
+    },
+    {
+      "key": "cargo.food",
+      "text": "Ящики з їжею"
+    },
+    {
+      "key": "cargo.materials",
+      "text": "Будматеріали"
+    },
+    {
+      "key": "cargo.medkits",
+      "text": "Аптечка"
+    },
+    {
+      "key": "cargo.solar_panel",
+      "text": "Набір сонячної панелі"
+    },
+    {
+      "key": "cargo.battery",
+      "text": "Набір батареї"
+    },
+    {
+      "key": "cargo.crew_seat",
+      "text": "Місце для людини"
+    },
+    {
+      "key": "launch.title_first",
+      "text": "ПЕРША МІСІЯ: ПАКУЄМО КОРАБЕЛЬ"
+    },
+    {
+      "key": "launch.title_supply",
+      "text": "ЗАМОВЛЕННЯ ПОСТАВКИ"
+    },
+    {
+      "key": "launch.cargo",
+      "text": "2. ПАКУЙ ВАНТАЖ"
+    },
+    {
+      "key": "launch.ship",
+      "text": "КОРАБЕЛЬ"
+    },
+    {
+      "key": "launch.fuel",
+      "text": "ПАЛИВО"
+    },
+    {
+      "key": "launch.kg",
+      "text": "{0} кг"
+    },
+    {
+      "key": "launch.fuel_value",
+      "text": "Паливо: {0} кг · треба: {1} кг"
+    },
+    {
+      "key": "launch.seats",
+      "text": "Місця екіпажу: {0} × {1} кг"
+    },
+    {
+      "key": "launch.mass",
+      "text": "Маса корабля: {0} кг (вантаж {1} кг). Важчому кораблю треба більше палива."
+    },
+    {
+      "key": "launch.risk",
+      "text": "Ризик: {0}%"
+    },
+    {
+      "key": "launch.link_ok",
+      "text": "ЗВ'ЯЗОК Є"
+    },
+    {
+      "key": "launch.link_off",
+      "text": "НЕМАЄ ЗВ'ЯЗКУ"
+    },
+    {
+      "key": "launch.legend_crew",
+      "text": "ЕКІПАЖ"
+    },
+    {
+      "key": "launch.legend_cargo",
+      "text": "ВАНТАЖ"
+    },
+    {
+      "key": "launch.hint.Green",
+      "text": "Палива із запасом. Політ безпечний."
+    },
+    {
+      "key": "launch.hint.Yellow",
+      "text": "Палива впритул. Може не вийти!"
+    },
+    {
+      "key": "launch.hint.Red",
+      "text": "Палива не вистачить. Корабель повернеться."
+    },
+    {
+      "key": "launch.go",
+      "text": "ЗАПУСК"
+    },
+    {
+      "key": "launch.send",
+      "text": "ВІДПРАВИТИ"
+    },
+    {
+      "key": "launch.flying",
+      "text": "Летимо до Місяця..."
+    },
+    {
+      "key": "launch.turning_back",
+      "text": "Паливо скінчилось! Повертаємось на Землю."
+    },
+    {
+      "key": "launch.success",
+      "text": "Сіли на Місяць!"
+    },
+    {
+      "key": "launch.failed_repack",
+      "text": "Корабель повернувся. Візьми менше вантажу або більше палива і спробуй ще."
+    },
+    {
+      "key": "launch.must_launch",
+      "text": "Спершу доправ екіпаж на Місяць."
+    },
+    {
+      "key": "launch.order_sent",
+      "text": "Замовлення на Землі. Корабель стартує за розкладом."
+    },
+    {
+      "key": "launch.status.Draft",
+      "text": "ЧЕРНЕТКА"
+    },
+    {
+      "key": "launch.status.Sent",
+      "text": "ВІДПРАВЛЕНО · ЧЕКАЄ СТАРТУ"
+    },
+    {
+      "key": "launch.status.Launched",
+      "text": "ЛЕТИТЬ"
+    },
+    {
+      "key": "launch.status.Returned",
+      "text": "ПОВЕРНУВСЯ · НА 3 ДНІ ПІЗНІШЕ"
+    },
+    {
+      "key": "error.comms_closed",
+      "text": "Зараз немає зв'язку із Землею. Дочекайся вікна зв'язку."
+    },
+    {
+      "key": "error.order_already_sent",
+      "text": "Замовлення вже відправлене."
+    },
+    {
+      "key": "error.order_locked",
+      "text": "Корабель уже летить. Зміни наступне замовлення."
+    },
+    {
+      "key": "error.unknown_cargo",
+      "text": "Невідомий вантаж."
+    },
+    {
+      "key": "error.not_found",
+      "text": "Не знайдено."
+    },
+    {
+      "key": "crew.err_severe",
+      "text": "Тяжко хворіє. Може тільки лежати в медмодулі."
+    },
+    {
+      "key": "crew.err_no_place",
+      "text": "Для цієї роботи ще немає місця."
+    },
+    {
+      "key": "crew.err_no_reserve",
+      "text": "На Землі немає людини з такою професією."
+    },
+    {
+      "key": "crew.err_already_requested",
+      "text": "Заміна вже в списку."
+    },
+    {
+      "key": "report.comms_no_power",
+      "text": "Антена без енергії. Немає зв'язку із Землею."
+    },
+    {
+      "key": "report.supply_not_sent",
+      "text": "Корабель поставки чекає: замовлення не відправлене."
+    },
+    {
+      "key": "report.supply_launched",
+      "text": "Корабель поставки стартував із Землі."
+    },
+    {
+      "key": "report.supply_returned",
+      "text": "Не вистачило палива! Поставка повернулась і прийде на {0} дні пізніше."
+    },
+    {
+      "key": "report.supply_arrived",
+      "text": "Поставка сіла на посадковий майданчик."
+    },
+    {
+      "key": "report.went_home",
+      "text": "{0} полетів(-ла) додому на Землю."
+    },
+    {
+      "key": "report.crew_arrived",
+      "text": "{0} прилетів(-ла) із Землі."
+    },
+    {
+      "key": "report.ice_mined",
+      "text": "Вода з видобутого льоду"
+    },
+    {
+      "key": "report.ice_empty",
+      "text": "У кратері {0} лід скінчився."
+    },
+    {
+      "key": "report.samples_empty",
+      "text": "На точці {0} зразки скінчились."
+    },
+    {
+      "key": "report.science_gained",
+      "text": "Наука зі зразків і лабораторії"
+    },
+    {
+      "key": "rocket.title",
+      "text": "1. ОБЕРИ РАКЕТУ"
+    },
+    {
+      "key": "rocket.small.name",
+      "text": "БДЖОЛА · мала"
+    },
+    {
+      "key": "rocket.medium.name",
+      "text": "ПЕЛІКАН · середня"
+    },
+    {
+      "key": "rocket.heavy.name",
+      "text": "КИТ · важка"
+    },
+    {
+      "key": "rocket.small.hint",
+      "text": "Мала і швидка. Бак з паливом маленький, тож багато не повезе."
+    },
+    {
+      "key": "rocket.medium.hint",
+      "text": "Золота середина: звичайний вантаж і звичайна швидкість."
+    },
+    {
+      "key": "rocket.heavy.hint",
+      "text": "Величезний бак, багато вантажу. Але сама ракета важка й летить довго."
+    },
+    {
+      "key": "rocket.stats",
+      "text": "Бак {0} кг · політ {1} год"
+    },
+    {
+      "key": "rocket.why",
+      "text": "Навіщо вибирати? Більша ракета везе більше, але сама важка і летить довше. Поки вона летить, база чекає."
+    },
+    {
+      "key": "launch.group.supplies",
+      "text": "ЗАПАСИ"
+    },
+    {
+      "key": "launch.group.modules",
+      "text": "НАБОРИ МОДУЛІВ"
+    },
+    {
+      "key": "launch.info_title",
+      "text": "НАВІЩО ЦЕ?"
+    },
+    {
+      "key": "launch.info_default",
+      "text": "Натисни ? біля вантажу, щоб дізнатися, навіщо він."
+    },
+    {
+      "key": "launch.gives",
+      "text": "Дає базі: {0}"
+    },
+    {
+      "key": "launch.kit_note",
+      "text": "Набір важчий за прості будматеріали, зате роботи починають будувати одразу після посадки."
+    },
+    {
+      "key": "launch.fuel_why",
+      "text": "Паливо теж важке! Більше вантажу — більше палива."
+    },
+    {
+      "key": "launch.res.water",
+      "text": "вода"
+    },
+    {
+      "key": "launch.res.food",
+      "text": "їжа"
+    },
+    {
+      "key": "launch.res.oxygen",
+      "text": "кисень"
+    },
+    {
+      "key": "launch.res.materials",
+      "text": "будматеріали"
+    },
+    {
+      "key": "launch.res.medkits",
+      "text": "аптечки"
+    },
+    {
+      "key": "launch.res.module",
+      "text": "новий модуль: {0}"
+    },
+    {
+      "key": "launch.res.seat",
+      "text": "місце для людини"
+    },
+    {
+      "key": "cargo.oxygen",
+      "text": "Балони з киснем"
+    },
+    {
+      "key": "cargo.water.hint",
+      "text": "Астронавти п'ють воду, а ще база робить з неї кисень."
+    },
+    {
+      "key": "cargo.food.hint",
+      "text": "Їжа дає екіпажу сили. Голодні астронавти працюють повільніше."
+    },
+    {
+      "key": "cargo.oxygen.hint",
+      "text": "Повітря, щоб дихати. На Місяці повітря немає зовсім! Бак бази вміщує до 100."
+    },
+    {
+      "key": "cargo.medkits.hint",
+      "text": "Ліки для хворих астронавтів. Космічна радіація може зашкодити здоров'ю."
+    },
+    {
+      "key": "cargo.materials.hint",
+      "text": "Деталі з металу й пластику. З них роботи будують будь-який модуль."
+    },
+    {
+      "key": "cargo.kit.habitat",
+      "text": "Набір житлового модуля"
+    },
+    {
+      "key": "cargo.kit.solar",
+      "text": "Набір сонячної панелі"
+    },
+    {
+      "key": "cargo.kit.battery",
+      "text": "Набір батареї"
+    },
+    {
+      "key": "cargo.kit.greenhouse",
+      "text": "Набір теплиці"
+    },
+    {
+      "key": "cargo.kit.shelter",
+      "text": "Набір укриття від бурі"
+    },
+    {
+      "key": "cargo.kit.medbay",
+      "text": "Набір медмодуля"
+    },
+    {
+      "key": "cargo.kit.antenna",
+      "text": "Набір антени"
+    },
+    {
+      "key": "cargo.kit.lab",
+      "text": "Набір лабораторії"
+    },
+    {
+      "key": "cargo.kit.habitat.hint",
+      "text": "Дім для екіпажу: ліжка, кухня і міцні стіни."
+    },
+    {
+      "key": "cargo.kit.solar.hint",
+      "text": "Робить електрику із сонячного світла. На південному полюсі Сонце низько, тому панелі стоять високо."
+    },
+    {
+      "key": "cargo.kit.battery.hint",
+      "text": "Зберігає електрику на час, коли панелі в тіні."
+    },
+    {
+      "key": "cargo.kit.greenhouse.hint",
+      "text": "Тут ростуть рослини — свіжа їжа."
+    },
+    {
+      "key": "cargo.kit.shelter.hint",
+      "text": "Товсті стіни від сонячних бур. Ховай тут екіпаж, коли Сонце сердиться."
+    },
+    {
+      "key": "cargo.kit.medbay.hint",
+      "text": "Маленька лікарня. Тут медик лікує людей."
+    },
+    {
+      "key": "cargo.kit.antenna.hint",
+      "text": "Зв'язок із Землею. Без нього не замовиш нову поставку."
+    },
+    {
+      "key": "cargo.kit.lab.hint",
+      "text": "Тут науковці вивчають місячні камені й отримують очки науки."
+    },
+    {
+      "key": "launch.module.Habitat",
+      "text": "житловий модуль"
+    },
+    {
+      "key": "launch.module.Solar",
+      "text": "сонячна панель"
+    },
+    {
+      "key": "launch.module.Battery",
+      "text": "батарея"
+    },
+    {
+      "key": "launch.module.Greenhouse",
+      "text": "теплиця"
+    },
+    {
+      "key": "launch.module.Shelter",
+      "text": "укриття"
+    },
+    {
+      "key": "launch.module.Medbay",
+      "text": "медмодуль"
+    },
+    {
+      "key": "launch.module.Antenna",
+      "text": "антена"
+    },
+    {
+      "key": "launch.module.Lab",
+      "text": "лабораторія"
+    },
+    {
+      "key": "report.kit_building",
+      "text": "Набір прилетів. Роботи почали будувати: {0}."
+    },
+    {
+      "key": "report.kit_unpacked",
+      "text": "Набір «{0}» розпакували на будматеріали."
+    }
+  ]
+}

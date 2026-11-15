@@ -21,13 +21,21 @@
 
             <ui:VisualElement class="body">
 
+                <ui:VisualElement name="rocket-panel" class="panel pad rocket-panel mr-16">
+                    <ui:Label name="rocket-title" text="1. CHOOSE A ROCKET" class="t-label mb-8" />
+                    <ui:VisualElement name="rocket-list" />
+                    <ui:Label name="rocket-why" text="" class="t-body why-text" />
+                </ui:VisualElement>
+
                 <ui:VisualElement name="cargo-panel" class="panel pad cargo-panel mr-16">
-                    <ui:Label name="cargo-title" text="SELECT CARGO" class="t-label mb-12" />
-                    <ui:VisualElement name="cargo-list" />
+                    <ui:Label name="cargo-title" text="2. PACK THE CARGO" class="t-label mb-8" />
+                    <ui:ScrollView name="cargo-scroll" class="cargo-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
+                        <ui:VisualElement name="cargo-list" />
+                    </ui:ScrollView>
                 </ui:VisualElement>
 
                 <ui:VisualElement name="ship-panel" class="panel panel--side ship-panel">
-                    <ui:Label name="ship-title" text="SHIP" class="t-label mb-8" />
+                    <ui:Label name="ship-title" text="SHIP" class="t-label mb-4" />
                     <ui:VisualElement class="ship-area">
                         <ui:VisualElement name="ship" class="ship">
                             <ui:VisualElement class="ship-nose-tip" />
@@ -43,7 +51,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:Label name="seats-label" text="" class="t-body mb-4" />
-                    <ui:Label name="mass-label" text="Mass: 1600 kg" class="t-body c-acc mb-8" />
+                    <ui:Label name="mass-label" text="Mass: 1600 kg" class="t-body c-acc mb-4" />
                     <ui:VisualElement class="mass-bar">
                         <ui:VisualElement name="mass-crew" class="mass-crew" />
                         <ui:VisualElement name="mass-cargo" class="mass-cargo" />
@@ -54,13 +62,19 @@
                         <ui:VisualElement class="legend-dot legend-cargo" />
                         <ui:Label name="legend-cargo" text="CARGO" class="t-label" />
                     </ui:VisualElement>
+                    <ui:VisualElement name="info-box" class="note info-box">
+                        <ui:Label name="info-title" text="WHAT IS IT FOR?" class="t-label mb-4" />
+                        <ui:Label name="info-text" text="" class="t-body" />
+                        <ui:Label name="info-gives" text="" class="t-body c-en" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
             </ui:VisualElement>
 
             <ui:VisualElement name="bottom" class="panel pad bottom-row">
                 <ui:VisualElement class="fuel-box">
-                    <ui:Label name="fuel-label" text="Fuel: 3000 kg" class="t-body mb-8" />
+                    <ui:Label name="fuel-label" text="Fuel: 3000 kg" class="t-body mb-4" />
+                    <ui:Label name="fuel-why" text="" class="t-label mb-4" />
                     <ui:Slider name="fuel-slider" low-value="0" high-value="6000" value="3000" />
                     <ui:Label name="result-label" text="" class="msg mt-8" />
                 </ui:VisualElement>

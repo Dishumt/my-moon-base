@@ -1,13 +1,21 @@
 {
   "_ai": "AI-assisted (Claude)",
-  "_note": "Вантажі для екрана запуску (роль 04). massKg — маса одного місця вантажу. Решта полів — що він дає базі після прибуття.",
+  "_note": "Вантажі для екрана запуску (роль 04). massKg — маса одного місця. group: supplies (запаси) або modules (набори модулів). hintKey — підказка для дітей «навіщо це». Решта полів — що вантаж дає базі після прибуття.",
+  "kit_note": "Набір модуля (module = назва з enum ModuleType): після посадки дає materials і одразу замовляє будівництво цього модуля у вільному квадратику біля бази (ConstructionSystem.Order від ролі 03). materials = ціна модуля з Balance/modules.json. Набір на ~30% важчий за ті самі будматеріали — це ціна зручності.",
   "items": [
-    { "id": "water",           "nameKey": "cargo.water",       "massKg": 100, "water": 20 },
-    { "id": "food",            "nameKey": "cargo.food",        "massKg": 50,  "food": 10 },
-    { "id": "materials",       "nameKey": "cargo.materials",   "massKg": 200, "materials": 20 },
-    { "id": "medkits",         "nameKey": "cargo.medkits",     "massKg": 20,  "medKits": 1 },
-    { "id": "solar_panel_kit", "nameKey": "cargo.solar_panel", "massKg": 300, "solarPanelKits": 1 },
-    { "id": "battery_kit",     "nameKey": "cargo.battery",     "massKg": 250, "batteryKits": 1 },
-    { "id": "crew_seat",       "nameKey": "cargo.crew_seat",   "massKg": 150, "crewSeats": 1 }
+    { "id": "water",          "group": "supplies", "nameKey": "cargo.water",          "hintKey": "cargo.water.hint",          "massKg": 100, "water": 20 },
+    { "id": "food",           "group": "supplies", "nameKey": "cargo.food",           "hintKey": "cargo.food.hint",           "massKg": 50,  "food": 10 },
+    { "id": "oxygen",         "group": "supplies", "nameKey": "cargo.oxygen",         "hintKey": "cargo.oxygen.hint",         "massKg": 80,  "oxygen": 20 },
+    { "id": "medkits",        "group": "supplies", "nameKey": "cargo.medkits",        "hintKey": "cargo.medkits.hint",        "massKg": 20,  "medKits": 1 },
+    { "id": "materials",      "group": "supplies", "nameKey": "cargo.materials",      "hintKey": "cargo.materials.hint",      "massKg": 200, "materials": 20 },
+    { "id": "kit_habitat",    "group": "modules",  "nameKey": "cargo.kit.habitat",    "hintKey": "cargo.kit.habitat.hint",    "massKg": 260, "materials": 20, "module": "Habitat" },
+    { "id": "kit_solar",      "group": "modules",  "nameKey": "cargo.kit.solar",      "hintKey": "cargo.kit.solar.hint",      "massKg": 130, "materials": 10, "module": "Solar" },
+    { "id": "kit_battery",    "group": "modules",  "nameKey": "cargo.kit.battery",    "hintKey": "cargo.kit.battery.hint",    "massKg": 130, "materials": 10, "module": "Battery" },
+    { "id": "kit_greenhouse", "group": "modules",  "nameKey": "cargo.kit.greenhouse", "hintKey": "cargo.kit.greenhouse.hint", "massKg": 190, "materials": 15, "module": "Greenhouse" },
+    { "id": "kit_shelter",    "group": "modules",  "nameKey": "cargo.kit.shelter",    "hintKey": "cargo.kit.shelter.hint",    "massKg": 190, "materials": 15, "module": "Shelter" },
+    { "id": "kit_medbay",     "group": "modules",  "nameKey": "cargo.kit.medbay",     "hintKey": "cargo.kit.medbay.hint",     "massKg": 130, "materials": 10, "module": "Medbay" },
+    { "id": "kit_antenna",    "group": "modules",  "nameKey": "cargo.kit.antenna",    "hintKey": "cargo.kit.antenna.hint",    "massKg": 70,  "materials": 5,  "module": "Antenna" },
+    { "id": "kit_lab",        "group": "modules",  "nameKey": "cargo.kit.lab",        "hintKey": "cargo.kit.lab.hint",        "massKg": 130, "materials": 10, "module": "Lab" },
+    { "id": "crew_seat",      "group": "crew",     "nameKey": "cargo.crew_seat",      "hintKey": "",                          "massKg": 150, "crewSeats": 1 }
   ]
 }

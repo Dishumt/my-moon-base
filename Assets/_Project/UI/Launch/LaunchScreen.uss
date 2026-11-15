@@ -3,15 +3,19 @@
 
 .body { flex-direction: row; flex-grow: 1; margin-top: 14px; }
 .pad { padding: 16px 20px; }
-.cargo-panel { width: 520px; }
+.cargo-panel { width: 500px; }
+.rocket-panel { width: 270px; }
+.mr-16 { margin-right: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
 .ship-panel { flex-grow: 1; }
 
 /* --- рядки вантажу (їх створює код: cargo-row, cargo-name, cargo-count, small-btn) --- */
 .cargo-row {
     flex-direction: row;
     align-items: center;
-    min-height: 72px;
-    margin-bottom: 8px;
+    min-height: 52px;
+    margin-bottom: 6px;
     padding: 4px 12px;
     background-color: var(--color-card);
     border-width: 2px;
@@ -21,22 +25,24 @@
 .cargo-row:hover { border-color: var(--color-accent); }
 .cargo-name {
     flex-grow: 1;
-    font-size: 18px;
-    letter-spacing: 2px;
+    flex-shrink: 1;
+    font-size: 16px;
+    letter-spacing: 1px;
+    white-space: normal;
     color: var(--color-text);
 }
 .cargo-count {
-    width: 72px;
-    font-size: 28px;
+    width: 48px;
+    font-size: 24px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
     color: var(--color-energy);
 }
 .small-btn {
-    width: 64px;
-    height: 64px;
+    width: 44px;
+    height: 44px;
     margin: 0 0 0 6px;
-    font-size: 34px;
+    font-size: 28px;
     color: var(--color-accent);
     background-color: rgba(0, 0, 0, 0);
     border-width: 2px;
@@ -47,7 +53,7 @@
 .small-btn:active { scale: 0.95 0.95; }
 
 /* --- ракета з прямокутників --- */
-.ship-area { height: 230px; align-items: center; justify-content: center; }
+.ship-area { height: 170px; align-items: center; justify-content: center; }
 .ship { width: 120px; height: 210px; }
 .ship-nose-tip { position: absolute; left: 50px; top: 0px; width: 20px; height: 14px; background-color: var(--color-accent); }
 .ship-nose-mid { position: absolute; left: 40px; top: 14px; width: 40px; height: 18px; background-color: var(--color-accent); }
@@ -111,3 +117,44 @@
 .light--yellow-on { background-color: var(--color-energy); }
 .light--green-on  { background-color: var(--color-ok); }
 .cargo-mass { width: 80px; font-size: 14px; color: var(--color-muted); -unity-text-align: middle-right; margin-right: 6px; }
+
+/* --- додано роллю 04: вибір ракети, групи вантажів, підказки --- */
+.rocket-card {
+    flex-direction: row;
+    align-items: center;
+    min-height: 84px;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background-color: var(--color-card);
+    border-width: 2px;
+    border-color: var(--color-line);
+}
+.rocket-card:hover { border-color: var(--color-accent); }
+.rocket-card--on { border-color: var(--color-energy); background-color: var(--color-card-selected); }
+.rocket-pic { width: 64px; height: 64px; margin-right: 8px; -unity-background-scale-mode: scale-to-fit; background-color: var(--color-void); }
+.rocket-texts { flex-grow: 1; flex-shrink: 1; }
+.rocket-name { font-size: 15px; -unity-font-style: bold; color: var(--color-text); white-space: normal; }
+.rocket-stats { font-size: 13px; color: var(--color-muted); white-space: normal; }
+.why-text { font-size: 14px; margin-top: 6px; }
+
+.cargo-scroll { flex-grow: 1; }
+.cargo-group { font-size: 13px; letter-spacing: 3px; color: var(--color-energy); margin: 8px 0 6px 2px; }
+.cargo-icon { width: 36px; height: 36px; margin-right: 10px; -unity-background-scale-mode: scale-to-fit; }
+.cargo-icon--none { display: none; }
+.cargo-row--on { border-color: var(--color-energy); }
+.help-btn {
+    width: 36px;
+    height: 36px;
+    margin: 0 4px 0 0;
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: var(--color-energy);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 2px;
+    border-color: var(--color-energy);
+    border-radius: 18px;
+}
+.help-btn:hover { background-color: rgba(255, 200, 61, 0.15); }
+
+.info-box { margin-top: 10px; flex-grow: 1; }
+.info-box > .t-body { font-size: 15px; }

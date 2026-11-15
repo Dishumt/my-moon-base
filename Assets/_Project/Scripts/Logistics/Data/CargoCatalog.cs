@@ -7,15 +7,28 @@ using System.Collections.Generic;
 public class CargoItemData
 {
     public string id;
+    public string group;        // supplies (запаси), modules (набори модулів) або crew
     public string nameKey;      // ключ тексту для Loc.Get
+    public string hintKey;      // підказка для дітей: навіщо цей вантаж
     public float massKg;        // маса одного місця
     public float water;         // що дає базі після прибуття
     public float food;
+    public float oxygen;
     public float materials;
     public int medKits;
     public int solarPanelKits;
     public int batteryKits;
     public int crewSeats;       // місце для людини
+    public string module;       // набір модуля: назва з ModuleType ("Greenhouse"); порожньо — не набір
+
+    public bool IsKit => !string.IsNullOrEmpty(module);
+
+    /// <summary>Тип модуля набору. false — це не набір або назва з помилкою.</summary>
+    public bool TryGetModule(out ModuleType type)
+    {
+        type = ModuleType.Habitat;
+        return IsKit && Enum.TryParse(module, out type);
+    }
 }
 
 /// <summary>Увесь файл cargo_items.json.</summary>

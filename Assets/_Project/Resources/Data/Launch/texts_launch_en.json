@@ -1,0 +1,450 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Texts of the launch screen (role 04). Loc reads texts_en/uk.json (role 05); LaunchText looks here only when a key is missing there. Role 05 can move these keys into the main files at any time.",
+  "items": [
+    {
+      "key": "cargo.water",
+      "text": "Water tanks"
+    },
+    {
+      "key": "cargo.food",
+      "text": "Food boxes"
+    },
+    {
+      "key": "cargo.materials",
+      "text": "Building materials"
+    },
+    {
+      "key": "cargo.medkits",
+      "text": "Med kit"
+    },
+    {
+      "key": "cargo.solar_panel",
+      "text": "Solar panel kit"
+    },
+    {
+      "key": "cargo.battery",
+      "text": "Battery kit"
+    },
+    {
+      "key": "cargo.crew_seat",
+      "text": "Crew seat"
+    },
+    {
+      "key": "launch.title_first",
+      "text": "FIRST MISSION: PACK THE SHIP"
+    },
+    {
+      "key": "launch.title_supply",
+      "text": "SUPPLY ORDER"
+    },
+    {
+      "key": "launch.cargo",
+      "text": "2. PACK THE CARGO"
+    },
+    {
+      "key": "launch.ship",
+      "text": "SHIP"
+    },
+    {
+      "key": "launch.fuel",
+      "text": "FUEL"
+    },
+    {
+      "key": "launch.kg",
+      "text": "{0} kg"
+    },
+    {
+      "key": "launch.fuel_value",
+      "text": "Fuel: {0} kg · needed: {1} kg"
+    },
+    {
+      "key": "launch.seats",
+      "text": "Crew seats: {0} × {1} kg"
+    },
+    {
+      "key": "launch.mass",
+      "text": "Ship mass: {0} kg (cargo {1} kg). Heavier ship needs more fuel."
+    },
+    {
+      "key": "launch.risk",
+      "text": "Risk: {0}%"
+    },
+    {
+      "key": "launch.link_ok",
+      "text": "LINK OK"
+    },
+    {
+      "key": "launch.link_off",
+      "text": "NO LINK"
+    },
+    {
+      "key": "launch.legend_crew",
+      "text": "CREW"
+    },
+    {
+      "key": "launch.legend_cargo",
+      "text": "CARGO"
+    },
+    {
+      "key": "launch.hint.Green",
+      "text": "Enough fuel. The flight is safe."
+    },
+    {
+      "key": "launch.hint.Yellow",
+      "text": "Just enough fuel. It may fail!"
+    },
+    {
+      "key": "launch.hint.Red",
+      "text": "Not enough fuel. The ship will turn back."
+    },
+    {
+      "key": "launch.go",
+      "text": "LAUNCH"
+    },
+    {
+      "key": "launch.send",
+      "text": "SEND ORDER"
+    },
+    {
+      "key": "launch.flying",
+      "text": "Flying to the Moon..."
+    },
+    {
+      "key": "launch.turning_back",
+      "text": "Out of fuel! Turning back to Earth."
+    },
+    {
+      "key": "launch.success",
+      "text": "Landed on the Moon!"
+    },
+    {
+      "key": "launch.failed_repack",
+      "text": "The ship came back. Take less cargo or add fuel, then try again."
+    },
+    {
+      "key": "launch.must_launch",
+      "text": "First, fly the crew to the Moon."
+    },
+    {
+      "key": "launch.order_sent",
+      "text": "Order sent to Earth. The ship starts on schedule."
+    },
+    {
+      "key": "launch.status.Draft",
+      "text": "DRAFT"
+    },
+    {
+      "key": "launch.status.Sent",
+      "text": "SENT · WAITING FOR LAUNCH"
+    },
+    {
+      "key": "launch.status.Launched",
+      "text": "FLYING"
+    },
+    {
+      "key": "launch.status.Returned",
+      "text": "CAME BACK · 3 DAYS LATE"
+    },
+    {
+      "key": "error.comms_closed",
+      "text": "No contact with Earth now. Wait for the next comms window."
+    },
+    {
+      "key": "error.order_already_sent",
+      "text": "The order is already sent."
+    },
+    {
+      "key": "error.order_locked",
+      "text": "The ship is already flying. Change the next order."
+    },
+    {
+      "key": "error.unknown_cargo",
+      "text": "Unknown cargo."
+    },
+    {
+      "key": "error.not_found",
+      "text": "Not found."
+    },
+    {
+      "key": "crew.err_severe",
+      "text": "Very sick. Can only rest in the med bay."
+    },
+    {
+      "key": "crew.err_no_place",
+      "text": "There is no place for this job yet."
+    },
+    {
+      "key": "crew.err_no_reserve",
+      "text": "Nobody with this job is waiting on Earth."
+    },
+    {
+      "key": "crew.err_already_requested",
+      "text": "A replacement is already on the list."
+    },
+    {
+      "key": "report.comms_no_power",
+      "text": "The antenna has no power. No contact with Earth."
+    },
+    {
+      "key": "report.supply_not_sent",
+      "text": "The supply ship is waiting: the order was not sent."
+    },
+    {
+      "key": "report.supply_launched",
+      "text": "The supply ship took off from Earth."
+    },
+    {
+      "key": "report.supply_returned",
+      "text": "Not enough fuel! The supply ship turned back. It comes {0} days later."
+    },
+    {
+      "key": "report.supply_arrived",
+      "text": "The supply ship landed on the pad."
+    },
+    {
+      "key": "report.went_home",
+      "text": "{0} flew home to Earth."
+    },
+    {
+      "key": "report.crew_arrived",
+      "text": "{0} arrived from Earth."
+    },
+    {
+      "key": "report.ice_mined",
+      "text": "Water from mined ice"
+    },
+    {
+      "key": "report.ice_empty",
+      "text": "No more ice in crater {0}."
+    },
+    {
+      "key": "report.samples_empty",
+      "text": "No more samples at {0}."
+    },
+    {
+      "key": "report.science_gained",
+      "text": "Science from samples and the lab"
+    },
+    {
+      "key": "rocket.title",
+      "text": "1. CHOOSE A ROCKET"
+    },
+    {
+      "key": "rocket.small.name",
+      "text": "BEE · small"
+    },
+    {
+      "key": "rocket.medium.name",
+      "text": "PELICAN · medium"
+    },
+    {
+      "key": "rocket.heavy.name",
+      "text": "WHALE · heavy"
+    },
+    {
+      "key": "rocket.small.hint",
+      "text": "Small and fast. Its fuel tank is small, so it can't carry much."
+    },
+    {
+      "key": "rocket.medium.hint",
+      "text": "The all-rounder. A normal load at a normal speed."
+    },
+    {
+      "key": "rocket.heavy.hint",
+      "text": "A huge fuel tank for lots of cargo. But the rocket itself is heavy and flies slowly."
+    },
+    {
+      "key": "rocket.stats",
+      "text": "Tank {0} kg · flight {1} h"
+    },
+    {
+      "key": "rocket.why",
+      "text": "Why choose? A bigger rocket carries more, but it is heavy itself and flies longer. While it flies, the base waits."
+    },
+    {
+      "key": "launch.group.supplies",
+      "text": "SUPPLIES"
+    },
+    {
+      "key": "launch.group.modules",
+      "text": "MODULE KITS"
+    },
+    {
+      "key": "launch.info_title",
+      "text": "WHAT IS IT FOR?"
+    },
+    {
+      "key": "launch.info_default",
+      "text": "Tap ? next to any cargo to learn what it is for."
+    },
+    {
+      "key": "launch.gives",
+      "text": "Gives the base: {0}"
+    },
+    {
+      "key": "launch.kit_note",
+      "text": "A kit is heavier than plain materials, but robots start building it right after landing."
+    },
+    {
+      "key": "launch.fuel_why",
+      "text": "Fuel is heavy too! More cargo means more fuel."
+    },
+    {
+      "key": "launch.res.water",
+      "text": "water"
+    },
+    {
+      "key": "launch.res.food",
+      "text": "food"
+    },
+    {
+      "key": "launch.res.oxygen",
+      "text": "oxygen"
+    },
+    {
+      "key": "launch.res.materials",
+      "text": "materials"
+    },
+    {
+      "key": "launch.res.medkits",
+      "text": "med kits"
+    },
+    {
+      "key": "launch.res.module",
+      "text": "a new {0}"
+    },
+    {
+      "key": "launch.res.seat",
+      "text": "a seat for a person"
+    },
+    {
+      "key": "cargo.oxygen",
+      "text": "Oxygen tanks"
+    },
+    {
+      "key": "cargo.water.hint",
+      "text": "Astronauts drink water, and the base also makes oxygen from it."
+    },
+    {
+      "key": "cargo.food.hint",
+      "text": "Food keeps the crew full and strong. Hungry astronauts work slower."
+    },
+    {
+      "key": "cargo.oxygen.hint",
+      "text": "Air to breathe. The Moon has no air at all! The base tank holds up to 100."
+    },
+    {
+      "key": "cargo.medkits.hint",
+      "text": "Medicine for sick astronauts. Space radiation can make people ill."
+    },
+    {
+      "key": "cargo.materials.hint",
+      "text": "Metal and plastic parts. Robots build any module from them."
+    },
+    {
+      "key": "cargo.kit.habitat",
+      "text": "Habitat kit"
+    },
+    {
+      "key": "cargo.kit.solar",
+      "text": "Solar panel kit"
+    },
+    {
+      "key": "cargo.kit.battery",
+      "text": "Battery kit"
+    },
+    {
+      "key": "cargo.kit.greenhouse",
+      "text": "Greenhouse kit"
+    },
+    {
+      "key": "cargo.kit.shelter",
+      "text": "Storm shelter kit"
+    },
+    {
+      "key": "cargo.kit.medbay",
+      "text": "Med bay kit"
+    },
+    {
+      "key": "cargo.kit.antenna",
+      "text": "Antenna kit"
+    },
+    {
+      "key": "cargo.kit.lab",
+      "text": "Lab kit"
+    },
+    {
+      "key": "cargo.kit.habitat.hint",
+      "text": "A home for the crew: beds, a kitchen and strong walls."
+    },
+    {
+      "key": "cargo.kit.solar.hint",
+      "text": "Turns sunlight into electricity. At the south pole the Sun stays low, so the panels stand tall."
+    },
+    {
+      "key": "cargo.kit.battery.hint",
+      "text": "Stores electricity for the time when the panels are in shadow."
+    },
+    {
+      "key": "cargo.kit.greenhouse.hint",
+      "text": "Plants grow fresh food here."
+    },
+    {
+      "key": "cargo.kit.shelter.hint",
+      "text": "Thick walls against solar storms. Hide the crew here when the Sun is angry."
+    },
+    {
+      "key": "cargo.kit.medbay.hint",
+      "text": "A small hospital. The medic heals people here."
+    },
+    {
+      "key": "cargo.kit.antenna.hint",
+      "text": "Talks to Earth. Without contact you can't order new supplies."
+    },
+    {
+      "key": "cargo.kit.lab.hint",
+      "text": "Scientists study Moon rocks here and earn science points."
+    },
+    {
+      "key": "launch.module.Habitat",
+      "text": "habitat"
+    },
+    {
+      "key": "launch.module.Solar",
+      "text": "solar panel"
+    },
+    {
+      "key": "launch.module.Battery",
+      "text": "battery"
+    },
+    {
+      "key": "launch.module.Greenhouse",
+      "text": "greenhouse"
+    },
+    {
+      "key": "launch.module.Shelter",
+      "text": "storm shelter"
+    },
+    {
+      "key": "launch.module.Medbay",
+      "text": "med bay"
+    },
+    {
+      "key": "launch.module.Antenna",
+      "text": "antenna"
+    },
+    {
+      "key": "launch.module.Lab",
+      "text": "lab"
+    },
+    {
+      "key": "report.kit_building",
+      "text": "The kit landed. Robots started building: {0}."
+    },
+    {
+      "key": "report.kit_unpacked",
+      "text": "The kit for {0} was unpacked into building materials."
+    }
+  ]
+}
