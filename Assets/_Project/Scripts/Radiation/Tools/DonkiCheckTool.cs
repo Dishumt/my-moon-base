@@ -34,8 +34,8 @@ public static class DonkiCheckTool
     /// </summary>
     static readonly string[] Hosts =
     {
-        "https://ccmc.gsfc.nasa.gov/DONKI/WS/get/",
-        SpaceWeather.DonkiWs, // kauai.ccmc.gsfc.nasa.gov
+        SpaceWeather.DonkiWs,       // ccmc.gsfc.nasa.gov — той самий хост, що й у живій космічній погоді в грі
+        SpaceWeather.DonkiWsLegacy, // kauai.ccmc.gsfc.nasa.gov
         MirrorBase,
     };
 

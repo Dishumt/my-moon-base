@@ -114,6 +114,15 @@ public class NasaDataTests
     public void LiveWeather_UrlIsLast7Days()
     {
         string url = SpaceWeather.BuildUrl(new DateTime(2026, 11, 15, 12, 0, 0, DateTimeKind.Utc));
-        Assert.AreEqual("https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/FLR?startDate=2026-11-08&endDate=2026-11-15", url);
+        Assert.AreEqual("https://ccmc.gsfc.nasa.gov/DONKI/WS/get/FLR?startDate=2026-11-08&endDate=2026-11-15", url);
+    }
+
+    [Test]
+    public void LiveWeather_UsesHostThatIsOpenInHackathonNetwork_NotTheLegacyOne()
+    {
+        // kauai.* не відкривався в мережі хакатону; ccmc.* відкритий і віддає CORS «*» (потрібно для веб-збірки)
+        StringAssert.StartsWith("https://ccmc.gsfc.nasa.gov/", SpaceWeather.DonkiWs);
+        StringAssert.StartsWith("https://kauai.", SpaceWeather.DonkiWsLegacy);
+        StringAssert.DoesNotStartWith(SpaceWeather.DonkiWsLegacy, SpaceWeather.BuildUrl(DateTime.UtcNow));
     }
 }
