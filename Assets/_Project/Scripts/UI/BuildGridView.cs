@@ -6,7 +6,8 @@ using UnityEngine.UIElements;
 /// Draws the base grid BaseGrid.Width x BaseGrid.Depth as buttons (row 0 is at the BOTTOM, like in the world:
 /// closer to the camera). One square = one module, its number = BaseGrid.ToSlot(column, row).
 ///  - empty square  -> click -> pick a module type -> ConstructionSystem.Order(state, type, slot);
-///  - building / built square -> click -> shows what is there.
+///  - building / built square -> click -> shows what is there;
+///  - built square without regolith -> "COVER WITH REGOLITH" -> ConstructionSystem.ShieldWithRegolith (less radiation inside).
 /// Not a MonoBehaviour: TabletController creates it and gives it the "pane-build" element.
 /// </summary>
 public class BuildGridView
@@ -26,6 +27,7 @@ public class BuildGridView
     readonly Label message;          // error (red) or "Ordered!" (green)
 
     readonly Button[] cells = new Button[BaseGrid.Count];
+    readonly BuildCostTable costs = BuildCostTable.Load(); // materials and robot hours from modules.json (role 03)
     int selectedSlot = -1;
 
     public BuildGridView(VisualElement pane)
@@ -106,14 +108,22 @@ public class BuildGridView
                 var t = type; // own copy for the lambda
                 var button = new Button(() => Order(t));
                 button.AddToClassList("opt");
-                button.text = Loc.Get("mod." + t) + "\n<size=12>" + Loc.Get("mod." + t + ".desc") + "</size>";
+                string cost = costs.TryGet(t, out var c)
+                    ? "  ·  " + Loc.Get("map.cost", UiKit.Num(c.Materials), UiKit.Num(c.BuildHours)) : "";
+                button.text = Loc.Get("mod." + t) + cost + "\n<size=12>" + Loc.Get("mod." + t + ".desc") + "</size>";
                 options.Add(button);
             }
         }
         else if (m.IsBuilt)
         {
-            SetText(slotState, Loc.Get("map.built"));
+            SetText(slotState, Loc.Get("map.built") + "  ·  " + Loc.Get(m.RegolithShield ? "map.shield_yes" : "map.shield_no"));
             SetText(hint, Loc.Get("mod." + m.Type) + " — " + Loc.Get("mod." + m.Type + ".desc"));
+            if (options == null || m.RegolithShield) return;
+            var shield = new Button(Shield);
+            shield.AddToClassList("opt");
+            shield.text = Loc.Get("map.shield_btn") + "\n<size=12>"
+                        + Loc.Get("map.shield_cost", UiKit.Num(costs.Regolith.BuildHours)) + " " + Loc.Get("map.regolith") + "</size>";
+            options.Add(shield);
         }
         else
         {
@@ -135,6 +145,16 @@ public class BuildGridView
         }
         SetMessage(Loc.Get("map.ordered"), false);
         GameEvents.RaiseStateChanged(); // world, HUD and this grid redraw
+    }
+
+    void Shield()
+    {
+        var construction = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ConstructionSystem>() : null;
+        if (construction == null) return;
+
+        string err = construction.ShieldWithRegolith(GameBootstrap.Instance.State, selectedSlot);
+        SetMessage(Loc.Get(err ?? "map.shield_ordered"), err != null);
+        GameEvents.RaiseStateChanged();
     }
 
     void SetMessage(string text, bool isError)
