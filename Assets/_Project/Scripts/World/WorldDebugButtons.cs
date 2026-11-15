@@ -40,6 +40,16 @@ public class WorldDebugButtons : MonoBehaviour
         if (GUILayout.Button(ModulePower.DebugOutage ? "Аварія: прибрати" : "Аварія: немає енергії")) ModulePower.DebugOutage = !ModulePower.DebugOutage;
         GUILayout.EndHorizontal();
         GUILayout.Label("Світ бачить енергію (отримано/план): " + RoomPowerText());
+
+        // ----- Ефекти світу: буря, тінь від хребта -----
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Буря: " + StormNames[StormFx.DebugMode] + " →")) StormFx.DebugMode = (StormFx.DebugMode + 1) % StormNames.Length;
+        if (GUILayout.Button("Тінь: до 17:00"))
+        {
+            int hours = (17 - s.Hour + 24) % 24;
+            game.Clock.AdvanceHours(hours == 0 ? 24 : hours); // о 17:00 починає сутеніти, о 18:00 — тінь від хребта
+        }
+        GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Аптечки -1")) s.Res.MedKits = Mathf.Max(0, s.Res.MedKits - 1);
         if (GUILayout.Button("Аптечки +1")) s.Res.MedKits++;
@@ -60,6 +70,8 @@ public class WorldDebugButtons : MonoBehaviour
         if (GUILayout.Button("Роботам енергія +1")) s.Power.Robots += 1;
         GUILayout.EndHorizontal();
     }
+
+    static readonly string[] StormNames = { "як у грі", "попередження", "буря" };
 
     static readonly ModuleType[] RoomCycle =
     {

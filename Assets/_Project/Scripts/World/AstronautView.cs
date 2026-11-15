@@ -543,6 +543,7 @@ public class AstronautView : MonoBehaviour
         Sprite s = null;
         if (Data.Health == HealthStatus.Severe) s = cl.iconSevere;
         else if (Data.Health == HealthStatus.Sick) s = cl.iconSick;
+        else if (StormFx.Danger && Data.InsideSlot < 0) s = cl.iconDoseRed; // буря: надворі небезпечно — в укриття!
         else if (Data.GoingHome) s = cl.iconDoseRed;
         else if (Data.InsideOnly) s = cl.iconDoseYellow;
         else if (Data.Satiety < cl.hungryBelow) s = cl.iconHungry;

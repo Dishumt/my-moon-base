@@ -43,6 +43,19 @@ public class MoonDecor : MonoBehaviour
 
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
+    // Спрайти каміння: на них не діє світло Сонця, тож темнішають самі разом з вулицею (тінь хребта, інженер у модулі)
+    readonly List<SpriteRenderer> propRenderers = new List<SpriteRenderer>();
+    float appliedBrightness = 1f;
+
+    void Update()
+    {
+        float b = OutdoorDarkening.Brightness;
+        if (Mathf.Abs(b - appliedBrightness) < 0.005f) return;
+        appliedBrightness = b;
+        var c = new Color(b, b, b, 1f);
+        foreach (var r in propRenderers) if (r != null) r.color = c;
+    }
+
     void Start() // після MoonTerrain.Awake (рельєф готовий) і після PoiMarker.OnEnable (точки знайдуться)
     {
         var look = ModuleLook.Instance;
@@ -172,6 +185,7 @@ public class MoonDecor : MonoBehaviour
         var sr = go.AddComponent<SpriteRenderer>();
         sr.sprite = sprites[p.sprite];
         sr.flipX = p.flip;
+        propRenderers.Add(sr);
         // Картинки намальовані «спереду й трохи згори», як меблі, — стоять паралельно екрану
         go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
 

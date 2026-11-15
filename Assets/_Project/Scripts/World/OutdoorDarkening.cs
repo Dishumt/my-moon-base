@@ -4,6 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Затемнення вулиці, коли інженер у модулі: плавно зменшує головне світло (Sun)
 /// і загальне фонове світло (ambient — світло «звідусіль», без джерела).
+/// Ще й тінь від хребта (ShadeFx): у години тіні Сонце слабшає — множимо одне на інше.
 /// Став на об'єкт Sun.
 /// </summary>
 [RequireComponent(typeof(Light))]
@@ -18,6 +19,14 @@ public class OutdoorDarkening : MonoBehaviour
 
     MaterialPropertyBlock block;
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+
+    /// <summary>Тінь від хребта (ставить ShadeFx): 1 — Сонце світить, менше — Сонце за горами.</summary>
+    public static float Shade { get; set; } = 1f;
+
+    /// <summary>Яскравість вулиці зараз (модуль × тінь), 0..1. Спрайти надворі (каміння) темнішають за нею.</summary>
+    public static float Brightness { get; private set; } = 1f;
+
+    float appliedShade = -1f;
 
     Light sun;
     float baseSun, baseAmbientIntensity;
@@ -37,13 +46,16 @@ public class OutdoorDarkening : MonoBehaviour
         float target = ModuleInterior.EngineerInsideAny ? insideBrightness : 1f;
         float step = fadeSeconds > 0f ? Time.unscaledDeltaTime / fadeSeconds : 1f;
         float newK = Mathf.MoveTowards(k, target, step * (1f - insideBrightness));
-        if (Mathf.Approximately(newK, k)) return;
+        if (Mathf.Approximately(newK, k) && Mathf.Approximately(appliedShade, Shade)) return;
         k = newK;
+        appliedShade = Shade;
 
-        sun.intensity = baseSun * k;
-        RenderSettings.ambientIntensity = baseAmbientIntensity * k;
-        RenderSettings.ambientLight = baseAmbientLight * k;
-        TintUnlit(k);
+        float b = k * Shade;
+        Brightness = b;
+        sun.intensity = baseSun * b;
+        RenderSettings.ambientIntensity = baseAmbientIntensity * b;
+        RenderSettings.ambientLight = baseAmbientLight * b;
+        TintUnlit(b);
     }
 
     void TintUnlit(float brightness)
@@ -66,5 +78,6 @@ public class OutdoorDarkening : MonoBehaviour
         RenderSettings.ambientIntensity = baseAmbientIntensity;
         RenderSettings.ambientLight = baseAmbientLight;
         TintUnlit(1f);
+        Brightness = 1f;
     }
 }

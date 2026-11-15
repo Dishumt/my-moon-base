@@ -24,6 +24,15 @@ public class ModuleInterior : MonoBehaviour
     static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     static readonly int Indoor = Shader.PropertyToID("_Indoor");
 
+    static readonly int IndoorColor = Shader.PropertyToID("_IndoorColor");
+    static readonly Color CalmIndoor = new Color(0.68f, 1f, 0.76f, 1f); // спокійне зелене світло в укритті під час бурі
+    static readonly Color CalmSprites = new Color(0.85f, 1f, 0.88f, 1f);
+
+    /// <summary>Буря: в укритті спокійне зелене світло (ставить StormFx).</summary>
+    public bool CalmLight { get; set; }
+    bool appliedCalm;
+    Color normalIndoor = new Color(1f, 0.92f, 0.8f, 1f);
+
     const float StandbyLight = 0.6f;  // «сплячий режим»
     const float OutageLight = 0.3f;   // аварія
     static readonly Color AlarmRed = new Color(1f, 0.15f, 0.12f, 1f);
@@ -77,6 +86,13 @@ public class ModuleInterior : MonoBehaviour
         sprites = list.ToArray();
         spriteColors = new Color[sprites.Length];
         for (int i = 0; i < sprites.Length; i++) spriteColors[i] = sprites[i].color;
+
+        foreach (var r in interior) // яке тепле світло задане в матеріалі — до нього повертаємось після бурі
+            if (r != null && r.sharedMaterial != null && r.sharedMaterial.HasProperty(IndoorColor))
+            {
+                normalIndoor = r.sharedMaterial.GetColor(IndoorColor);
+                break;
+            }
     }
 
     /// <summary>Аварійна лампа (створює RoomBuilder): лампа під стелею, червоне сяйво навколо неї і червоні відблиски на підлозі.</summary>
@@ -114,7 +130,7 @@ public class ModuleInterior : MonoBehaviour
         float want = power == RoomPower.On ? 1f : (power == RoomPower.Standby ? StandbyLight : OutageLight);
         lightLevel = Mathf.MoveTowards(lightLevel, want, Time.unscaledDeltaTime * 2f);
 
-        if (!Mathf.Approximately(applied, shellAlpha) || !Mathf.Approximately(appliedLight, lightLevel)) Apply(look);
+        if (!Mathf.Approximately(applied, shellAlpha) || !Mathf.Approximately(appliedLight, lightLevel) || appliedCalm != CalmLight) Apply(look);
         UpdateAlarm();
     }
 
@@ -136,6 +152,7 @@ public class ModuleInterior : MonoBehaviour
     {
         applied = shellAlpha;
         appliedLight = lightLevel;
+        appliedCalm = CalmLight;
 
         for (int i = 0; i < shell.Length; i++)
         {
@@ -161,7 +178,7 @@ public class ModuleInterior : MonoBehaviour
         foreach (var r in hiddenWhenClosed) if (r != null) r.enabled = IsOpen;
         // ...і темнішають, коли світло гасне
         for (int i = 0; i < sprites.Length; i++)
-            if (sprites[i] != null) sprites[i].color = Dim(spriteColors[i], lightLevel);
+            if (sprites[i] != null) sprites[i].color = Dim(CalmLight ? spriteColors[i] * CalmSprites : spriteColors[i], lightLevel);
 
         // Світло всередині: шейдер Moon/Toon підмішує теплий колір (_Indoor 0..1).
         // Без енергії теплого світла менше, а підлога темніша.
@@ -172,6 +189,7 @@ public class ModuleInterior : MonoBehaviour
             r.GetPropertyBlock(block);
             block.SetFloat(Indoor, (1f - shellAlpha) * lightLevel);
             block.SetColor(BaseColor, Dim(interiorColors[i], lightLevel));
+            block.SetColor(IndoorColor, CalmLight ? CalmIndoor : normalIndoor);
             r.SetPropertyBlock(block);
         }
     }

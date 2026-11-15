@@ -290,5 +290,9 @@ public class ModuleView : MonoBehaviour
                 ModuleParts.Box(root, "Block", mat, new Vector3(0f, 1f, 0f), new Vector3(3f, 2f, 3f), tint: c);
                 break;
         }
+
+        // Відблиск на панелях (зникає в тіні від хребта) і лампочки заряду на батареях
+        if (type == ModuleType.Solar || type == ModuleType.Battery)
+            root.gameObject.AddComponent<EquipmentLife>().Init(type, size);
     }
 }

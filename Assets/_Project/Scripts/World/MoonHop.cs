@@ -100,6 +100,7 @@ public class MoonHop : MonoBehaviour
                 {
                     Leg = 1 - Leg;      // приземляємось на іншу ногу
                     Kick(suit, 8);
+                    if (suit) Footprint(Leg); // надворі на реголіті лишається відбиток
                     phase = wantMove ? Phase.Push : Phase.Landing;
                     t = 0f;
                 }
@@ -136,6 +137,21 @@ public class MoonHop : MonoBehaviour
         phase = Phase.Landing;
         t = 0f;
         Kick(suit, 22);
+        if (suit) { Footprint(0); Footprint(1); } // приземлився на обидві ноги
+    }
+
+    Vector3 lastPrint;
+    Vector3 lastPrintDir = Vector3.forward;
+
+    /// <summary>Відбиток черевика носком у бік руху (напрямок — від попереднього відбитка).</summary>
+    void Footprint(int leg)
+    {
+        Vector3 p = transform.position;
+        Vector3 d = p - lastPrint;
+        d.y = 0f;
+        if (d.sqrMagnitude > 0.0004f && d.sqrMagnitude < 25f) lastPrintDir = d.normalized;
+        lastPrint = p;
+        Footprints.Step(p, lastPrintDir, leg);
     }
 
     /// <summary>Стиснення/витягування тіла: присідає на нозі перед поштовхом, витягується на злеті.</summary>

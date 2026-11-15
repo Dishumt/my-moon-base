@@ -86,6 +86,15 @@ public class CameraFollow : MonoBehaviour
         targetDistance = Mathf.Clamp(targetDistance - Mathf.Sign(scroll) * zoomStep, minDistance, maxDistance);
     }
 
+    static float shakeLeft, shakeTotal, shakeAmp;
+
+    /// <summary>Коротко струснути камеру (наприклад, на початку сонячної бурі). amplitude — метри.</summary>
+    public static void Shake(float seconds, float amplitude)
+    {
+        shakeTotal = shakeLeft = Mathf.Max(0.01f, seconds);
+        shakeAmp = amplitude;
+    }
+
     /// <summary>Ставить камеру на відстань distance від точки focus під кутом pitch/yaw.</summary>
     void ApplyPosition()
     {
@@ -98,6 +107,11 @@ public class CameraFollow : MonoBehaviour
         {
             d *= 0.85f;
             pos = lookAt - rotation * Vector3.forward * d;
+        }
+        if (shakeLeft > 0f)
+        {
+            shakeLeft -= Time.unscaledDeltaTime;
+            pos += Random.insideUnitSphere * shakeAmp * Mathf.Clamp01(shakeLeft / shakeTotal); // затухає
         }
         transform.SetPositionAndRotation(pos, rotation);
     }

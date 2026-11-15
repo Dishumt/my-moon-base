@@ -106,6 +106,10 @@ public class ModuleLook : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        // Ефекти світу (буря, тінь від хребта, сліди) — на тому ж об'єкті World, руками ставити не треба
+        if (GetComponent<StormFx>() == null) gameObject.AddComponent<StormFx>();
+        if (GetComponent<ShadeFx>() == null) gameObject.AddComponent<ShadeFx>();
+        if (GetComponent<Footprints>() == null) gameObject.AddComponent<Footprints>();
         if (wallMaterial == null || roofMaterial == null)
             Debug.LogWarning("ModuleLook: не задано матеріали. Модулі будуть рожевими у веб-збірці.");
     }
