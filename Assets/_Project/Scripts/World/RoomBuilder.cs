@@ -64,7 +64,9 @@ public static class RoomBuilder
         Wall(root, "Block Front R", new Vector3(w / 2 - part / 2, wallH / 2, L.roomFront + t / 2), new Vector3(part, wallH, t));
 
         // ----- Меблі -----
-        Furnish(root, solid, type, roomMid, roomDepth, w, interior);
+        var furniture = new List<Renderer>();
+        if (!FurnishWithSprites(root, look, type, roomMid, roomDepth, w, furniture))
+            Furnish(root, solid, type, roomMid, roomDepth, w, interior); // картинок ще немає — прості коробки
 
         // ----- Оболонка (видно надворі) -----
         BuildShell(root, look, type, typeColor, roomMid, roomDepth, w, shell, shellColors);
@@ -91,7 +93,7 @@ public static class RoomBuilder
         var outerDoor = DoubleDoor(root, "Door Outer", solid, new Vector3(0f, ah / 2, L.airlockFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
         var innerDoor = DoubleDoor(root, "Door Inner", solid, new Vector3(0f, ah / 2, L.roomFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
 
-        root.gameObject.AddComponent<ModuleInterior>().Setup(view, shell.ToArray(), shellColors.ToArray(), interior.ToArray());
+        root.gameObject.AddComponent<ModuleInterior>().Setup(view, shell.ToArray(), shellColors.ToArray(), interior.ToArray(), furniture.ToArray());
         // front = зовнішній край шлюзу, inner = середина внутрішніх дверей
         root.gameObject.AddComponent<Airlock>().Setup(outerDoor.transform, innerDoor.transform, door, aw,
                                                       L.airlockFront, L.roomFront + t / 2, ah);
@@ -160,7 +162,67 @@ public static class RoomBuilder
         }
     }
 
-    // ---------- Меблі (поки прості фігури; потім заміняться спрайтами від 02) ----------
+    // ---------- Меблі-спрайти від 02 (Art/Props/Furniture) ----------
+    //
+    // Картинки намальовані «спереду й трохи згори», тому стоять як білборди FaceCamera — паралельно екрану,
+    // і виглядають рівно так, як намалювала Юля. Стоять уздовж задньої стіни й по боках,
+    // щоб не заступати прохід від шлюзу. x — від центру кімнати вліво/вправо, row: 0 = біля задньої стіни, 1 = збоку.
+
+    struct Item
+    {
+        public string name; public float x; public int row;
+        public Item(string name, float x, int row) { this.name = name; this.x = x; this.row = row; }
+    }
+
+    static Item[] LayoutFor(ModuleType type)
+    {
+        switch (type)
+        {
+            case ModuleType.Habitat:
+                return new[] { new Item("bunk_bed", -2.0f, 0), new Item("galley_kitchen", 0f, 0), new Item("wardrobe_storage", 2.0f, 0),
+                               new Item("shower_toilet", -2.1f, 1), new Item("dining_table", 2.1f, 1) };
+            case ModuleType.Greenhouse:
+                return new[] { new Item("hydroponic_rack", -2.0f, 0), new Item("hydroponic_rack", 0f, 0), new Item("hydroponic_rack", 2.0f, 0),
+                               new Item("hydroponic_rack", -2.1f, 1), new Item("water_recycler", 2.1f, 1) };
+            case ModuleType.Medbay:
+                return new[] { new Item("medical_cabinet", -2.0f, 0), new Item("bunk_bed", 0f, 0), new Item("wash_station", 2.0f, 0),
+                               new Item("wardrobe_storage", -2.1f, 1) };
+            case ModuleType.Lab:
+                return new[] { new Item("science_bench", -2.0f, 0), new Item("specimen_cabinet", 0f, 0), new Item("workstation_desk", 2.0f, 0),
+                               new Item("repair_workbench", -2.1f, 1), new Item("power_control_panel", 2.1f, 1) };
+            case ModuleType.Shelter:
+                return new[] { new Item("cargo_crates", -2.0f, 0), new Item("oxygen_generator", 0f, 0), new Item("power_control_panel", 2.0f, 0),
+                               new Item("cargo_crates", -2.1f, 1), new Item("water_recycler", 2.1f, 1) };
+        }
+        return new Item[0];
+    }
+
+    /// <summary>Розставляє меблі-спрайти і кладе їх у list. false — якщо картинок немає (тоді будуть коробки).</summary>
+    static bool FurnishWithSprites(Transform root, ModuleLook look, ModuleType type, float mid, float depth, float w, List<Renderer> list)
+    {
+        if (look == null || !look.HasFurniture) return false;
+        // Впритул до задньої стіни: поки гравець надворі, меблі сховані (ModuleInterior),
+        // тож верх картинки, що нахилений назад разом з камерою, ніхто не побачить крізь оболонку.
+        float backZ = mid + depth / 2 - 0.35f;
+        float sideZ = mid - 0.6f;
+        bool any = false;
+        foreach (var it in LayoutFor(type))
+        {
+            var sprite = look.Furniture(it.name);
+            if (sprite == null) continue;
+            var go = new GameObject("Furniture " + it.name);
+            go.transform.SetParent(root, false);
+            go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.9f, w / 2 - 0.9f), 0.1f, it.row == 0 ? backZ : sideZ);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
+            list.Add(sr);
+            any = true;
+        }
+        return any;
+    }
+
+    // ---------- Меблі-коробки (запасний варіант, якщо картинок немає) ----------
 
     static void Furnish(Transform root, Material m, ModuleType type, float mid, float depth, float w, List<Renderer> list)
     {
