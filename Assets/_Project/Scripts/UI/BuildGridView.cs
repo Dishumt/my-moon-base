@@ -123,8 +123,11 @@ public class BuildGridView
             SetText(slotState, Loc.Get("map.built") + "  ·  " + Loc.Get(m.RegolithShield ? "map.shield_yes" : "map.shield_no"));
             SetText(hint, Loc.Get("mod." + m.Type) + " — " + Loc.Get("mod." + m.Type + ".desc") + TunnelInfo(state));
             if (options == null) return;
-            AddTunnelButton(state, selectedSlot, "map.tunnel_right");       // до сусіда праворуч
-            AddTunnelButton(state, selectedSlot - 1, "map.tunnel_left");    // до сусіда ліворуч (тунель починається там)
+            if (ModuleKinds.IsRoom(m.Type))   // тунель — тільки від кімнати (у сонячну панель не зайдеш)
+            {
+                AddTunnelButton(state, selectedSlot, "map.tunnel_right");       // до сусіда праворуч
+                AddTunnelButton(state, selectedSlot - 1, "map.tunnel_left");    // до сусіда ліворуч (тунель починається там)
+            }
             if (m.RegolithShield) return;
             var shield = new Button(Shield);
             shield.AddToClassList("opt");
