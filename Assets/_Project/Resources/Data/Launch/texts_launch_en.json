@@ -607,7 +607,7 @@
       "text": "With fuel the ship weighs like {0} cars!"
     },
     {
-      "key": "report.title",
+      "key": "launch.report_title",
       "text": "MISSION REPORT"
     },
     {

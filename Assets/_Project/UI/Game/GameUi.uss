@@ -1,0 +1,132 @@
+/* AI-assisted: written with Claude. See docs/AI_USE.md */
+/* HUD, evening report, win / lose windows and the start menu. Colours come from Theme.uss. */
+
+/* ---------- HUD ---------- */
+.hud { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.hud-top { position: absolute; left: 10px; top: 8px; right: 10px; flex-direction: row; align-items: flex-start; }
+.hud-chip { flex-direction: row; align-items: center; height: 40px; margin-right: 6px; padding: 0 10px;
+            background-color: rgba(4, 16, 26, 0.88); border-width: 2px; border-color: var(--color-line); }
+.hud-chip--low { border-color: var(--color-warn); }
+.hud-chip--bad { border-color: var(--color-alarm); background-color: rgba(80, 10, 16, 0.9); }
+.hud-chip__k { font-size: 13px; letter-spacing: 1px; margin-right: 8px; -unity-font-style: bold; }
+.hud-chip__v { font-size: 18px; -unity-font-style: bold; color: var(--color-text); }
+.hud-k--oxygen { color: var(--color-oxygen); }
+.hud-k--water { color: var(--color-water); }
+.hud-k--food { color: var(--color-food); }
+.hud-k--battery { color: var(--color-energy); }
+.hud-k--materials { color: var(--color-regolith); }
+.hud-k--medkits { color: var(--color-alarm); }
+.hud-time { flex-direction: row; align-items: center; height: 40px; padding: 0 4px 0 12px;
+            background-color: rgba(4, 16, 26, 0.88); border-width: 2px; border-color: var(--color-line); }
+.hud-day { font-size: 17px; -unity-font-style: bold; color: var(--color-accent); margin-right: 10px; }
+.hud-spd { width: 44px; height: 30px; margin: 0 2px; padding: 0; font-size: 14px; -unity-font-style: bold;
+           background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-line); border-radius: 0; color: var(--color-muted); }
+.hud-spd:hover { border-color: var(--color-accent); color: var(--color-text); }
+.hud-spd--on { background-color: var(--color-accent); border-color: var(--color-accent); color: var(--color-panel); }
+.hud-spd--paused { background-color: var(--color-energy); border-color: var(--color-energy); color: var(--color-panel); }
+
+.hud-goals { position: absolute; left: 10px; top: 60px; width: 300px; padding: 8px 12px;
+             background-color: rgba(4, 16, 26, 0.85); border-width: 2px; border-color: var(--color-line); }
+.hud-goals__title { font-size: 14px; letter-spacing: 1px; -unity-font-style: bold; color: var(--color-accent); margin-bottom: 4px; white-space: normal; }
+.hud-goal { font-size: 13px; color: var(--color-soft); white-space: normal; margin-bottom: 2px; }
+.hud-goal--done { color: var(--color-ok); }
+
+.hud-bottom { position: absolute; right: 10px; bottom: 10px; flex-direction: row; align-items: center; }
+.hud-link { height: 36px; padding: 0 10px; margin-right: 8px; -unity-text-align: middle-left; font-size: 13px; letter-spacing: 1px;
+            background-color: rgba(4, 16, 26, 0.85); border-width: 2px; border-color: var(--color-line); color: var(--color-muted); }
+.hud-link--ok { color: var(--color-ok); border-color: var(--color-ok); }
+.hud-tablet { height: 52px; padding: 0 18px; margin: 0; font-size: 17px; letter-spacing: 2px; -unity-font-style: bold;
+              background-color: var(--color-accent); border-width: 2px; border-color: var(--color-accent); border-radius: 0; color: var(--color-panel); }
+.hud-tablet:hover { background-color: #8BE3FA; }
+.hud-walk { position: absolute; left: 10px; bottom: 10px; padding: 6px 10px; font-size: 13px; letter-spacing: 1px;
+            background-color: rgba(4, 16, 26, 0.75); color: var(--color-soft); }
+.hud-hint { position: absolute; left: 50%; bottom: 74px; translate: -50% 0; max-width: 620px; padding: 10px 16px;
+            font-size: 17px; color: var(--color-text); white-space: normal; -unity-text-align: middle-center;
+            background-color: rgba(4, 16, 26, 0.9); border-width: 2px; border-color: var(--color-accent); }
+.hud-hint--urgent { border-color: var(--color-warn); color: #FFE2CF; }
+.hud-demo { position: absolute; left: 50%; bottom: 10px; translate: -50% 0; padding: 4px 12px; font-size: 13px; letter-spacing: 2px;
+            -unity-font-style: bold; color: var(--color-panel); background-color: var(--color-energy); }
+
+/* ---------- windows (report, win, lose) ---------- */
+.win-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center;
+             background-color: rgba(2, 7, 13, 0.72); }
+.win { width: 760px; max-height: 640px; padding: 20px 24px; background-color: var(--color-panel);
+       border-width: 2px; border-color: var(--color-accent); }
+.win--bad { border-color: var(--color-alarm); }
+.win--good { border-color: var(--color-ok); }
+.win-title { font-size: 28px; letter-spacing: 2px; -unity-font-style: bold; color: var(--color-accent); margin-bottom: 4px; white-space: normal; }
+.win-title--bad { color: var(--color-alarm); }
+.win-title--good { color: var(--color-ok); }
+.win-sub { font-size: 17px; color: var(--color-soft); margin-bottom: 10px; white-space: normal; }
+.win-lines { max-height: 380px; margin-bottom: 10px; }
+.win-line { flex-direction: row; align-items: center; min-height: 30px; padding: 4px 8px; margin-bottom: 4px;
+            background-color: var(--color-card); border-left-width: 3px; border-color: var(--color-line); }
+.win-line--bad { border-color: var(--color-alarm); background-color: rgba(255, 77, 94, 0.08); }
+.win-line__text { flex-grow: 1; flex-shrink: 1; font-size: 15px; color: var(--color-text); white-space: normal; }
+.win-line--bad .win-line__text { color: #FFB3BA; }
+.win-line__delta { margin-left: 10px; font-size: 15px; -unity-font-style: bold; color: var(--color-soft); }
+.win-line__delta--up { color: var(--color-ok); }
+.win-line__delta--down { color: var(--color-warn); }
+.win-goals { font-size: 14px; color: var(--color-muted); margin-bottom: 10px; white-space: normal; }
+.win-buttons { flex-direction: row; }
+.win-btn { flex-grow: 1; height: 56px; margin: 0 8px 0 0; font-size: 18px; letter-spacing: 2px; border-radius: 0;
+           background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-accent); color: var(--color-accent); }
+.win-btn:hover { background-color: rgba(95, 212, 244, 0.12); }
+.win-btn--main { background-color: var(--color-accent); color: var(--color-panel); -unity-font-style: bold; }
+.win-btn--main:hover { background-color: #8BE3FA; }
+
+/* ---------- start menu ---------- */
+/* the menu hides the game world completely: a sky with stars, Earth and the edge of the Moon (StartMenu.BuildSky) */
+.menu-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center;
+              background-color: #02050B; }
+.menu-sky { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.menu-star { position: absolute; background-color: #FFFFFF; border-radius: 2px; }
+.menu-earth { position: absolute; right: 9%; top: 10%; width: 64px; height: 64px; border-radius: 32px;
+              background-color: #3D8BFF; border-width: 3px; border-color: rgba(216, 243, 255, 0.55); }
+.menu-earth__land { position: absolute; left: 14px; top: 16px; width: 24px; height: 16px; border-radius: 8px; background-color: #58C46A; }
+.menu-moon { position: absolute; left: -10%; right: -10%; bottom: -560px; height: 680px; border-radius: 1000px;
+             background-color: #3A3D44; border-top-width: 3px; border-color: #6F7480; }
+.menu { width: 600px; padding: 16px 24px; background-color: rgba(4, 16, 26, 0.94); border-width: 2px; border-color: var(--color-accent); }
+.menu-title { font-size: 40px; letter-spacing: 4px; -unity-font-style: bold; color: var(--color-accent); -unity-text-align: middle-center; }
+.menu-sub { font-size: 15px; color: var(--color-soft); -unity-text-align: middle-center; white-space: normal; margin-bottom: 10px; }
+.menu-btn { flex-grow: 0; height: 46px; margin: 0 0 6px 0; font-size: 19px; letter-spacing: 2px; border-radius: 0;
+            background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-accent); color: var(--color-accent); }
+.menu-btn:hover { background-color: rgba(95, 212, 244, 0.12); }
+.menu-btn--main { background-color: var(--color-accent); color: var(--color-panel); -unity-font-style: bold; }
+.menu-btn--main:hover { background-color: #8BE3FA; }
+.menu-btn--demo { border-color: var(--color-energy); color: var(--color-energy); }
+.menu-btn--demo:hover { background-color: rgba(255, 200, 61, 0.12); }
+.menu-chapters { flex-direction: row; margin-bottom: 6px; }
+.menu-ch { flex-grow: 1; height: 42px; margin: 0 6px 0 0; font-size: 15px; border-radius: 0; white-space: normal;
+           background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-line); color: var(--color-soft); }
+.menu-ch:hover { border-color: var(--color-accent); }
+.menu-ch--locked { opacity: 0.4; }
+.menu-lang { flex-direction: row; justify-content: center; margin: 2px 0 8px 0; }
+.menu-lang-btn { width: 70px; height: 34px; margin: 0 4px; font-size: 14px; border-radius: 0;
+                 background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-line); color: var(--color-muted); }
+.menu-lang-btn--on { border-color: var(--color-accent); color: var(--color-accent); -unity-font-style: bold; }
+.menu-weather { padding: 8px 12px; border-left-width: 3px; border-color: var(--color-radiation); background-color: rgba(165, 105, 232, 0.08); }
+.menu-weather__title { font-size: 13px; letter-spacing: 2px; color: var(--color-radiation); -unity-font-style: bold; margin-bottom: 2px; }
+.menu-weather__text { font-size: 14px; color: var(--color-soft); white-space: normal; }
+.menu-badge { align-self: flex-start; margin-top: 4px; padding: 1px 8px; font-size: 12px; letter-spacing: 2px; -unity-font-style: bold;
+              border-width: 1.5px; border-color: var(--color-muted); color: var(--color-muted); }
+.menu-badge--live { border-color: var(--color-ok); color: var(--color-ok); }
+.menu-credit { margin-top: 8px; font-size: 12px; color: var(--color-muted); -unity-text-align: middle-center; white-space: normal; }
+
+/* ---------- NASA data (NasaDataView.cs) ---------- */
+.menu-btn--data { border-color: var(--color-radiation); color: var(--color-radiation); }
+.menu-btn--data:hover { background-color: rgba(165, 105, 232, 0.12); }
+.data-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center;
+              background-color: rgba(2, 7, 13, 0.9); }
+.data-window { width: 900px; height: 640px; padding: 18px 22px; background-color: var(--color-panel);
+               border-width: 2px; border-color: var(--color-radiation); }
+.data-list { flex-grow: 1; margin: 6px 0 12px 0; }
+.data-section { flex-direction: row; align-items: center; margin: 12px 0 6px 0; }
+.data-section__title { font-size: 17px; letter-spacing: 2px; -unity-font-style: bold; color: var(--color-accent); margin-right: 10px; }
+.data-line { padding: 4px 10px; margin-bottom: 4px; background-color: var(--color-card); border-left-width: 3px; border-color: var(--color-line); }
+.data-line--muted { background-color: rgba(0, 0, 0, 0); }
+.data-line__text { font-size: 14px; color: var(--color-text); white-space: normal; }
+.data-line--muted .data-line__text { color: var(--color-muted); font-size: 13px; }
+.data-link { align-self: flex-start; margin: 2px 0 0 0; padding: 0; font-size: 12px; color: var(--color-accent); white-space: normal;
+             background-color: rgba(0, 0, 0, 0); border-width: 0; -unity-text-align: middle-left; }
+.data-link:hover { color: var(--color-text); }

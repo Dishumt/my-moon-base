@@ -1,0 +1,40 @@
+<!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
+<!-- HUD over the game (HudController.cs). Texts come from Loc; numbers from GameState. -->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="/Assets/_Project/UI/Common/Theme.uss" />
+    <Style src="/Assets/_Project/UI/Game/GameUi.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="hud-top" class="hud-top" picking-mode="Ignore">
+            <ui:VisualElement name="hud-res" class="row" picking-mode="Ignore">
+                <ui:VisualElement name="h-oxygen" class="hud-chip"><ui:Label name="h-oxygen-k" class="hud-chip__k hud-k--oxygen" /><ui:Label name="h-oxygen-v" class="hud-chip__v" /></ui:VisualElement>
+                <ui:VisualElement name="h-water" class="hud-chip"><ui:Label name="h-water-k" class="hud-chip__k hud-k--water" /><ui:Label name="h-water-v" class="hud-chip__v" /></ui:VisualElement>
+                <ui:VisualElement name="h-food" class="hud-chip"><ui:Label name="h-food-k" class="hud-chip__k hud-k--food" /><ui:Label name="h-food-v" class="hud-chip__v" /></ui:VisualElement>
+                <ui:VisualElement name="h-battery" class="hud-chip"><ui:Label name="h-battery-k" class="hud-chip__k hud-k--battery" /><ui:Label name="h-battery-v" class="hud-chip__v" /></ui:VisualElement>
+                <ui:VisualElement name="h-materials" class="hud-chip"><ui:Label name="h-materials-k" class="hud-chip__k hud-k--materials" /><ui:Label name="h-materials-v" class="hud-chip__v" /></ui:VisualElement>
+                <ui:VisualElement name="h-medkits" class="hud-chip"><ui:Label name="h-medkits-k" class="hud-chip__k hud-k--medkits" /><ui:Label name="h-medkits-v" class="hud-chip__v" /></ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="grow" picking-mode="Ignore" />
+            <ui:VisualElement name="hud-time" class="hud-time">
+                <ui:Label name="hud-day" class="hud-day" />
+                <ui:Button name="spd-0" class="hud-spd" text="II" />
+                <ui:Button name="spd-1" class="hud-spd" text="x1" />
+                <ui:Button name="spd-2" class="hud-spd" text="x2" />
+                <ui:Button name="spd-4" class="hud-spd" text="x4" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="hud-goals" class="hud-goals" picking-mode="Ignore">
+            <ui:Label name="hud-chapter" class="hud-goals__title" />
+            <ui:VisualElement name="hud-goal-list" picking-mode="Ignore" />
+        </ui:VisualElement>
+
+        <ui:Label name="hud-hint" class="hud-hint" picking-mode="Ignore" />
+        <ui:Label name="hud-walk" class="hud-walk" picking-mode="Ignore" />
+        <ui:Label name="hud-demo" class="hud-demo" picking-mode="Ignore" />
+
+        <ui:VisualElement name="hud-bottom" class="hud-bottom" picking-mode="Ignore">
+            <ui:Label name="hud-link" class="hud-link" />
+            <ui:Button name="hud-tablet" class="hud-tablet" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
