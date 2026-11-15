@@ -19,6 +19,7 @@ public class LaunchData
 
     // ----- Час: ЧАСТКИ від довжини розділу (див. LogisticsTime). 0 = старі поля в годинах/днях нижче. -----
     public float fallbackChapterDays = 3f;    // довжина розділу, якщо в chapter_NN.json немає цілі SurviveDays
+    public float maxChapterDays = 0f;         // логістика рахує розділ не довшим за це (довгий розділ = більше кораблів). 0 — без меж
     public float failedDelayShare = 0f;       // невдалий політ: затримка = частка періоду поставок
     public float stormDelayShare = 0f;        // гроза на Землі: затримка = частка періоду поставок
     public float commsCyclesPerChapter = 0f;  // скільки разів за розділ зв'язок зникає й повертається

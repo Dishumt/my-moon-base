@@ -15,10 +15,22 @@ public static class LogisticsTime
     /// <summary>Для тестів: підставити довжину розділу в днях. null — брати з ChapterSystem.</summary>
     public static Func<float> ChapterDaysOverride;
 
-    /// <summary>Скільки ігрових днів триває поточний розділ.</summary>
+    /// <summary>
+    /// Скільки ігрових днів триває поточний розділ — для логістики, тобто не довше за maxChapterDays.
+    /// Межа потрібна, щоб у довгому розділі кораблі не рідшали без кінця: тоді запасів до першої поставки
+    /// треба стільки, що разом із наборами модулів вони не влізуть у жодну ракету. Довгий розділ = просто більше кораблів.
+    /// </summary>
     public static float ChapterDays(LaunchData data)
     {
-        if (ChapterDaysOverride != null) return Math.Max(0.25f, ChapterDaysOverride());
+        float days = Math.Max(0.25f, GoalDays(data));
+        if (data != null && data.maxChapterDays > 0f) days = Math.Min(days, data.maxChapterDays);
+        return days;
+    }
+
+    /// <summary>Довжина розділу з цілі SurviveDays (без межі maxChapterDays).</summary>
+    static float GoalDays(LaunchData data)
+    {
+        if (ChapterDaysOverride != null) return ChapterDaysOverride();
 
         var game = GameBootstrap.Instance;
         var chapters = game != null ? game.GetSystem<ChapterSystem>() : null;

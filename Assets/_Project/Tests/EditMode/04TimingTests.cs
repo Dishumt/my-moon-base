@@ -186,4 +186,48 @@ public class TimingTests
             }
         }
     }
+
+    /// <summary>
+    /// Справжні дані (launch, rockets, cargo, balance, chapter_01): у «Пелікан» за планом за замовчуванням
+    /// влазять житловий модуль + сонячна панель (цілі розділу 1) + запаси до першої поставки — за будь-якої довжини розділу.
+    /// </summary>
+    [Test]
+    public void RealData_FirstMission_KitsAndSuppliesToFirstShip_FitPelican()
+    {
+        var real = LaunchData.Load();
+        var rockets = RocketCatalog.Load();
+        var cat = CargoCatalog.Load();
+        var bal = DataLoader.Load<SimBalanceData>("Balance/balance");
+        var start = DataLoader.Load<ChapterStartData>("Chapters/chapter_01");
+        var chapter = DataLoader.Load<ChapterData>("Chapters/chapter_01");
+
+        foreach (float days in new[] { 1f, 2f, 3f, 5f, 8f })
+        {
+            chapterDays = days;
+            var st = new GameState { Day = 1, Hour = start.startHour };
+            st.Res.Food = start.resources.Food;
+            st.Res.Water = start.resources.Water;
+            st.Res.Oxygen = start.resources.Oxygen;
+            st.Power.LifeSupport = start.power.LifeSupport;
+            st.Power.Greenhouse = start.power.Greenhouse;
+
+            var real04 = new SupplySystem(real, cat, rockets) { Balance = bal };
+            real04.SetPlan(st, real.defaultPlanId);
+            Assert.IsNull(real04.SetRocket(st, "medium"));
+            Assert.IsNull(real04.ChangeCargo(st, "kit_habitat", 1), "житловий модуль не влазить у Пелікан");
+            Assert.IsNull(real04.ChangeCargo(st, "kit_solar", 1), "панель не влазить разом із житловим модулем");
+
+            for (int i = 0; i < 40; i++)
+            {
+                var plan = MissionPlanner.Build(st, real04, true, real04.Evaluate(st, true), bal, chapter);
+                float need = plan.DaysToNextShip;   // хоча б до першої поставки (без запасу)
+                string item = plan.Food.Days < need ? "food"
+                            : plan.Water.Days < need ? "water"
+                            : plan.Oxygen.Days < need ? "oxygen" : null;
+                if (item == null) break;
+                Assert.IsNull(real04.ChangeCargo(st, item, 1),
+                    $"розділ {days} дн.: «{item}» уже не влазить — модуль, панель і запаси до першої поставки не вміщаються в Пелікан");
+            }
+        }
+    }
 }

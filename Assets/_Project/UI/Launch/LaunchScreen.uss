@@ -406,11 +406,6 @@
 .weather-chip--Storm { background-color: rgba(230, 80, 70, 0.55); border-width: 2px; border-color: #FF8A7A; }
 .weather-chip--hidden { display: none; }
 
-/* --- «Порадь мені» (роль 04) --- */
-.fuel-row { flex-direction: row; align-items: center; justify-content: space-between; }
-.advise-btn { height: 24px; padding: 0 10px; margin: 0 0 2px 8px; font-size: 12px; letter-spacing: 0; }
-.advise-btn--hidden { display: none; }
-
 /* --- екіпаж у дорозі (роль 04) --- */
 .days-trip { font-size: 12px; white-space: normal; color: var(--color-warn); margin-top: 2px; }
 .report-trip { margin-top: 6px; white-space: normal; }

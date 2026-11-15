@@ -951,26 +951,6 @@
       "text": "It was windy on Earth, but the supply ship took off."
     },
     {
-      "key": "advise.button",
-      "text": "HELP ME"
-    },
-    {
-      "key": "advise.why",
-      "text": "Mission Control fills the fuel exactly to green: enough to be safe, no extra weight. But you get at most 2 stars."
-    },
-    {
-      "key": "advise.done",
-      "text": "Mission Control: fuel is set exactly to green. Fuel is heavy too, so we didn't add extra!"
-    },
-    {
-      "key": "advise.too_heavy",
-      "text": "Even a full tank can't lift this! Take out some cargo or pick a bigger rocket."
-    },
-    {
-      "key": "report.star_advice",
-      "text": "Used \"Help me\" (max 2 stars)"
-    },
-    {
       "key": "plan.every",
       "text": "Every {0}"
     },

@@ -1,7 +1,7 @@
 // AI-assisted: written with Claude. See docs/AI_USE.md
 using NUnit.Framework;
 
-/// <summary>Тести погоди в день запуску (роль 04): вітер, гроза, очікування, затримка поставки; кнопка «Порадь мені».</summary>
+/// <summary>Тести погоди в день запуску (роль 04): вітер, гроза, очікування, затримка поставки.</summary>
 public class WeatherTests
 {
     SupplySystem sup;
@@ -130,25 +130,5 @@ public class WeatherTests
         // за 6 годин знову гроза, але вдруге не відкладаємо: летимо (вітер, зелений — успіх)
         RunHours(data.stormDelayHours);
         Assert.AreEqual(SupplyStatus.Launched, s.Supply.Status);
-    }
-
-    // ---------- «Порадь мені» ----------
-
-    [Test]
-    public void Advise_SetsFuelExactlyToGreen()
-    {
-        sup.ChangeCargo(s, "water", 2);   // корабель 1000 + вантаж 200 + 4 людини по 150 = 1800 кг → треба 2700, зелений від 2970
-        sup.SetFuel(s, 500f);
-        Assert.IsNull(sup.AdviseFuel(s, true));
-        Assert.AreEqual(2970f, s.Supply.FuelKg, 0.01f);
-        Assert.AreEqual(LaunchLight.Green, sup.Evaluate(s, true).Light);
-    }
-
-    [Test]
-    public void Advise_TooHeavy_FillsTankAndSaysWhy()
-    {
-        sup.ChangeCargo(s, "water", 40);  // 5000 кг вантажу — повний бак не підніме
-        Assert.AreEqual("advise.too_heavy", sup.AdviseFuel(s, true));
-        Assert.AreEqual(sup.MaxFuel(s), s.Supply.FuelKg, 0.01f);
     }
 }
