@@ -59,7 +59,7 @@
 { "key": "report.comms_no_power", "text": "The antenna has no power. No contact with Earth." },
 { "key": "report.supply_not_sent", "text": "The supply ship is waiting: the order was not sent." },
 { "key": "report.supply_launched", "text": "The supply ship took off from Earth." },
-{ "key": "report.supply_returned", "text": "Not enough fuel! The supply ship turned back. It comes {0} days later." },
+{ "key": "report.supply_returned", "text": "Not enough fuel! The supply ship turned back. It comes {0} hours later." },
 { "key": "report.supply_arrived", "text": "The supply ship landed on the pad." },
 { "key": "report.went_home", "text": "{0} flew home to Earth." },
 { "key": "report.crew_arrived", "text": "{0} arrived from Earth." },
@@ -119,7 +119,7 @@
 { "key": "report.comms_no_power", "text": "Антена без енергії. Немає зв'язку із Землею." },
 { "key": "report.supply_not_sent", "text": "Корабель поставки чекає: замовлення не відправлене." },
 { "key": "report.supply_launched", "text": "Корабель поставки стартував із Землі." },
-{ "key": "report.supply_returned", "text": "Не вистачило палива! Поставка повернулась і прийде на {0} дні пізніше." },
+{ "key": "report.supply_returned", "text": "Не вистачило палива! Поставка повернулась і прийде на {0} год пізніше." },
 { "key": "report.supply_arrived", "text": "Поставка сіла на посадковий майданчик." },
 { "key": "report.went_home", "text": "{0} полетів(-ла) додому на Землю." },
 { "key": "report.crew_arrived", "text": "{0} прилетів(-ла) із Землі." },
@@ -149,3 +149,13 @@
 - `SupplySystem.ChangeCargo / SetFuel / Evaluate / Send`, стан у `state.Supply` (`Status`, `NextLaunchAt`, `ArrivalAt`).
 - `CommsSystem.IsOpen(state)`, `UpcomingWindows(state, 5)`, `HoursUntilOpen(state)`.
 - `LaunchScreen.Open()` — відкрити екран запуску.
+
+## Погода на Землі (нові ключі звіту дня від 04)
+Звіт дня читає тільки `Loc`, тому додай ці два ключі у свої `texts_en.json` / `texts_uk.json`
+(`{0}` — кількість годин, приходить у `Delta`):
+```
+{ "key": "report.supply_storm", "text": "Thunderstorm at the launch site on Earth! The supply ship will start {0} hours later." },
+{ "key": "report.supply_weather_ok", "text": "It was windy on Earth, but the supply ship took off." },
+{ "key": "report.supply_storm", "text": "Гроза на космодромі на Землі! Корабель поставки стартує на {0} год пізніше." },
+{ "key": "report.supply_weather_ok", "text": "На Землі був вітер, але корабель поставки злетів." },
+```

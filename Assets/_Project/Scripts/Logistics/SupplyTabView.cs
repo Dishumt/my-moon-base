@@ -101,7 +101,7 @@ public class SupplyTabView
             int h = Mathf.Max(0, arriveAt - now);
             nextValue.text = T("sup.in", h / 24, h % 24);
             nextLands.text = supply.Status == SupplyStatus.Returned
-                ? T("supply.returned", sup.Data.failedDelayDays)
+                ? T("supply.returned", LaunchText.Duration(sup.FailedDelayHours(s)))
                 : sup.IsLate(s) ? T("supply.waiting") : T("supply.lands", LaunchScreen.DayTime(arriveAt));
             nextLands.EnableInClassList("c-bad", sup.IsLate(s) || supply.Status == SupplyStatus.Returned);
         }
@@ -118,7 +118,7 @@ public class SupplyTabView
                        : T("supply.link_none", comms != null ? comms.HoursUntilOpen(s) : 0);
 
         var supplyPlan = sup.GetPlan(s);
-        planLabel.text = supplyPlan != null ? T("plan.current", T(supplyPlan.nameKey)) : "";
+        planLabel.text = supplyPlan != null ? T("plan.current", LaunchText.PlanName(sup, supplyPlan)) : "";
 
         openButton.text = !firstDone || supply.Status == SupplyStatus.Draft ? T("supply.open") : T("supply.view");
 

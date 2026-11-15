@@ -196,7 +196,7 @@
     },
     {
       "key": "report.supply_returned",
-      "text": "Not enough fuel! The supply ship turned back. It comes {0} days later."
+      "text": "Not enough fuel! The supply ship turned back. It comes {0} hours later."
     },
     {
       "key": "report.supply_arrived",
@@ -256,7 +256,7 @@
     },
     {
       "key": "rocket.stats",
-      "text": "hold {0} kg · {1} h"
+      "text": "hold {0} kg · flight {1}"
     },
     {
       "key": "rocket.why",
@@ -476,7 +476,7 @@
     },
     {
       "key": "pad.fail",
-      "text": "Not enough fuel! The rocket turns back to Earth."
+      "text": "Not enough fuel! The crew is safe: the capsule landed in the ocean. Repack the rocket and try again."
     },
     {
       "key": "pad.fact.1",
@@ -584,11 +584,11 @@
     },
     {
       "key": "mission.next_ship",
-      "text": "Last until the next ship: {0} days + {1} days reserve"
+      "text": "Last until the next ship: {0} + {1} reserve"
     },
     {
       "key": "mission.reserve_why",
-      "text": "Why a reserve? If a ship has to turn back, it arrives a few days late."
+      "text": "Why a reserve? If a ship has to turn back, it arrives later."
     },
     {
       "key": "pad.fact.5",
@@ -700,7 +700,7 @@
     },
     {
       "key": "supply.returned",
-      "text": "Not enough fuel: the ship turned back and comes {0} days late."
+      "text": "Not enough fuel: the ship turned back and comes {0} late."
     },
     {
       "key": "supply.passengers",
@@ -784,15 +784,15 @@
     },
     {
       "key": "flight.step2",
-      "text": "One orbit around Earth: checking all systems"
+      "text": "Parking orbit around Earth: checking all systems (about 1.5 laps)"
     },
     {
       "key": "flight.step3",
-      "text": "Flight to the Moon (in real space it takes about 3 days)"
+      "text": "Flying to the Moon: about 3 days, engines off"
     },
     {
       "key": "flight.step4",
-      "text": "Orbit around the Moon: slowing down"
+      "text": "Moon orbit: braking with the engines"
     },
     {
       "key": "flight.step5",
@@ -812,7 +812,7 @@
     },
     {
       "key": "flight.fact3",
-      "text": "We aim not at the Moon, but at the place where the Moon will be: it moves too! You could line up 30 Earths between Earth and the Moon."
+      "text": "We aim not at the Moon, but where it WILL be in 3 days: the Moon keeps moving along its orbit (the dotted circle). The farther from Earth, the slower the ship: Earth's gravity pulls it back."
     },
     {
       "key": "flight.fact4",
@@ -856,11 +856,11 @@
     },
     {
       "key": "plan.normal.hint",
-      "text": "A ship every 3 days: the Bee or the Pelican."
+      "text": "A ship now and then: the Bee or the Pelican."
     },
     {
       "key": "plan.rare.hint",
-      "text": "A ship only every 4 days, but it can even be the heavy Whale. The wait is long, so take more supplies now!"
+      "text": "Ships come rarely, but it can even be the heavy Whale. The wait is long, so take more supplies now!"
     },
     {
       "key": "plan.rockets",
@@ -905,6 +905,122 @@
     {
       "key": "error.hold_too_small",
       "text": "This cargo won't fit into this rocket's hold. Take something out first."
+    },
+    {
+      "key": "launch.weather.Clear",
+      "text": "Clear sky"
+    },
+    {
+      "key": "launch.weather.Windy",
+      "text": "Strong wind"
+    },
+    {
+      "key": "launch.weather.Storm",
+      "text": "STORM"
+    },
+    {
+      "key": "launch.weather_wait",
+      "text": "STORM! Wait it out (-{0}% fuel)"
+    },
+    {
+      "key": "launch.weather_waited",
+      "text": "The storm is over! While you waited, some fuel boiled away. Check the traffic light again."
+    },
+    {
+      "key": "launch.weather_why.Clear",
+      "text": "Clear sky: perfect weather for a launch. Only the fuel matters."
+    },
+    {
+      "key": "launch.weather_why.Windy",
+      "text": "Strong wind pushes the rocket sideways. With extra fuel (green light) it's fine. On yellow, the risk gets bigger."
+    },
+    {
+      "key": "launch.weather_why.Storm",
+      "text": "Thunderstorm! Lightning can hit a rocket, so real rockets never launch in a storm. You can wait, but the super-cold fuel slowly boils away."
+    },
+    {
+      "key": "error.no_storm",
+      "text": "There is no storm right now."
+    },
+    {
+      "key": "report.supply_storm",
+      "text": "Thunderstorm at the launch site on Earth! The supply ship will start {0} hours later."
+    },
+    {
+      "key": "report.supply_weather_ok",
+      "text": "It was windy on Earth, but the supply ship took off."
+    },
+    {
+      "key": "plan.every",
+      "text": "Every {0}"
+    },
+    {
+      "key": "time.hours",
+      "text": "{0} h"
+    },
+    {
+      "key": "time.day1",
+      "text": "1 day"
+    },
+    {
+      "key": "time.days",
+      "text": "{0} days"
+    },
+    {
+      "key": "days.trip",
+      "text": "On the way ({0}) the crew will eat {1} food and breathe {2} oxygen."
+    },
+    {
+      "key": "rocket.trip",
+      "text": "With the crew: {0} on the way. They will eat {1} food and breathe {2} oxygen. Water is cleaned and reused on board."
+    },
+    {
+      "key": "report.trip",
+      "text": "On the way the crew ate {0} food and breathed {1} oxygen."
+    },
+    {
+      "key": "pad.telemetry",
+      "text": "T+{0} · altitude {1} km · speed {2} km/h"
+    },
+    {
+      "key": "pad.event.maxq",
+      "text": "Max Q: the air pushes hardest. Engines ease off a little."
+    },
+    {
+      "key": "pad.event.staging",
+      "text": "Stage separation! The empty first stage falls away."
+    },
+    {
+      "key": "pad.event.turn",
+      "text": "The rocket leans east and speeds up."
+    },
+    {
+      "key": "pad.event.orbit",
+      "text": "Engines off. We are in orbit!"
+    },
+    {
+      "key": "pad.event.abort",
+      "text": "ALARM! The engines stopped. The rescue system pulls the capsule away!"
+    },
+    {
+      "key": "pad.fact.staging",
+      "text": "Empty fuel tanks are just extra weight. The rocket drops them, so flying gets easier."
+    },
+    {
+      "key": "pad.fact.turn",
+      "text": "Rockets lean east on purpose: the Earth spins that way and gives them a free push."
+    },
+    {
+      "key": "pad.fact.orbit",
+      "text": "In orbit the ship flies about 28 000 km/h. That's 8 km every second!"
+    },
+    {
+      "key": "pad.fact.abort",
+      "text": "Real crew ships have a rescue system: small motors pull the capsule away from the rocket, and parachutes bring the crew down safely."
+    },
+    {
+      "key": "flight.clock",
+      "text": "Mission time: {0} d {1} h {2} min (sped up)"
     }
   ]
 }

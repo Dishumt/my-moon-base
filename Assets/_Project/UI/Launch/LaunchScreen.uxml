@@ -107,7 +107,10 @@
                 </ui:VisualElement>
 
                 <ui:VisualElement class="launch-box">
-                    <ui:Label name="risk-label" text="Risk: 0%" class="t-big mb-4" />
+                    <ui:VisualElement class="risk-row">
+                        <ui:Label name="risk-label" text="Risk: 0%" class="t-big mb-4" />
+                        <ui:Button name="weather-chip" text="" class="btn btn--small weather-chip" />
+                    </ui:VisualElement>
                     <ui:Label name="hint-label" text="" class="t-body hint-small" />
                     <ui:Button name="launch-button" text="LAUNCH" class="btn btn--primary launch-btn" />
                 </ui:VisualElement>

@@ -1,8 +1,13 @@
 @import url("unity-theme://default");
+VisualElement {}
 
-/*
-  Шрифт усього інтерфейсу: Inter (SIL Open Font License, див. docs/CREDITS.md).
-  У веб-збірці немає системних шрифтів, а стандартний шрифт Unity не має кирилиці: українські тексти були невидимі.
-  Inter має кирилицю і знаки ✓ • → · — , а Unity робить з .ttf динамічний шрифт сам.
-*/
+/* AI-assisted: written with Claude. See docs/AI_USE.md
+   Font with Cyrillic (Ukrainian). In WebGL the browser has no system fonts,
+   so the default Unity font shows no Ukrainian letters. Inter (SIL OFL 1.1). */
+:root, .unity-text-element {
+    -unity-font: url("project:///Assets/_Project/Art/Fonts/Inter-Regular.ttf");
+    -unity-font-definition: url("project:///Assets/_Project/Art/Fonts/Inter-Regular.ttf");
+}
+
+/* Те саме для всіх елементів (перевірено у веб-збірці: українські тексти видно). Правило вище лишає шрифт і для тих, хто не має класу unity-text-element. */
 * { -unity-font-definition: url("project:///Assets/_Project/Art/Fonts/Inter-Regular.ttf"); }

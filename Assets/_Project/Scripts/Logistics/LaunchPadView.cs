@@ -29,12 +29,16 @@ public class LaunchPadView
     bool skip;
     float W, H, groundTop, size, rocketW, cx, towerX, armY, doorX, rocketTop, mountTop;
     readonly LaunchPadScenery scenery;   // небо, океан, будівлі, автобус, вода під ракетою
+
+    /// <summary>Звуки відліку й двигунів (LaunchScreen ставить сюди). null — тиша.</summary>
+    public LaunchSounds Sounds;
     float CrewSize = 56f;             // розмір астронавта на екрані, px (рахується від висоти екрана)
 
     const float WalkSpeed = 200f;     // px за секунду
     const float FrameTime = 0.12f;    // зміна кадру ходьби
 
     static string T(string key) => LaunchText.Get(key);
+    static string T(string key, params object[] args) => LaunchText.Get(key, args);
 
     public LaunchPadView(VisualElement root)
     {
@@ -64,6 +68,14 @@ public class LaunchPadView
                          && rocket != null && trail != null && smokeLayer != null && crewLayer != null
                          && title != null && count != null && status != null && fact != null;
 
+    /// <summary>Картинки Юлі з Art/Earth: фон майданчика й автобус. null — малюємо кодом.</summary>
+    public void SetArt(Texture2D background, Texture2D bus)
+    {
+        if (scenery == null) return;
+        scenery.Background = background;
+        scenery.Bus = bus;
+    }
+
     public void Show(bool visible) => view?.EnableInClassList("pad-view--hidden", !visible);
 
     // ---------- Головна послідовність ----------
@@ -76,6 +88,7 @@ public class LaunchPadView
                             RocketData rocketData, bool success)
     {
         skip = false;
+        ClearExtras();
         Show(true);
         SetText(title, T("pad.title"));
         SetText(skipButton, T("pad.skip"));
@@ -108,7 +121,7 @@ public class LaunchPadView
         for (int n = 10; n >= 1 && !skip; n--)
         {
             SetText(count, n.ToString());
-            GameAudio.Play(n <= 3 ? Sfx.Toggle : Sfx.Click); // піп щосекунди
+            Sounds?.Count(n);
             // факти під час відліку: як летить ракета → скільки летіти → коли можна летіти; на старті — перевантаження
             if (n == 10) SetText(fact, T("pad.fact.1"));
             else if (n == 8) SetText(fact, T("pad.fact.6"));   // справжня ракета — як 600 слонів
@@ -121,53 +134,277 @@ public class LaunchPadView
                 if (n <= 3) { Smoke(0.25f + (3 - n + t) / 3f * 0.5f); Shake(rocket, 1.5f + (3 - n) * 1.2f); }
                 if (n <= 2) Flame(0.4f + (2 - n + t) * 0.3f);
                 if (scenery != null) scenery.Ignition = n <= 2 ? 0.3f + (2 - n + t) * 0.35f : 0f;
+                Sounds?.Engines(n <= 2 ? 0.2f + (2 - n + t) * 0.25f : 0f);   // двигуни прокидаються за 2 с до старту
                 yield return null;
             }
         }
 
-        // 4) СТАРТ!
+        // 4) СТАРТ! Справжній профіль виходу на орбіту, час прискорено (≈ 8 хв польоту за кілька секунд)
         SetText(count, T("pad.liftoff"));
-        if (!skip) GameAudio.Play(success ? Sfx.Launch : Sfx.LaunchFail);
         count.AddToClassList("pad-count--word");   // слово довше за цифру — менший шрифт, щоб не налазило на ракету
         SetText(fact, T("pad.fact.3"));
         SetText(status, "");
         count.style.scale = new Scale(Vector3.one);
         trail.style.display = DisplayStyle.Flex;
-        float baseTop = rocketTop;
         if (scenery != null) scenery.Ignition = 1f;
-        float rise = 0f, speed = 0f;
-        for (float t = 0f; t < 4f && !skip; t += Time.unscaledDeltaTime)
-        {
-            float dt = Time.unscaledDeltaTime;
-            speed += (t < 0.6f ? 60f : 420f) * dt;   // спершу ледве відривається, потім розганяється
-            rise += speed * dt;
-            if (!success && t > 2.2f) break;         // невдача: двигуни глохнуть на висоті
-            rocket.style.top = baseTop - rise;
-            rocket.style.translate = new Translate(UnityEngine.Random.Range(-2f, 2f), 0f);
-            Flame(1f);
-            Smoke(Mathf.Clamp01(0.8f + t * 0.2f));
-            float bottom = baseTop - rise + size * 0.97f;
-            trail.style.top = bottom;
-            trail.style.height = Mathf.Max(0f, mountTop - bottom);
-            trail.style.opacity = Mathf.Clamp01(1.2f - t * 0.3f);
-            Shake(scene, Mathf.Lerp(7f, 0f, t / 3f));
-            yield return null;
-        }
-        scene.style.translate = new Translate(0f, 0f);
-        if (skip && success) rocket.style.top = -size * 2f; // пропустили — ракета вже далеко
+        if (!skip) Sounds?.Liftoff();
+        yield return Ascent(success);
 
         // 5) результат
         SetText(count, "");
+        SetText(telemetry, "");
         SetText(status, T(success ? "pad.success" : "pad.fail"));
         status.EnableInClassList("c-ok", success);
         status.EnableInClassList("c-bad", !success);
         if (!success) Flame(0f);
+        Sounds?.Engines(0f);
         float wait = skip ? 0.6f : 1.8f;
         for (float t = 0f; t < wait; t += Time.unscaledDeltaTime) yield return null;
         status.RemoveFromClassList("c-ok");
         status.RemoveFromClassList("c-bad");
         if (scenery != null) { scenery.Ignition = 0f; scenery.Stop(); }
+        Sounds?.StopAll();
+        ClearExtras();
         Show(false);
+    }
+
+    // ---------- Політ на орбіту ----------
+
+    // Справжній профіль пілотованого старту (приблизно, як у сучасних ракет): час від старту (с) → висота (км), швидкість (км/год)
+    static readonly float[] ProfileT = { 0f, 60f, 75f, 150f, 200f, 510f };
+    static readonly float[] ProfileAltKm = { 0f, 10f, 13f, 65f, 100f, 200f };
+    static readonly float[] ProfileKmh = { 0f, 1500f, 1800f, 7500f, 8000f, 27500f };
+    const float RealAscentSeconds = 510f;   // ≈ 8.5 хв до орбіти
+    const float AscentSeconds = 10f;        // стільки триває на екрані (факти встигають прочитати)
+    const float MaxQAt = 75f, StagingAt = 150f, AbortAt = 120f;
+
+    readonly List<VisualElement> extras = new List<VisualElement>();   // космос, ступінь, капсула — прибираємо після сцени
+    Label telemetry;
+
+    /// <summary>
+    /// Злет: ракета нахиляється на схід (гравітаційний поворот), камера летить за нею, небо темнішає до чорного космосу,
+    /// телеметрія показує висоту й швидкість, Max Q, відокремлення ступеня, орбіта.
+    /// Невдача: двигуни глохнуть, і система порятунку відносить капсулу з екіпажем, вона сідає в океан на парашуті.
+    /// </summary>
+    IEnumerator Ascent(bool success)
+    {
+        float baseTop = rocketTop, baseLeft = cx - rocketW * 0.5f;
+        if (telemetry == null)
+        {
+            telemetry = new Label { pickingMode = PickingMode.Ignore };
+            telemetry.AddToClassList("pad-telemetry");
+            view.Add(telemetry);
+        }
+        AddSpace();
+
+        float rise = 0f, drift = 0f, speed = 0f, tilt = 0f;
+        bool maxQ = false, staged = false, turnFact = false, orbit = false;
+        float stagingPause = 0f;
+        for (float t = 0f; t < AscentSeconds && !skip; t += Time.unscaledDeltaTime)
+        {
+            float dt = Time.unscaledDeltaTime;
+            float real = t / AscentSeconds * RealAscentSeconds;      // скільки минуло б по-справжньому
+            if (!success && real >= AbortAt) { yield return Abort(baseTop - rise, baseLeft + drift, tilt); yield break; }
+            if (t > 1.2f) SetText(count, "");
+
+            // події
+            if (!maxQ && real >= MaxQAt) { maxQ = true; SetText(status, T("pad.event.maxq")); }
+            if (!staged && real >= StagingAt)
+            {
+                staged = true;
+                stagingPause = 0.35f;   // мить тиші між ступенями
+                SetText(status, T("pad.event.staging"));
+                SetText(fact, T("pad.fact.staging"));
+                DropStage(baseTop - rise, baseLeft + drift, tilt);
+            }
+            if (!turnFact && t >= 6f) { turnFact = true; SetText(status, T("pad.event.turn")); SetText(fact, T("pad.fact.turn")); }
+            if (!orbit && real >= RealAscentSeconds * 0.9f) { orbit = true; SetText(status, T("pad.event.orbit")); SetText(fact, T("pad.fact.orbit")); }
+
+            // двигун: на Max Q трохи притишують, між ступенями — пауза
+            float throttle = maxQ && real < MaxQAt + 30f ? 0.7f : 1f;
+            if (stagingPause > 0f) { stagingPause -= dt; throttle = 0f; }
+            Flame(throttle);
+            Sounds?.Engines(throttle * Mathf.Lerp(1f, 0.35f, t / AscentSeconds));
+
+            // рух: розгін і поворот на схід (праворуч) — так Земля, що обертається, допомагає набрати швидкість
+            speed += (t < 0.6f ? 60f : 260f + 70f * t) * throttle * dt;
+            tilt = Mathf.Lerp(0f, 60f, Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.1f, 0.85f, t / AscentSeconds)));
+            float rad = tilt * Mathf.Deg2Rad;
+            rise += speed * Mathf.Cos(rad) * dt;
+            drift += speed * Mathf.Sin(rad) * dt;
+            rocket.style.top = baseTop - rise;
+            rocket.style.left = baseLeft + drift;
+            rocket.style.rotate = new Rotate(new Angle(tilt));
+            rocket.style.translate = new Translate(UnityEngine.Random.Range(-1.5f, 1.5f), 0f);
+
+            // камера летить за ракетою: земля йде вниз, згори відкривається чорний космос
+            float camY = Mathf.Max(0f, H * 0.38f - (baseTop - rise));
+            float camX = Mathf.Max(0f, baseLeft + drift - W * 0.62f);
+            float shake = Mathf.Lerp(7f, 0f, t / 3f);
+            scene.style.translate = new Translate(-camX + UnityEngine.Random.Range(-shake, shake), camY + UnityEngine.Random.Range(-shake, shake));
+
+            Smoke(Mathf.Clamp01(0.8f + t * 0.2f));
+            float bottom = baseTop - rise + size * 0.97f;
+            trail.style.top = bottom;
+            trail.style.height = Mathf.Max(0f, mountTop - bottom);
+            trail.style.opacity = Mathf.Clamp01(1.2f - t * 0.5f);   // стовп вихлопу розвіюється
+
+            ShowTelemetry(real);
+            yield return null;
+        }
+        if (success) ShowTelemetry(RealAscentSeconds);
+    }
+
+    void ShowTelemetry(float real)
+    {
+        int sec = Mathf.RoundToInt(real);
+        SetText(telemetry, T("pad.telemetry", (sec / 60).ToString("00") + ":" + (sec % 60).ToString("00"),
+                             Profile(ProfileAltKm, real).ToString("0"), (Mathf.Round(Profile(ProfileKmh, real) / 100f) * 100f).ToString("0")));
+    }
+
+    static float Profile(float[] values, float real)
+    {
+        for (int i = 1; i < ProfileT.Length; i++)
+            if (real <= ProfileT[i]) return Mathf.Lerp(values[i - 1], values[i], Mathf.InverseLerp(ProfileT[i - 1], ProfileT[i], real));
+        return values[values.Length - 1];
+    }
+
+    // Колір самого верху неба на майданчику: картинка Юлі (виміряно на PNG) або небо, намальоване кодом
+    static readonly Color ArtSkyTop = new Color(20f / 255f, 43f / 255f, 99f / 255f);
+    static readonly Color DrawnSkyTop = new Color(14f / 255f, 35f / 255f, 71f / 255f);
+    static readonly Color SpaceColor = new Color(0.02f, 0.025f, 0.06f);
+
+    /// <summary>
+    /// Небо над сценою: коли камера піднімається, синє небо ПЛАВНО (градієнтом на 6 висот екрана) темнішає до чорного космосу,
+    /// а зорі проступають поступово. Градієнт складено з тонких смуг — у UI Toolkit немає готового градієнта.
+    /// </summary>
+    void AddSpace()
+    {
+        Color top = scenery != null && scenery.HasArt ? ArtSkyTop : DrawnSkyTop;
+        float fade = H * 6f;                 // на якій висоті небо вже зовсім чорне
+        const int Strips = 60;
+        float left = -W, width = W * 4f;
+
+        // над градієнтом — космос (і під ним теж, щоб збоку від картинки не було дірки)
+        var space = Box(left, -H * 40f, width, H * 41f, SpaceColor);
+        scene.Insert(0, space);
+        extras.Add(space);
+
+        var sky = Box(left, -fade, width, fade + H, top);   // нижче від 0 — колір верху неба
+        sky.style.backgroundColor = new StyleColor(StyleKeyword.None);
+        for (int i = 0; i < Strips; i++)
+        {
+            float k = (i + 0.5f) / Strips;                   // 0 — внизу (біля картинки), 1 — нагорі
+            var c = Color.Lerp(top, SpaceColor, Mathf.SmoothStep(0f, 1f, k));
+            float h = fade / Strips;
+            sky.Add(Box(0f, fade - (i + 1) * h, width, h + 1f, c));   // +1 px — без щілин між смугами
+        }
+        sky.Add(Box(0f, fade, width, H, top));                // під градієнтом — той самий колір, що верх картинки
+        scene.Insert(1, sky);
+        extras.Add(sky);
+
+        // зорі: що вище, то яскравіші
+        var rnd = new System.Random(5);
+        for (int i = 0; i < 120; i++)
+        {
+            float y = -(float)rnd.NextDouble() * H * 30f;      // від 0 до -30 висот екрана
+            float bright = Mathf.Clamp01(-y / fade);           // біля землі невидимі, у космосі — яскраві
+            if (bright <= 0.05f) continue;
+            var star = Box(left + (float)rnd.NextDouble() * width, y, 2f, 2f, Color.white);
+            star.style.opacity = bright * (0.4f + 0.6f * (float)rnd.NextDouble());
+            scene.Insert(2, star);
+            extras.Add(star);
+        }
+    }
+
+    /// <summary>Відпрацьований ступінь відпадає і падає вниз (в океан), крутячись.</summary>
+    void DropStage(float top, float left, float tilt)
+    {
+        float w = rocketW * 0.7f, h = size * 0.3f;
+        var stage = Box(left + (rocketW - w) * 0.5f, top + size * 0.68f, w, h, new Color(0.8f, 0.82f, 0.86f));
+        stage.style.borderBottomLeftRadius = 4f;
+        stage.style.borderBottomRightRadius = 4f;
+        stage.style.rotate = new Rotate(new Angle(tilt));
+        stage.style.opacity = 1f;
+        scene.Add(stage);
+        extras.Add(stage);
+        stage.schedule.Execute(() =>
+        {
+            stage.style.top = stage.style.top.value.value + 6f;
+            stage.style.left = stage.style.left.value.value - 1.5f;
+            stage.style.rotate = new Rotate(new Angle(stage.style.rotate.value.angle.value + 4f));
+            stage.style.opacity = Mathf.Max(0f, stage.style.opacity.value - 0.012f);
+        }).Every(30).Until(() => stage.parent == null || stage.style.opacity.value <= 0.01f);
+    }
+
+    /// <summary>Аварія: двигуни глохнуть, система порятунку відносить капсулу, капсула сідає на парашуті в океан.</summary>
+    IEnumerator Abort(float rocketTopNow, float rocketLeftNow, float tilt)
+    {
+        Flame(0f);
+        Sounds?.Engines(0f);
+        SetText(status, T("pad.event.abort"));
+        SetText(fact, T("pad.fact.abort"));
+
+        float cw = Mathf.Max(14f, rocketW * 0.6f), ch = cw * 0.8f;
+        var capsule = Box(rocketLeftNow + (rocketW - cw) * 0.5f, rocketTopNow, cw, ch, new Color(0.93f, 0.94f, 0.96f));
+        capsule.style.borderTopLeftRadius = cw * 0.5f;
+        capsule.style.borderTopRightRadius = cw * 0.5f;
+        var jet = Box(cw * 0.3f, ch, cw * 0.4f, ch * 0.8f, new Color(1f, 0.6f, 0.2f));   // рятувальні двигуни
+        capsule.Add(jet);
+        var chute = Box(-cw * 0.9f, -cw * 2f, cw * 2.8f, cw * 1.4f, new Color(1f, 0.45f, 0.15f));
+        chute.style.borderTopLeftRadius = cw * 1.4f;
+        chute.style.borderTopRightRadius = cw * 1.4f;
+        chute.style.display = DisplayStyle.None;
+        capsule.Add(chute);
+        scene.Add(capsule);
+        extras.Add(capsule);
+
+        float cTop = rocketTopNow, cLeft = capsule.style.left.value.value, rTop = rocketTopNow, rLeft = rocketLeftNow, rTilt = tilt;
+        for (float t = 0f; t < 3.2f && !skip; t += Time.unscaledDeltaTime)
+        {
+            float dt = Time.unscaledDeltaTime;
+            if (t < 0.8f) { cTop -= 320f * dt; cLeft -= 60f * dt; }          // ривок угору й убік від ракети
+            else
+            {
+                jet.style.display = DisplayStyle.None;
+                chute.style.display = DisplayStyle.Flex;                     // парашут
+                cTop += 45f * dt;
+                cLeft += Mathf.Sin(t * 2f) * 10f * dt;
+            }
+            capsule.style.top = cTop;
+            capsule.style.left = cLeft;
+
+            // ракета без двигунів падає і відстає
+            rTop += 140f * t * dt;
+            rTilt += 25f * dt;
+            rocket.style.top = rTop;
+            rocket.style.left = rLeft;
+            rocket.style.rotate = new Rotate(new Angle(rTilt));
+            rocket.style.opacity = Mathf.Max(0f, 1f - t / 2f);
+            trail.style.opacity = Mathf.Max(0f, trail.style.opacity.value - dt);
+            yield return null;
+        }
+    }
+
+    void ClearExtras()
+    {
+        foreach (var e in extras) e.RemoveFromHierarchy();
+        extras.Clear();
+        scene.style.translate = new Translate(0f, 0f);
+        rocket.style.rotate = new Rotate(new Angle(0f));
+        rocket.style.opacity = 1f;
+    }
+
+    static VisualElement Box(float left, float top, float width, float height, Color color)
+    {
+        var e = new VisualElement { pickingMode = PickingMode.Ignore };
+        e.style.position = Position.Absolute;
+        e.style.left = left;
+        e.style.top = top;
+        e.style.width = width;
+        e.style.height = height;
+        e.style.backgroundColor = color;
+        return e;
     }
 
     // ---------- Розкладка ----------
@@ -189,11 +426,13 @@ public class LaunchPadView
         if (aspect <= 0.01f) aspect = 0.3f;
 
         groundTop = H * 0.86f;
+        cx = W * 0.62f;
+        bool art = scenery != null && scenery.HasArt;
+        if (art) scenery.ArtAnchors(W, H, out cx, out groundTop, out _); // ракета — на пусковому столі з картинки
         CrewSize = Mathf.Clamp(H * 0.075f, 36f, 64f);
         size = Mathf.Min(CrewSize * heightInCrew, groundTop - H * 0.06f);   // висота ракети
         CrewSize = Mathf.Min(CrewSize, size / heightInCrew);                 // якщо ракету обрізали — менші й люди
         rocketW = size * aspect;
-        cx = W * 0.62f;
         float left = cx - rocketW * 0.5f;
         towerX = left - 16f - 36f;
 
@@ -213,6 +452,9 @@ public class LaunchPadView
 
         Place(ground, 0f, groundTop, W, H - groundTop);
         Place(platform, cx - rocketW * 0.75f, groundTop - 12f, rocketW * 1.5f, 12f);
+        // на картинці вже є і земля з дорогою, і пусковий стіл
+        ground.style.display = art ? DisplayStyle.None : DisplayStyle.Flex;
+        platform.style.display = art ? DisplayStyle.None : DisplayStyle.Flex;
 
         // ракета
         Place(rocket, left, top, rocketW, size);

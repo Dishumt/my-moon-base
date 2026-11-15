@@ -228,13 +228,13 @@
 .advisor { min-height: 36px; margin-top: 6px; padding: 4px 14px; flex-shrink: 0; }
 .advisor-text { font-size: 15px; }
 .bottom-row { height: 104px; flex-shrink: 0; padding: 8px 16px; margin-top: 6px; }
-.fuel-box > .t-body { font-size: 15px; margin-bottom: 2px; }
+.fuel-box .t-body { font-size: 15px; margin-bottom: 2px; }
 .fuel-box > .t-label { font-size: 12px; margin-bottom: 2px; }
 .fuel-box > .msg { margin-top: 2px; min-height: 16px; font-size: 13px; }
 .light { width: 44px; height: 44px; border-radius: 22px; margin: 3px; }
 .traffic-light { padding: 4px; margin-right: 16px; }
 .launch-box { width: 280px; }
-.launch-box > .t-big { font-size: 22px; margin-bottom: 4px; }
+.launch-box .t-big { font-size: 22px; margin-bottom: 4px; }
 .launch-btn { height: 52px; }
 .hint-small { display: none; }
 
@@ -397,3 +397,21 @@
 
 /* --- планшет екрана запуску підлаштовується під ширину вікна (не обрізається справа) --- */
 .launch-stage > .tablet { left: 16px; right: 16px; top: 12px; bottom: 12px; width: auto; height: auto; }
+
+/* --- погода в день запуску (роль 04) --- */
+.risk-row { flex-direction: row; align-items: center; justify-content: space-between; }
+.weather-chip { height: 26px; padding: 0 8px; margin: 0 0 4px 8px; font-size: 12px; letter-spacing: 0; white-space: normal; }
+.weather-chip--Clear { background-color: rgba(110, 200, 140, 0.25); }
+.weather-chip--Windy { background-color: rgba(240, 190, 70, 0.35); }
+.weather-chip--Storm { background-color: rgba(230, 80, 70, 0.55); border-width: 2px; border-color: #FF8A7A; }
+.weather-chip--hidden { display: none; }
+
+/* --- екіпаж у дорозі (роль 04) --- */
+.days-trip { font-size: 12px; white-space: normal; color: var(--color-warn); margin-top: 2px; }
+.report-trip { margin-top: 6px; white-space: normal; }
+
+/* --- телеметрія злету (роль 04) --- */
+.pad-telemetry { position: absolute; left: 24px; top: 100px; right: 40%; font-size: 18px; color: #9FE8FF; -unity-font-style: bold; white-space: normal; }
+
+/* --- годинник місії на карті польоту (роль 04) --- */
+.flight-clock { position: absolute; right: 24px; top: 64px; font-size: 15px; color: #9FE8FF; -unity-text-align: upper-right; -unity-font-style: bold; }

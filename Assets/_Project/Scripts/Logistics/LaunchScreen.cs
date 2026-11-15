@@ -49,6 +49,24 @@ public class LaunchScreen : MonoBehaviour
     [Tooltip("Скафандри для пускового майданчика. Якщо в сцені є CrewLook (головна сцена), картинки беруться з нього — такі самі, як на Місяці.")]
     [SerializeField] List<CrewSuit> crewSuits = new List<CrewSuit>();
 
+    [Tooltip("Фон пускового майданчика (Art/Earth/Pixel Art Rocket Launch Site at Sunset). Порожньо — небо й будівлі малюються кодом.")]
+    [SerializeField] Texture2D padBackground;
+
+    [Tooltip("Автобус для екіпажу (Art/Earth/Pixel Art Blue-Stripe Bus Sprite). Порожньо — автобус із прямокутників.")]
+    [SerializeField] Texture2D padBus;
+
+    [Tooltip("Звук на кожну секунду відліку. Порожньо — простий «біп», згенерований кодом.")]
+    [SerializeField] AudioClip countdownBeep;
+
+    [Tooltip("Звук «СТАРТ!». Порожньо — сигнал, згенерований кодом.")]
+    [SerializeField] AudioClip liftoffSound;
+
+    [Tooltip("Гул двигунів (грає по колу). Порожньо — низький шум, згенерований кодом.")]
+    [SerializeField] AudioClip engineRumble;
+
+    [Tooltip("Гучність звуків майданчика (0 — без звуку)")]
+    [Range(0f, 1f)] [SerializeField] float padVolume = 0.8f;
+
     [Tooltip("Показувати пусковий майданчик (екіпаж, відлік, злет) після ПІДТВЕРДИТИ")]
     [SerializeField] bool showLaunchPad = true;
 
@@ -83,9 +101,10 @@ public class LaunchScreen : MonoBehaviour
 
     const float ShipBaseScale = 0.92f; // ракета на планшеті менша, ніж на майданчику
     Slider fuelSlider;
-    Button launchButton, closeButton;
+    Button launchButton, closeButton, weatherChip;
     VisualElement tablet;
     LaunchPadView pad;
+    LaunchSounds sounds;      // біп відліку, «СТАРТ!», гул двигунів
     FlightMapView flight;     // політ Дніпро → південний полюс Місяця
     bool animating, modalPushed, ready;
 
@@ -138,6 +157,7 @@ public class LaunchScreen : MonoBehaviour
         infoGives = root.Q<Label>("info-gives");
         fuelSlider = root.Q<Slider>("fuel-slider");
         launchButton = root.Q<Button>("launch-button");
+        weatherChip = root.Q<Button>("weather-chip");
         closeButton = root.Q<Button>("close-button");
         tablet = root.Q("launch");
         goalsTitle = root.Q<Label>("goals-title");
@@ -165,6 +185,14 @@ public class LaunchScreen : MonoBehaviour
         if (tasks == null) tasks = TasksData.Load();
         pad = new LaunchPadView(root);
         if (!pad.Ready) pad = null; // у UXML немає майданчика — буде тільки політ по дузі
+        else
+        {
+            pad.SetArt(padBackground, padBus);
+            // звуки створюємо один раз (OnEnable може викликатися кілька разів)
+            if (padVolume > 0f && sounds == null)
+                sounds = new LaunchSounds(gameObject, countdownBeep, liftoffSound, engineRumble, padVolume);
+            pad.Sounds = sounds;
+        }
         flight = new FlightMapView(root);
         if (!flight.Ready) flight = null;
 
@@ -178,6 +206,12 @@ public class LaunchScreen : MonoBehaviour
         fuelSlider.RegisterValueChangedCallback(OnFuelChanged);
         launchButton.clicked += OnLaunchClicked;
         if (closeButton != null) closeButton.clicked += Close;
+        if (weatherChip != null)
+        {
+            weatherChip.clicked += OnWeatherClicked;
+            // навели — пояснюємо, що ця погода означає для польоту
+            weatherChip.RegisterCallback<PointerEnterEvent>(_ => { if (State != null) SetResult("launch.weather_why." + State.Supply.Weather); });
+        }
         Loc.LanguageChanged += Refresh;
         GameEvents.StateChanged += Refresh;
         Loc.LanguageChanged += RefreshTab;
@@ -198,6 +232,7 @@ public class LaunchScreen : MonoBehaviour
         fuelSlider.UnregisterValueChangedCallback(OnFuelChanged);
         launchButton.clicked -= OnLaunchClicked;
         if (closeButton != null) closeButton.clicked -= Close;
+        if (weatherChip != null) weatherChip.clicked -= OnWeatherClicked;
         Loc.LanguageChanged -= Refresh;
         GameEvents.StateChanged -= Refresh;
         Loc.LanguageChanged -= RefreshTab;
@@ -206,6 +241,32 @@ public class LaunchScreen : MonoBehaviour
         PopModal();
         if (Instance == this) Instance = null;
     }
+
+#if UNITY_EDITOR
+    // Картинки Юлі (роль 02): редактор сам підставляє їх у порожні поля, щоб не перетягувати вручну.
+    // Після цього збережи сцену (Ctrl+S) — тоді картинки потраплять і у WebGL-збірку.
+    const string PadBackgroundPath = "Assets/_Project/Art/Earth/Pixel Art Rocket Launch Site at Sunset.png";
+    const string PadBusPath = "Assets/_Project/Art/Earth/Pixel Art Blue-Stripe Bus Sprite.png";
+
+    void OnValidate() => AutoFillArt();
+    void Reset() => AutoFillArt();
+
+    void AutoFillArt()
+    {
+        bool changed = false;
+        if (padBackground == null)
+        {
+            padBackground = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(PadBackgroundPath);
+            changed |= padBackground != null;
+        }
+        if (padBus == null)
+        {
+            padBus = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(PadBusPath);
+            changed |= padBus != null;
+        }
+        if (changed) UnityEditor.EditorUtility.SetDirty(this);
+    }
+#endif
 
     void Start()
     {
@@ -294,6 +355,7 @@ public class LaunchScreen : MonoBehaviour
             return;
         }
         IsFirstMission = !State.Supply.FirstMissionDone;
+        if (IsFirstMission) Supply.ForecastFirstMission(State);   // погода на космодромі
         IsOpen = true;
         if (!modalPushed) { GameBootstrap.Instance.Clock.PushModal(); modalPushed = true; }
         SetVisible(true);
@@ -502,11 +564,19 @@ public class LaunchScreen : MonoBehaviour
         {
             SetText(infoTitle, T(infoRocket.nameKey));
             SetText(infoText, T(infoRocket.hintKey) + " " + T("rocket.why"));
-            SetText(infoGives, T("rocket.stats", infoRocket.maxCargoKg.ToString("0"), infoRocket.flightHours));
+            string gives = T("rocket.stats", infoRocket.maxCargoKg.ToString("0"), LaunchText.Duration(Supply.FlightHoursOf(State, infoRocket)));
+            int tripHours = IsFirstMission ? Supply.CrewTripHours(State, infoRocket) : 0;
+            if (tripHours > 0)
+            {
+                // повільніша ракета — екіпаж довше в дорозі і більше з'їсть: це ціна великого трюму
+                Supply.CrewTripUse(State, infoRocket, out float tripFood, out float tripOxygen);
+                gives += "\n" + T("rocket.trip", LaunchText.Duration(tripHours), tripFood.ToString("0.#"), tripOxygen.ToString("0.#"));
+            }
+            SetText(infoGives, gives);
         }
         else if (infoPlan != null)
         {
-            SetText(infoTitle, T(infoPlan.nameKey));
+            SetText(infoTitle, LaunchText.PlanName(Supply, infoPlan));
             SetText(infoText, T(infoPlan.hintKey) + (IsFirstMission ? "" : " " + T("plan.locked_hint")));
             SetText(infoGives, T("plan.rockets", RocketNames(infoPlan)));
         }
@@ -610,7 +680,7 @@ public class LaunchScreen : MonoBehaviour
                 card.Q<Label>("name").text = T(rd.nameKey);
                 bool allowed = Supply.RocketAllowed(s, rd.id);   // поставка: тільки ракети з плану
                 card.Q<Label>("stats").text = allowed
-                    ? T("rocket.stats", rd.maxCargoKg.ToString("0"), rd.flightHours)
+                    ? T("rocket.stats", rd.maxCargoKg.ToString("0"), LaunchText.Duration(Supply.FlightHoursOf(s, rd)))
                     : T("rocket.not_in_plan");
                 card.EnableInClassList("rocket-card--on", rocket == rd);
                 card.EnableInClassList("rocket-card--locked", !allowed);
@@ -670,6 +740,7 @@ public class LaunchScreen : MonoBehaviour
             riskLabel.EnableInClassList("c-bad", r.Light == LaunchLight.Red);
         }
         SetText(hintLabel, T("launch.hint." + r.Light));
+        RefreshWeather(editable);
 
         RefreshPlan(editable);
         RefreshMission(r);
@@ -718,7 +789,7 @@ public class LaunchScreen : MonoBehaviour
         foreach (var child in planList.Children())
         {
             if (!(child is Button b) || !(b.userData is SupplyPlanData p)) continue;
-            b.text = T(p.nameKey);
+            b.text = LaunchText.PlanName(Supply, p).ToUpperInvariant();   // «РАЗ НА 16 ГОД» — з довжини розділу
             b.EnableInClassList("plan-btn--on", p == current);
             b.SetEnabled(editable && IsFirstMission);   // план обирають перед першим стартом
         }
@@ -826,6 +897,13 @@ public class LaunchScreen : MonoBehaviour
         AddReportRow(stars.FirstTry, "report.star_first");
         AddReportRow(stars.Supplies, "report.star_supplies");
         AddReportRow(stars.NoWaste, "report.star_nowaste");
+        if (State != null && (State.Supply.TripFood > 0f || State.Supply.TripOxygen > 0f))
+        {
+            var trip = new Label(T("report.trip", State.Supply.TripFood.ToString("0.#"), State.Supply.TripOxygen.ToString("0.#")));
+            trip.AddToClassList("report-text");
+            trip.AddToClassList("report-trip");
+            reportList.Add(trip);
+        }
         SetText(reportTip, T(stars.TipKey, stars.TipArgs));
         if (reportNext != null) reportNext.text = T("report.next");
 
@@ -875,6 +953,10 @@ public class LaunchScreen : MonoBehaviour
             row.Add(nameLabel); row.Add(bar); row.Add(value);
             daysList.Add(row);
         }
+        // рядок «у дорозі екіпаж з'їсть…» (тільки перша місія)
+        var trip = new Label { name = "days-trip", userData = "trip" };
+        trip.AddToClassList("days-trip");
+        daysList.Add(trip);
     }
 
     void RefreshMission(LaunchResult r)
@@ -889,7 +971,8 @@ public class LaunchScreen : MonoBehaviour
         if (goalsList != null)
         {
             goalsList.Clear();
-            AddGoalRow(T("mission.next_ship", Mathf.CeilToInt(plan.DaysToNextShip - 0.01f), plan.ReserveDays), plan.SurviveOk);
+            AddGoalRow(T("mission.next_ship", LaunchText.Duration(Mathf.CeilToInt(plan.DaysToNextShip * 24f - 0.01f)),
+                         LaunchText.Duration(Mathf.RoundToInt(plan.ReserveDays * 24f))), plan.SurviveOk);
             foreach (var g in plan.Goals)
                 AddGoalRow(T("mission.build", T("launch.module." + g.Module), Mathf.Min(g.Have + g.Packed, g.Target), g.Target), g.Done);
         }
@@ -901,6 +984,14 @@ public class LaunchScreen : MonoBehaviour
             foreach (var row in daysList.Children())
             {
                 string kind = row.userData as string;
+                if (kind == "trip")
+                {
+                    bool show = plan.TripHours > 0;
+                    row.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+                    if (show) ((Label)row).text = T("days.trip", LaunchText.Duration(plan.TripHours),
+                                                      plan.Food.Travel.ToString("0.#"), plan.Oxygen.Travel.ToString("0.#"));
+                    continue;
+                }
                 var d = kind == "food" ? plan.Food : kind == "water" ? plan.Water : plan.Oxygen;
                 row.Q<Label>("name").text = T("days." + kind);
 
@@ -969,6 +1060,36 @@ public class LaunchScreen : MonoBehaviour
             GameEvents.RaiseStateChanged();
             Refresh();
         }
+    }
+
+    // ---------- Погода ----------
+
+    /// <summary>Чип погоди біля ризику. Тільки для першої місії: погоду поставок вирішує старт за розкладом.</summary>
+    void RefreshWeather(bool editable)
+    {
+        if (weatherChip == null) return;
+        var w = State.Supply.Weather;
+        weatherChip.EnableInClassList("weather-chip--hidden", !IsFirstMission);
+        foreach (LaunchWeather v in Enum.GetValues(typeof(LaunchWeather)))
+            weatherChip.EnableInClassList("weather-chip--" + v, v == w);
+        bool storm = w == LaunchWeather.Storm;
+        weatherChip.text = storm
+            ? T("launch.weather_wait", Mathf.RoundToInt(Supply.Data.stormBoilOff * 100f))
+            : T("launch.weather." + w);
+        weatherChip.SetEnabled(editable);
+    }
+
+    /// <summary>Гроза: перечекати (частина палива випаровується). В іншу погоду — просто пояснення.</summary>
+    void OnWeatherClicked()
+    {
+        if (animating || State == null || !IsFirstMission) return;
+        if (State.Supply.Weather != LaunchWeather.Storm)
+        {
+            SetResult("launch.weather_why." + State.Supply.Weather);
+            return;
+        }
+        SetResult(Supply.WaitOutStorm(State) ?? "launch.weather_waited");
+        Refresh();
     }
 
     /// <summary>Чому не можна відправити: антена без енергії або вікно зв'язку закрите (і коли відкриється).</summary>

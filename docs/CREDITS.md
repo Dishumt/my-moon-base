@@ -9,7 +9,7 @@ Everything that is not written by the team is listed here: what it is, where it 
 | What | Licence / terms |
 |---|---|
 | Unity 6 (6000.6.9f1), Universal Render Pipeline 17, UI Toolkit, Input System 1.20, Test Framework | Unity Personal terms and Unity package licences (Unity Companion License) |
-| **Inter** (`Assets/_Project/Art/Fonts/Inter-Regular.ttf`), the font of the whole interface. Copied from the font folder of the Unity editor install. Has Latin and Cyrillic, so the Ukrainian texts show in the browser build. Copyright © The Inter Project Authors (https://github.com/rsms/inter) | SIL Open Font License 1.1 |
+| **Inter** (`Assets/_Project/Art/Fonts/Inter-Regular.ttf`), the font of the whole interface. Has Latin and Cyrillic, so the Ukrainian texts show in the browser build. Copyright © The Inter Project Authors (https://github.com/rsms/inter) | SIL Open Font License 1.1 |
 
 ## Sound
 

@@ -1,6 +1,6 @@
 {
   "_ai": "AI-assisted (Claude)",
-  "_note": "Ракети на вибір (роль 04). emptyMassKg — маса порожньої ракети, maxFuelKg — найбільший бак, flightHours — скільки годин летить поставка. scale — розмір на планшеті. heightInCrew — у скільки разів ракета вища за астронавта на пусковому майданчику. doorX/doorY — де люк капсули на картинці (частка ширини зліва і висоти зверху). Картинки (Art/Launch/Rockets) вибираються в інспекторі LaunchScreen за id.",
+  "_note": "Ракети на вибір (роль 04). emptyMassKg — маса порожньої ракети, maxFuelKg — найбільший бак, flightShare — скільки летить поставка: частка періоду поставок (період 24 год × 0.3 = 7 год); flightHours — запасний спосіб, якщо flightShare = 0. scale — розмір на планшеті. heightInCrew — у скільки разів ракета вища за астронавта на пусковому майданчику. doorX/doorY — де люк капсули на картинці (частка ширини зліва і висоти зверху). Картинки (Art/Launch/Rockets) вибираються в інспекторі LaunchScreen за id.",
   "defaultId": "medium",
   "items": [
     {
@@ -9,6 +9,7 @@
       "hintKey": "rocket.small.hint",
       "emptyMassKg": 600,
       "maxFuelKg": 3500,
+      "flightShare": 0.2,
       "flightHours": 8,
       "scale": 0.9,
       "heightInCrew": 8.0,
@@ -22,6 +23,7 @@
       "hintKey": "rocket.medium.hint",
       "emptyMassKg": 1000,
       "maxFuelKg": 6000,
+      "flightShare": 0.3,
       "flightHours": 12,
       "scale": 1.0,
       "heightInCrew": 9.0,
@@ -35,6 +37,7 @@
       "hintKey": "rocket.heavy.hint",
       "emptyMassKg": 2000,
       "maxFuelKg": 10000,
+      "flightShare": 0.45,
       "flightHours": 24,
       "scale": 1.05,
       "heightInCrew": 9.5,

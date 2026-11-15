@@ -9,6 +9,16 @@ public class SupplyDays
     public float Bring;     // у ракеті
     public float PerDay;    // скільки витрачається за день (0 = не витрачається)
     public float Cap;       // скільки вміщує склад/бак (0 = без меж). Більше — пропадає
+    public float Travel;    // перша місія: скільки витратять у дорозі (вже віднято з Bring, а що не вистачило — з Have)
+
+    /// <summary>Відняти витрати в дорозі: спершу з вантажу, решту — зі складу бази.</summary>
+    public void SpendOnTheWay(float amount)
+    {
+        Travel = Math.Max(0f, amount);
+        float fromCargo = Math.Min(Bring, Travel);
+        Bring -= fromCargo;
+        Have = Math.Max(0f, Have - (Travel - fromCargo));
+    }
 
     /// <summary>Скільки привеземо разом із тим, що є, без урахування бака.</summary>
     public float RawTotal => Have + Bring;
@@ -35,7 +45,7 @@ public class MissionPlan
 {
     public int Crew;
     public float DaysToNextShip;     // через скільки днів прилетить НАСТУПНИЙ корабель (після цього)
-    public int ReserveDays;          // запас: стільки запізнюється корабель, що повернувся на Землю
+    public float ReserveDays;        // запас: стільки запізнюється корабель, що повернувся на Землю (дні, можна дробові)
     public int MissionDays;          // скільки днів треба протриматися = до наступного корабля + запас
     public SupplyDays Food = new SupplyDays();
     public SupplyDays Water = new SupplyDays();
@@ -48,6 +58,7 @@ public class MissionPlan
     public bool TipIsWarning;        // червона/жовта порада чи зелена
 
     public float IceWaterPerDay;     // скільки води дає лід (добувають астронавти)
+    public int TripHours;            // перша місія: скільки годин екіпаж у дорозі
 
     public bool SurviveOk => Food.Days >= MissionDays && Water.Days >= MissionDays && Oxygen.Days >= MissionDays;
 }
@@ -65,7 +76,7 @@ public static class MissionPlanner
         var data = sup.Data;
         plan.Crew = firstMission ? data.firstMissionSeats : s.Crew.Count + s.Supply.Passengers.Count;
         plan.DaysToNextShip = DaysToNextShip(s, sup, firstMission);
-        plan.ReserveDays = Math.Max(0, data.failedDelayDays);
+        plan.ReserveDays = Math.Max(0, sup.FailedDelayHours(s)) / 24f;
         plan.MissionDays = Math.Max(1, (int)Math.Ceiling(plan.DaysToNextShip + plan.ReserveDays - 0.01f));
 
         // що в ракеті
@@ -80,6 +91,15 @@ public static class MissionPlanner
         plan.Food.Have = s.Res.Food;
         plan.Water.Have = s.Res.Water;
         plan.Oxygen.Have = s.Res.Oxygen;
+
+        // перша місія: екіпаж у дорозі їсть і дихає (повільна ракета — більше), тож долетить менше
+        if (firstMission)
+        {
+            sup.CrewTripUse(s, sup.GetRocket(s), out float tripFood, out float tripOxygen);
+            plan.TripHours = sup.CrewTripHours(s, sup.GetRocket(s));
+            plan.Food.SpendOnTheWay(tripFood);
+            plan.Oxygen.SpendOnTheWay(tripOxygen);
+        }
 
         // скільки витрачається за день — за правилами ролі 03
         var food = balance != null ? balance.food : null;
@@ -119,17 +139,15 @@ public static class MissionPlanner
 
     /// <summary>
     /// Через скільки днів сяде наступний корабель, тобто той, що прилетить ПІСЛЯ цього.
-    /// Розклад той самий, що в SupplySystem: кожні supplyEveryDays днів о launchHour, плюс час польоту.
+    /// Розклад той самий, що в SupplySystem (NextLaunchFrom), плюс час польоту.
     /// Перша місія: наступний корабель — перша поставка. Поставка: цей вантаж має протримати до наступної.
     /// </summary>
     public static float DaysToNextShip(GameState s, SupplySystem sup, bool firstMission)
     {
-        var data = sup.Data;
         int now = CommsSystem.AbsHour(s);
         int flight = sup.FlightHours(s);
         int from = firstMission ? now : sup.ExpectedArrivalAt(s);         // коли сяде цей корабель
-        int nextLaunch = (from / 24 + sup.EveryDays(s)) * 24 + data.launchHour;
-        if (!firstMission && nextLaunch < from) nextLaunch += 24;
+        int nextLaunch = sup.NextLaunchFrom(s, from);
         int nextArrival = nextLaunch + flight;
         return Math.Max(0f, (nextArrival - now) / 24f);
     }

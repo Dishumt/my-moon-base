@@ -8,7 +8,8 @@ using UnityEngine.UIElements;
 /// Декорації пускового майданчика (роль 04): небо світанку із сонцем, Місяцем і хмарами, океан,
 /// складальний корпус, паливні баки, водонапірна вежа, громовідводи, прожектори, пусковий стіл,
 /// автобус з екіпажем, птахи і вода під ракетою на старті.
-/// Усе малюється прямокутниками й колами UI Toolkit, без картинок. LaunchPadView кличе Build()
+/// Якщо в інспекторі LaunchScreen вказано фон і автобус з Art/Earth (роль 02) — беремо їх,
+/// інакше все малюється прямокутниками й колами UI Toolkit. LaunchPadView кличе Build()
 /// при кожному запуску, а Ignition (0..1) показує, наскільки сильно вже працюють двигуни.
 /// </summary>
 public class LaunchPadScenery
@@ -42,6 +43,49 @@ public class LaunchPadScenery
 
     // ---------- Побудова ----------
 
+    // ---------- Картинки Юлі (роль 02): Art/Earth ----------
+
+    /// <summary>Фон «Launch Site at Sunset». Порожньо — небо й будівлі малюються кодом, як раніше.</summary>
+    public Texture2D Background { get; set; }
+    /// <summary>Автобус «Blue-Stripe Bus». Порожньо — автобус із прямокутників.</summary>
+    public Texture2D Bus { get; set; }
+    public bool HasArt => Background != null;
+
+    // Розміри й точки, виміряні на оригінальних картинках (частки ширини/висоти картинки).
+    // Беремо числа, а не texture.width: Unity може розтягнути картинку до 2048×1024 під час імпорту.
+    const float BgAspect = 1672f / 941f;
+    const float BgPadX = 0.617f;      // центр пускового столу
+    const float BgPadTop = 0.742f;    // верх пускового столу — тут стоїть ракета
+    const float BgGround = 0.798f;    // низ столу — земля, по якій ходить екіпаж
+    const float BusAspect = 1983f / 793f;
+    const float BusLeft = 0.219f, BusRight = 0.779f, BusBottom = 0.851f; // де сам автобус на картинці (решта прозора)
+
+    float bgX, bgY, bgW, bgH, vanW;
+
+    /// <summary>Де на екрані лежить картинка фону (заповнює екран без спотворень, зайве обрізається).</summary>
+    void FitBackground(float w, float h)
+    {
+        bgW = Mathf.Max(w, h * BgAspect);
+        bgH = bgW / BgAspect;
+        bgX = (w - bgW) * 0.5f;
+        bgY = (h - bgH) * 0.5f;
+    }
+
+    float BgPx(float fx) => bgX + fx * bgW;
+    float BgPy(float fy) => bgY + fy * bgH;
+
+    /// <summary>
+    /// Для фону-картинки: де центр пускового столу, де земля і яка висота столу (px на екрані).
+    /// LaunchPadView ставить ракету саме туди, щоб вона стояла на намальованому столі.
+    /// </summary>
+    public void ArtAnchors(float w, float h, out float centerX, out float ground, out float mountHeight)
+    {
+        FitBackground(w, h);
+        centerX = BgPx(BgPadX);
+        ground = BgPy(BgGround);
+        mountHeight = (BgGround - BgPadTop) * bgH;
+    }
+
     public void Build(float w, float h, float ground, float centerX, float rocketWidth, float rocketHeight, float towerX)
     {
         W = w; H = h; groundTop = ground; cx = centerX; rocketW = rocketWidth;
@@ -50,13 +94,81 @@ public class LaunchPadScenery
 
         back = Box(0, 0, W, H, null);
         back.pickingMode = PickingMode.Ignore;
+        back.style.overflow = Overflow.Hidden;
         scene.Insert(0, back);
 
+        if (HasArt) BuildArt(towerX);
+        else BuildDrawn(rnd, rocketHeight, towerX);
+
+        // вода під ракетою (система гасіння звуку)
+        for (int i = 0; i < 16; i++)
+        {
+            var d = Box(0, 0, 4f, 10f, "#CFEAFF", frontLayer);
+            d.style.opacity = 0f;
+            drops.Add(d);
+        }
+
+        lastTime = Time.unscaledTime;
+        Ignition = 0f;
+        if (ticker == null) ticker = view.schedule.Execute(Tick).Every(30);
+        else ticker.Resume();
+    }
+
+    /// <summary>Фон — картинка Юлі; поверх неї кодом лише те, що рухається: вогники, ліхтарі, птахи, автобус.</summary>
+    void BuildArt(float towerX)
+    {
+        FitBackground(W, H);
+        var img = Box(bgX, bgY, bgW, bgH, null, back);
+        img.style.backgroundImage = new StyleBackground(Background);
+        MountHeight = (BgGround - BgPadTop) * bgH;   // пусковий стіл уже намальований на картинці
+        mount = null;
+
+        // червоні вогники на верхівках громовідводів (на картинці вони вже є — ми змушуємо їх блимати)
+        foreach (float fx in new[] { 0.459f, 0.756f })
+            blinkers.Add(Circle(BgPx(fx), BgPy(0.078f), Mathf.Max(3f, bgH * 0.007f), "#FF4A3D", back));
+
+        // м'яке світло ліхтарів
+        foreach (float fx in new[] { 0.480f, 0.706f })
+        {
+            var glow = Circle(BgPx(fx), BgPy(0.620f), bgH * 0.025f, "#FFE9A0", back);
+            glow.userData = 0.4f;   // світиться слабше, ніж намальовані кодом лампи
+            lamps.Add(glow);
+        }
+
+        // птахи на кущах біля моря — злетять від гуркоту
+        for (int i = 0; i < 5; i++)
+            AddBird(BgPx(0.30f + 0.03f * i), BgPy(0.635f) - 6f * (i % 2));
+
+        // автобус для екіпажу: стоїть на дорозі перед майданчиком
+        float busVisibleW = Mathf.Clamp(W * 0.16f, 140f, 260f);
+        vanW = busVisibleW / (BusRight - BusLeft);   // уся картинка разом із прозорими краями
+        float vanH = vanW / BusAspect;
+        VanDoorX = towerX - 40f - busVisibleW * 0.5f;
+        if (Bus != null)
+        {
+            van = Box(-vanW, groundTop + H * 0.03f - BusBottom * vanH, vanW, vanH, null, back);
+            van.style.backgroundImage = new StyleBackground(Bus);
+        }
+        else van = DrawnVan(busVisibleW, busVisibleW * 0.4f);
+    }
+
+    /// <summary>Старий варіант: усе малюється прямокутниками й колами (якщо картинку фону не вказали).</summary>
+    void BuildDrawn(System.Random rnd, float rocketHeight, float towerX)
+    {
         // небо світанку: смуги від темно-синього до теплого біля горизонту
         float horizon = H * 0.6f;
         string[] sky = { "#0E2347", "#16305C", "#244274", "#3D578C", "#6B6E9E", "#B48A9C", "#E2A88A" };
-        for (int i = 0; i < sky.Length; i++)
-            Box(0, horizon * i / sky.Length, W, horizon / sky.Length + 1f, sky[i], back);
+        // плавний градієнт: 60 тонких смуг, колір між сусідніми точками палітри змішується
+        var pal = new Color[sky.Length];
+        for (int i = 0; i < sky.Length; i++) ColorUtility.TryParseHtmlString(sky[i], out pal[i]);
+        const int Strips = 60;
+        for (int i = 0; i < Strips; i++)
+        {
+            float k = (float)i / (Strips - 1) * (pal.Length - 1);
+            int a = Mathf.Min((int)k, pal.Length - 2);
+            var strip = Box(0, horizon * i / Strips, W, horizon / Strips + 1f, null, back);
+            strip.style.backgroundColor = Color.Lerp(pal[a], pal[a + 1], k - a);
+        }
 
         // зорі (тьмяні — уже світає)
         for (int i = 0; i < 24; i++)
@@ -129,18 +241,7 @@ public class LaunchPadScenery
 
         // далекі птахи сидять на березі — злетять від гуркоту
         for (int i = 0; i < 5; i++)
-        {
-            var bird = new Label("v");
-            bird.pickingMode = PickingMode.Ignore;
-            bird.style.position = Position.Absolute;
-            bird.style.left = W * (0.66f + 0.04f * i);
-            bird.style.top = seaBottom - H * 0.01f - 6f * (i % 2);
-            bird.style.fontSize = 14;
-            bird.style.color = new Color(0.12f, 0.12f, 0.16f);
-            bird.userData = new Vector2(bird.style.left.value.value, bird.style.top.value.value);
-            back.Add(bird);
-            birds.Add(bird);
-        }
+            AddBird(W * (0.66f + 0.04f * i), seaBottom - H * 0.01f - 6f * (i % 2));
 
         // громовідводи навколо ракети з червоними вогниками
         float mastH = rocketHeight * 1.15f;
@@ -170,27 +271,36 @@ public class LaunchPadScenery
         scene.Insert(scene.IndexOf(rocket), mount);
 
         // автобус для екіпажу
-        float vanW = 118f, vanH = 46f;
-        van = Box(-vanW - 20f, groundTop - vanH - 10f, vanW, vanH, "#E9ECF1", back); // за вежею, перед землею
-        Round(van, 8f);
-        for (int i = 0; i < 4; i++) Box(10f + i * 26f, 8f, 20f, 14f, "#4C6D90", van);
-        Box(0, vanH - 14f, vanW, 4f, "#4C79A8", van);
-        Circle(24f, vanH + 2f, 10f, "#1F2228", van);
-        Circle(vanW - 24f, vanH + 2f, 10f, "#1F2228", van);
+        van = DrawnVan(118f, 46f);
         VanDoorX = towerX - 40f - vanW * 0.35f;
+    }
 
-        // вода під ракетою (система гасіння звуку)
-        for (int i = 0; i < 16; i++)
-        {
-            var d = Box(0, 0, 4f, 10f, "#CFEAFF", frontLayer);
-            d.style.opacity = 0f;
-            drops.Add(d);
-        }
+    /// <summary>Автобус із прямокутників (якщо картинки автобуса немає).</summary>
+    VisualElement DrawnVan(float w, float h)
+    {
+        vanW = w;
+        var v = Box(-w - 20f, groundTop - h - 10f, w, h, "#E9ECF1", back); // за вежею, перед землею
+        Round(v, 8f);
+        float win = (w - 14f) / 4f;
+        for (int i = 0; i < 4; i++) Box(10f + i * win, h * 0.17f, win * 0.77f, h * 0.3f, "#4C6D90", v);
+        Box(0, h - 14f, w, 4f, "#4C79A8", v);
+        Circle(w * 0.2f, h + 2f, 10f, "#1F2228", v);
+        Circle(w * 0.8f, h + 2f, 10f, "#1F2228", v);
+        return v;
+    }
 
-        lastTime = Time.unscaledTime;
-        Ignition = 0f;
-        if (ticker == null) ticker = view.schedule.Execute(Tick).Every(30);
-        else ticker.Resume();
+    void AddBird(float x, float y)
+    {
+        var bird = new Label("v");
+        bird.pickingMode = PickingMode.Ignore;
+        bird.style.position = Position.Absolute;
+        bird.style.left = x;
+        bird.style.top = y;
+        bird.style.fontSize = 14;
+        bird.style.color = new Color(0.12f, 0.12f, 0.16f);
+        bird.userData = new Vector2(x, y);
+        back.Add(bird);
+        birds.Add(bird);
     }
 
     public void Stop() => ticker?.Pause();
@@ -210,7 +320,6 @@ public class LaunchPadScenery
     public IEnumerator DriveVan(System.Func<bool> skip)
     {
         if (van == null) yield break;
-        float vanW = van.resolvedStyle.width > 1f ? van.resolvedStyle.width : 118f;
         float from = -vanW - 20f, to = VanDoorX - vanW * 0.5f;
         for (float t = 0f; t < 1.6f && !skip(); t += Time.unscaledDeltaTime)
         {
@@ -239,7 +348,8 @@ public class LaunchPadScenery
         }
         for (int i = 0; i < shimmer.Count; i++) shimmer[i].style.opacity = 0.3f + 0.5f * Mathf.Abs(Mathf.Sin(now * 1.3f + i));
         foreach (var b in blinkers) b.style.opacity = Mathf.Repeat(now, 1.2f) < 0.6f ? 1f : 0.2f;
-        foreach (var l in lamps) l.style.opacity = 0.75f + 0.25f * Mathf.Sin(now * 3f) + (Ignition > 0f ? 0.25f : 0f);
+        foreach (var l in lamps)
+            l.style.opacity = (l.userData is float k ? k : 1f) * (0.75f + 0.25f * Mathf.Sin(now * 3f) + (Ignition > 0f ? 0.25f : 0f));
 
         // птахи злітають, щойно запрацювали двигуни
         for (int i = 0; i < birds.Count; i++)
