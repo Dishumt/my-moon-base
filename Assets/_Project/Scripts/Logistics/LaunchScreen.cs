@@ -819,7 +819,7 @@ public class LaunchScreen : MonoBehaviour
     IEnumerator ShowReport(MissionStars stars)
     {
         if (report == null) yield break;
-        SetText(reportTitle, T("report.title"));
+        SetText(reportTitle, T("launch.report_title"));
         reportStars.Clear();
         for (int i = 0; i < 3; i++) reportStars.Add(new StarShape(i < stars.Count, false));
         reportList.Clear();

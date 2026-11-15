@@ -1,0 +1,12 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Demo for judges (owner: role 01). Chapter 3 with generous supplies and a real NASA DONKI storm about 1 minute after the start, so everything is visible in ~5 minutes.",
+  "chapter": 3,
+  "startHour": 8,
+  "realSecondsPerDay": 240,
+  "realSecondsPerDay_note": "Demo day is 4 minutes (10 s per game hour); the normal game uses balance.json.",
+  "resources": { "Battery": 30, "Water": 80, "Oxygen": 100, "Food": 40, "Materials": 80, "MedKits": 3 },
+  "stormEventId": "gst-2024-05-10",
+  "stormEventId_note": "Real geomagnetic storm of 10 May 2024 (NASA DONKI), id from Nasa/donki_storms.json.",
+  "stormInHours": 6
+}

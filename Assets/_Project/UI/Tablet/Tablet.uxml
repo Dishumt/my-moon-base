@@ -1,6 +1,7 @@
 <!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="/Assets/_Project/UI/Common/Theme.uss" />
+    <Style src="/Assets/_Project/UI/Tablet/GameTabs.uss" />
 
     <!-- tablet-stage: covers the whole screen; hidden (display:none) while the tablet is closed -->
     <ui:VisualElement name="tablet-stage" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: none;">

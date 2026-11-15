@@ -1,0 +1,40 @@
+<!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
+<!-- Start menu (StartMenu.cs): play, continue, chapters, Demo for judges, language, real space weather from NASA. -->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="/Assets/_Project/UI/Common/Theme.uss" />
+    <Style src="/Assets/_Project/UI/Game/GameUi.uss" />
+    <ui:VisualElement name="menu-stage" class="menu-stage">
+        <ui:VisualElement name="menu" class="menu">
+            <ui:Label name="menu-title" class="menu-title" />
+            <ui:Label name="menu-sub" class="menu-sub" />
+            <ui:Button name="menu-play" class="menu-btn menu-btn--main" />
+            <ui:Button name="menu-continue" class="menu-btn" />
+            <ui:VisualElement name="menu-chapters" class="menu-chapters">
+                <ui:Button name="menu-ch1" class="menu-ch" />
+                <ui:Button name="menu-ch2" class="menu-ch" />
+                <ui:Button name="menu-ch3" class="menu-ch" />
+            </ui:VisualElement>
+            <ui:Button name="menu-demo" class="menu-btn menu-btn--demo" />
+            <ui:Button name="menu-data" class="menu-btn menu-btn--data" />
+            <ui:Label name="menu-msg" class="msg msg--err" />
+            <ui:VisualElement class="menu-lang">
+                <ui:Button name="menu-en" class="menu-lang-btn" text="EN" />
+                <ui:Button name="menu-uk" class="menu-lang-btn" text="UK" />
+            </ui:VisualElement>
+            <ui:VisualElement name="menu-weather" class="menu-weather">
+                <ui:Label name="menu-weather-title" class="menu-weather__title" />
+                <ui:Label name="menu-weather-text" class="menu-weather__text" />
+                <ui:Label name="menu-weather-badge" class="menu-badge" />
+            </ui:VisualElement>
+            <ui:Label name="menu-credit" class="menu-credit" />
+        </ui:VisualElement>
+        <!-- "NASA data in the game" (NasaDataView.cs): hidden until the button is pressed -->
+        <ui:VisualElement name="data-stage" class="data-stage" style="display: none;">
+            <ui:VisualElement class="data-window">
+                <ui:Label name="data-title" class="win-title" />
+                <ui:ScrollView name="data-list" class="data-list" />
+                <ui:Button name="data-close" class="win-btn win-btn--main" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

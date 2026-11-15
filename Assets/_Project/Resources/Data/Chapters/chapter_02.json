@@ -153,7 +153,7 @@
     {
       "id": "survive",
       "type": "SurviveDays",
-      "target": 7,
+      "target": 3,
       "target_note": "Скільки днів треба прожити в цьому розділі.",
       "module": "",
       "titleKey": "goal.survive_days"
