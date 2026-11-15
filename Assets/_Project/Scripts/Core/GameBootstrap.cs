@@ -143,6 +143,31 @@ public class GameBootstrap : MonoBehaviour
     void OnDayEnded(DayReport report) => SaveNow();
 
     /// <summary>
+    /// Перейти в наступний розділ БЕЗ перезапуску гри: база, екіпаж, запаси, день і час лишаються як є.
+    /// Додаються лише нові точки розділу на карті, нові цілі й відкриті модулі (ChapterSystem.StartChapter з applyStart = false).
+    /// Повертає false, якщо так перейти не можна (демо, немає такого розділу): тоді викликач перезавантажує гру.
+    /// </summary>
+    public bool AdvanceChapter(int next)
+    {
+        if (State == null || Clock == null || IsDemo || next < 1 || next > GameStart.LastChapter) return false;
+        var chapters = GetSystem<ChapterSystem>();
+        if (chapters == null) return false;
+
+        var data = DataLoader.Load<ChapterStartData>("Chapters/chapter_" + next.ToString("00"));
+        foreach (var p in data.pois)
+        {
+            if (State.FindPoi(p.id) != null) continue; // старі точки лишаються зі своїм станом (розвідані, запас)
+            System.Enum.TryParse(p.type, out PoiType type);
+            State.Pois.Add(new PoiState { Id = p.id, Type = type, Amount = p.amount });
+        }
+        chapters.StartChapter(State, next, false);
+        GameStart.MarkStarted(next);
+        SaveNow();
+        GameEvents.RaiseStateChanged();
+        return true;
+    }
+
+    /// <summary>
     /// Ще й тричі на день (6:00, 12:00, 18:00): якщо закрити вкладку браузера посеред дня, пропаде не більше пів дня.
     /// О 24:00 не зберігаємо тут: день ще не перемкнувся, це робить OnDayEnded.
     /// </summary>

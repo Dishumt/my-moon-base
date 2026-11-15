@@ -91,8 +91,31 @@ public class HudController : MonoBehaviour
         else clock.SetSpeed(speed);
     }
 
+    bool urgentHint;
+
+    /// <summary>The TABLET button breathes: a soft glow all the time, and it also bobs when something urgent waits there (storm, no oxygen).</summary>
+    void AnimateTabletButton()
+    {
+        if (tablet == null) return;
+        float t = Time.unscaledTime;
+        float p = 0.5f + 0.5f * Mathf.Sin(t * (urgentHint ? 6f : 2.4f));
+        Color glow = urgentHint ? Color.Lerp(new Color(1f, 0.6f, 0.2f), Color.white, p)
+                                : Color.Lerp(new Color(0.37f, 0.83f, 0.96f), Color.white, p * 0.85f);
+        tablet.style.borderTopColor = glow;
+        tablet.style.borderBottomColor = glow;
+        tablet.style.borderLeftColor = glow;
+        tablet.style.borderRightColor = glow;
+        float width = 2f + 2.5f * p;
+        tablet.style.borderTopWidth = width;
+        tablet.style.borderBottomWidth = width;
+        tablet.style.borderLeftWidth = width;
+        tablet.style.borderRightWidth = width;
+        tablet.style.translate = new Translate(0f, urgentHint ? -4f * p : 0f);
+    }
+
     void Update()
     {
+        if (bound) AnimateTabletButton();
         // the clock in the corner moves every quarter of a game hour, not only when the hour changes
         if (!bound || Time.unscaledTime < nextClockText) return;
         nextClockText = Time.unscaledTime + 0.25f;
@@ -176,6 +199,7 @@ public class HudController : MonoBehaviour
 
         // one hint: what to do now (Coach)
         var next = Coach.Pick(s, chapters, balance, clock.UserPaused ? 1f : clock.Speed);
+        urgentHint = next.HasValue && next.Value.Urgent;
         UiKit.Show(hint, next.HasValue);
         if (next.HasValue)
         {

@@ -155,6 +155,19 @@ public class GameWindows : MonoBehaviour
         UiKit.Show(stage, true);
     }
 
+    /// <summary>«Наступний розділ»: гра йде далі з тією самою базою (без перезавантаження сцени).</summary>
+    void ContinueToChapter(int next)
+    {
+        var game = GameBootstrap.Instance;
+        if (game == null || !game.AdvanceChapter(next))
+        {
+            GameStart.Begin(StartMode.Chapter, next); // запасний шлях
+            return;
+        }
+        finished = false; // вечірні звіти знову показуються
+        CloseCurrent();
+    }
+
     void CloseCurrent()
     {
         current = null;
@@ -209,7 +222,7 @@ public class GameWindows : MonoBehaviour
                 else if (last)
                     Buttons(Loc.Get("win.menu"), GameStart.BackToMenu, Loc.Get("win.replay"), () => GameStart.Begin(StartMode.Chapter, n), null, null);
                 else
-                    Buttons(Loc.Get("win.next_chapter"), () => GameStart.Begin(StartMode.Chapter, n + 1),
+                    Buttons(Loc.Get("win.next_chapter"), () => ContinueToChapter(n + 1),
                             Loc.Get("win.replay"), () => GameStart.Begin(StartMode.Chapter, n),
                             Loc.Get("win.menu"), GameStart.BackToMenu);
                 if (last && !demo) AddText(Loc.Get("win.final"), false);
