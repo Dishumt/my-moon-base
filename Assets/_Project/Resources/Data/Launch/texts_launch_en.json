@@ -589,6 +589,10 @@
     {
       "key": "mission.reserve_why",
       "text": "Why a reserve? If a ship has to turn back, it arrives a few days late."
+    },
+    {
+      "key": "pad.fact.5",
+      "text": "In real space, launch windows to the Moon open about once a month. In our game, time runs much faster!"
     }
   ]
 }

@@ -102,7 +102,8 @@ public class LaunchPadView
         for (int n = 10; n >= 1 && !skip; n--)
         {
             SetText(count, n.ToString());
-            if (n == 10 || n == 7 || n == 4) SetText(fact, T("pad.fact." + (n == 10 ? 1 : n == 7 ? 2 : 3)));
+            // факти під час відліку: як летить ракета → скільки летіти → коли можна летіти; на старті — перевантаження
+            if (n == 10 || n == 7 || n == 4) SetText(fact, T("pad.fact." + (n == 10 ? 1 : n == 7 ? 4 : 5)));
             for (float t = 0f; t < 1f && !skip; t += Time.unscaledDeltaTime)
             {
                 count.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.4f, 1f, Mathf.Clamp01(t * 4f)));
@@ -114,7 +115,7 @@ public class LaunchPadView
 
         // 4) СТАРТ!
         SetText(count, T("pad.liftoff"));
-        SetText(fact, T("pad.fact.4"));
+        SetText(fact, T("pad.fact.3"));
         SetText(status, "");
         count.style.scale = new Scale(Vector3.one);
         trail.style.display = DisplayStyle.Flex;
