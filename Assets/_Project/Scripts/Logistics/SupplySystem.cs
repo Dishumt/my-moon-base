@@ -63,6 +63,7 @@ public class SupplySystem : ISimSystem
         if (s.Supply.FirstMissionDone && s.Supply.Status != SupplyStatus.Draft) return "error.order_locked";
         var item = catalog.Find(itemId);
         if (item == null) return "error.unknown_cargo";
+        if (delta > 0 && CargoKg(s) + item.massKg * delta > MaxCargo(s) + 0.01f) return "error.hold_full";
         if (delta > 0 && item.TryGetModule(out var type) && !KitUnlocked(type)) return "error.kit_locked";
         var line = s.Supply.Cargo.Find(l => l.itemId == itemId);
         if (line == null)
@@ -121,6 +122,23 @@ public class SupplySystem : ISimSystem
         return p == null || p.rockets == null || p.rockets.Count == 0 || p.rockets.Contains(rocketId);
     }
 
+    /// <summary>Скільки кг вантажу вміщує трюм вибраної ракети (без меж, якщо не задано).</summary>
+    public float MaxCargo(GameState s)
+    {
+        var r = GetRocket(s);
+        return r != null && r.maxCargoKg > 0f ? r.maxCargoKg : float.MaxValue;
+    }
+
+    /// <summary>Скільки кг вантажу зараз у замовленні.</summary>
+    public float CargoKg(GameState s) => LaunchCalculator.CargoMass(s.Supply.Cargo, catalog);
+
+    /// <summary>Чи влізе ще одна штука цього вантажу.</summary>
+    public bool Fits(GameState s, string itemId)
+    {
+        var item = catalog.Find(itemId);
+        return item != null && CargoKg(s) + item.massKg <= MaxCargo(s) + 0.01f;
+    }
+
     /// <summary>Найбільший бак вибраної ракети.</summary>
     public float MaxFuel(GameState s)
     {
@@ -141,6 +159,8 @@ public class SupplySystem : ISimSystem
         if (s.Supply.FirstMissionDone && s.Supply.Status != SupplyStatus.Draft) return "error.order_locked";
         if (rockets.Find(rocketId) == null) return "error.unknown_rocket";
         if (!RocketAllowed(s, rocketId)) return "error.rocket_not_in_plan";
+        var target = rockets.Find(rocketId);
+        if (target.maxCargoKg > 0f && CargoKg(s) > target.maxCargoKg + 0.01f) return "error.hold_too_small";
         s.Supply.RocketId = rocketId;
         s.Supply.FuelKg = Math.Min(GetFuel(s), MaxFuel(s));
         return null;

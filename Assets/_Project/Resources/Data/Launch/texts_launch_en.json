@@ -244,19 +244,19 @@
     },
     {
       "key": "rocket.small.hint",
-      "text": "Small and fast. Its fuel tank is small, so it can't carry much."
+      "text": "Small and fast, but its hold is tiny."
     },
     {
       "key": "rocket.medium.hint",
-      "text": "The all-rounder. A normal load at a normal speed."
+      "text": "The all-rounder: a medium hold at a normal speed."
     },
     {
       "key": "rocket.heavy.hint",
-      "text": "A huge fuel tank for lots of cargo. But the rocket itself is heavy and flies slowly."
+      "text": "The biggest hold, but the rocket itself is heavy and flies slowly."
     },
     {
       "key": "rocket.stats",
-      "text": "fuel {0} t · {1} h"
+      "text": "hold {0} kg · {1} h"
     },
     {
       "key": "rocket.why",
@@ -893,6 +893,18 @@
     {
       "key": "days.ice",
       "text": "ice +{0}/day"
+    },
+    {
+      "key": "launch.hold_kg",
+      "text": "HOLD {0}/{1} KG"
+    },
+    {
+      "key": "error.hold_full",
+      "text": "The cargo hold is full! Take something out first."
+    },
+    {
+      "key": "error.hold_too_small",
+      "text": "This cargo won't fit into this rocket's hold. Take something out first."
     }
   ]
 }

@@ -502,7 +502,7 @@ public class LaunchScreen : MonoBehaviour
         {
             SetText(infoTitle, T(infoRocket.nameKey));
             SetText(infoText, T(infoRocket.hintKey) + " " + T("rocket.why"));
-            SetText(infoGives, T("rocket.stats", (infoRocket.maxFuelKg / 1000f).ToString("0.#"), infoRocket.flightHours));
+            SetText(infoGives, T("rocket.stats", infoRocket.maxCargoKg.ToString("0"), infoRocket.flightHours));
         }
         else if (infoPlan != null)
         {
@@ -610,7 +610,7 @@ public class LaunchScreen : MonoBehaviour
                 card.Q<Label>("name").text = T(rd.nameKey);
                 bool allowed = Supply.RocketAllowed(s, rd.id);   // поставка: тільки ракети з плану
                 card.Q<Label>("stats").text = allowed
-                    ? T("rocket.stats", (rd.maxFuelKg / 1000f).ToString("0.#"), rd.flightHours)
+                    ? T("rocket.stats", rd.maxCargoKg.ToString("0"), rd.flightHours)
                     : T("rocket.not_in_plan");
                 card.EnableInClassList("rocket-card--on", rocket == rd);
                 card.EnableInClassList("rocket-card--locked", !allowed);
@@ -632,7 +632,7 @@ public class LaunchScreen : MonoBehaviour
             row.Q<Label>("count").text = packed.ToString();
             row.EnableInClassList("cargo-row--has", packed > 0);
             row.Q<Button>("minus").SetEnabled(editable);
-            row.Q<Button>("plus").SetEnabled(editable && !locked);
+            row.Q<Button>("plus").SetEnabled(editable && !locked && Supply.Fits(s, item.id));   // не влазить у трюм — «+» не тиснеться
         }
 
         // паливо: повзунок до бака вибраної ракети
@@ -644,7 +644,10 @@ public class LaunchScreen : MonoBehaviour
 
         // смужка маси: шкала = найбільша маса, яку повний бак ще піднімає (жовта межа)
         float emptyKg = rocket != null ? rocket.emptyMassKg : data.emptyShipMassKg;
-        float scaleKg = Mathf.Max(1f, maxFuel / (data.fuelPerKg * data.redMargin) - emptyKg);
+        float holdKg = Supply.MaxCargo(s);
+        float scaleKg = holdKg < float.MaxValue
+            ? Mathf.Max(1f, r.PeopleKg + holdKg)                                       // смужка = місця людей + трюм
+            : Mathf.Max(1f, maxFuel / (data.fuelPerKg * data.redMargin) - emptyKg);
         float crewPct = Mathf.Clamp01(r.PeopleKg / scaleKg) * 100f;
         float cargoPct = Mathf.Clamp(r.CargoKg / scaleKg * 100f, 0f, 100f - crewPct);
         if (massCrew != null) massCrew.style.width = Length.Percent(crewPct);
@@ -747,7 +750,10 @@ public class LaunchScreen : MonoBehaviour
     void RefreshHold(GameState s)
     {
         if (hold == null) return;
-        SetText(holdTitle, T("launch.hold"));
+        float cap = Supply.MaxCargo(s);
+        SetText(holdTitle, cap < float.MaxValue
+            ? T("launch.hold_kg", Supply.CargoKg(s).ToString("0"), cap.ToString("0"))
+            : T("launch.hold"));
         hold.Clear();
         int shown = 0, total = 0;
         foreach (var line in s.Supply.Cargo) total += line.count;

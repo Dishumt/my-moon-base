@@ -13,6 +13,7 @@ public class RocketData
     public float maxFuelKg;      // найбільший бак
     public int flightHours;      // скільки годин летить поставка
     public float scale = 1f;     // розмір картинки на екрані
+    public float maxCargoKg;         // скільки вантажу вміщує трюм (0 = без меж)
     public float heightInCrew = 8f; // у скільки разів ракета вища за астронавта (пусковий майданчик)
     public float doorX = 0.1f;      // люк капсули: частка ширини картинки зліва
     public float doorY = 0.28f;     // люк капсули: частка висоти картинки зверху

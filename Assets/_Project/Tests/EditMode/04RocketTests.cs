@@ -383,3 +383,26 @@ public class SupplyPlanTests
         Assert.AreEqual(4 * 24 + 8, s.Supply.NextLaunchAt);
     }
 }
+
+/// <summary>Тест трюму: більше, ніж уміщує ракета, не покласти (роль 04).</summary>
+public class HoldTests
+{
+    [Test]
+    public void HoldLimit_StopsCargo_AndSmallerRocket()
+    {
+        var cat = new CargoCatalog();
+        cat.items.Add(new CargoItemData { id = "food", massKg = 50f, food = 5f });
+        var rockets = new RocketCatalog { defaultId = "medium" };
+        rockets.items.Add(new RocketData { id = "small", emptyMassKg = 600f, maxFuelKg = 3500f, maxCargoKg = 250f });
+        rockets.items.Add(new RocketData { id = "medium", emptyMassKg = 1000f, maxFuelKg = 6000f, maxCargoKg = 450f });
+        var sup = new SupplySystem(new LaunchData(), cat, rockets);
+        var s = new GameState();
+
+        Assert.IsNull(sup.ChangeCargo(s, "food", 9));                    // 450 кг — рівно трюм
+        Assert.AreEqual("error.hold_full", sup.ChangeCargo(s, "food", 1));
+        Assert.IsFalse(sup.Fits(s, "food"));
+        Assert.AreEqual("error.hold_too_small", sup.SetRocket(s, "small")); // 450 кг не влізе в 250
+        sup.ChangeCargo(s, "food", -5);                                   // лишилось 200 кг
+        Assert.IsNull(sup.SetRocket(s, "small"));
+    }
+}

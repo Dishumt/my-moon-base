@@ -187,6 +187,8 @@ public static class MissionPlanner
         foreach (var r in sup.Rockets.items)
         {
             if (r == current || r.emptyMassKg >= current.emptyMassKg) continue;
+            if (r.maxCargoKg > 0f && cargo > r.maxCargoKg) continue;          // не влізе в трюм
+            if (!sup.RocketAllowed(s, r.id)) continue;
             var res = sup.Calculator.Evaluate(cargo, people, r.maxFuelKg, r);
             if (res.Light == LaunchLight.Green && (best == null || r.emptyMassKg < best.emptyMassKg)) best = r;
         }
