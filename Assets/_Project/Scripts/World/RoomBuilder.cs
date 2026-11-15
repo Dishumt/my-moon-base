@@ -54,6 +54,10 @@ public static class RoomBuilder
         interior.Add(R(ModuleParts.Box(root, "Curb Left", solid, new Vector3(-w / 2 + t / 2, curbH / 2, roomMid), new Vector3(t, curbH, roomDepth), false, curb)));
         interior.Add(R(ModuleParts.Box(root, "Curb Right", solid, new Vector3(w / 2 - t / 2, curbH / 2, roomMid), new Vector3(t, curbH, roomDepth), false, curb)));
 
+        // ----- Внутрішні стіни з текстурою Юлі (видно, коли ти в кімнаті; ближню до камери ховає InnerWalls) -----
+        if (type != ModuleType.Greenhouse) // теплиця — скляний тунель, там стін немає
+            BuildInnerWalls(root, view, solid, typeColor, w, t, L, roomMid, roomDepth, aw, interior);
+
         // ----- Невидимі стіни (щоб не пройти крізь оболонку) -----
         // Вищі за саму кімнату: інакше місячним стрибком (2 м) можна заскочити всередину повз шлюз
         const float wallH = 4.5f;
@@ -191,26 +195,55 @@ public static class RoomBuilder
     // Ліжко-капсула більше за інші меблі: у ньому лежить людина звичайного розміру (AstronautView).
     const float BedScale = 1.6f;
 
-    static Material floorMaterial;
+    const float InnerWallH = 2f;      // висота внутрішніх стін, метри
+    const float InnerWallT = 0.08f;   // товщина
+
+    static void BuildInnerWalls(Transform root, ModuleView view, Material solid, Color typeColor, float w, float t, Layout L,
+                                float roomMid, float roomDepth, float aw, List<Renderer> interior)
+    {
+        var mat = ModuleParts.Textured(solid, "Art/Base/moon_base_wall", Vector2.one);
+        if (mat == solid) return; // текстури немає — лишаємо кімнату як була
+        // Стіни — як намальований фон: не пишуть глибину і малюються після землі, але ДО спрайтів.
+        // Інакше верхівки меблів і людей (картинки нахилені до камери) ховалися б за задньою стіною.
+        if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+        mat.SetShaderPassEnabled("DepthOnly", false);
+        mat.renderQueue = 2450; // після звичайних 3D-об'єктів (2000), перед прозорими спрайтами (3000)
+        var walls = root.gameObject.AddComponent<InnerWalls>();
+        walls.Init(view);
+        Color tint = Color.Lerp(typeColor, Color.white, 0.8f);
+        float inX = w / 2 - t - InnerWallT / 2 - 0.02f;           // трохи всередині бортика
+        float backZ = L.roomBack - t - InnerWallT / 2 - 0.02f;
+        float frontZ = L.roomFront + t + InnerWallT / 2 + 0.02f;
+        float sideLen = backZ - frontZ;
+        float sideMid = (backZ + frontZ) / 2;
+        float y = InnerWallH / 2;
+
+        void Add(string name, Vector3 pos, Vector3 scale, float length, Vector3 inward)
+        {
+            var r = R(ModuleParts.Box(root, name, mat, pos, scale, collider: false, tint: tint));
+            ModuleParts.SetTiling(r, new Vector2(Mathf.Max(1f, Mathf.Round(length / InnerWallH)), 1f)); // квадратні панелі
+            r.enabled = false; // покаже InnerWalls, коли інженер зайде
+            interior.Add(r);   // темнішає разом зі світлом у кімнаті
+            walls.Add(r, inward);
+        }
+
+        Add("Inner Wall Back", new Vector3(0f, y, backZ), new Vector3(2 * inX, InnerWallH, InnerWallT), 2 * inX, Vector3.back);
+        Add("Inner Wall Left", new Vector3(-inX, y, sideMid), new Vector3(InnerWallT, InnerWallH, sideLen), sideLen, Vector3.right);
+        Add("Inner Wall Right", new Vector3(inX, y, sideMid), new Vector3(InnerWallT, InnerWallH, sideLen), sideLen, Vector3.left);
+        // передня стіна — обабіч дверей шлюзу
+        float seg = inX - aw / 2;
+        if (seg > 0.2f)
+        {
+            Add("Inner Wall Front L", new Vector3(-(aw / 2 + seg / 2), y, frontZ), new Vector3(seg, InnerWallH, InnerWallT), seg, Vector3.forward);
+            Add("Inner Wall Front R", new Vector3(aw / 2 + seg / 2, y, frontZ), new Vector3(seg, InnerWallH, InnerWallT), seg, Vector3.forward);
+        }
+    }
 
     /// <summary>
-    /// Підлога кімнати з плитками Юлі (Resources/Art/Base/moon_base_floor): копія матеріалу стін з текстурою,
-    /// плитки ≈ 2 м. Колір кімнати (тінт) накладається поверх. Немає текстури — звичайна підлога.
+    /// Підлога кімнати з плитками Юлі (Resources/Art/Base/moon_base_floor), плитки ≈ 2 м.
+    /// Колір кімнати (тінт) накладається поверх. Немає текстури — звичайна підлога.
     /// </summary>
-    static Material FloorMaterial(Material solid)
-    {
-        if (floorMaterial != null) return floorMaterial;
-        var tex = Resources.Load<Texture2D>("Art/Base/moon_base_floor");
-        if (tex == null || solid == null) return solid;
-        floorMaterial = new Material(solid) { name = "Module Floor (runtime)" };
-        if (floorMaterial.HasProperty("_BaseMap"))
-        {
-            floorMaterial.SetTexture("_BaseMap", tex);
-            floorMaterial.SetTextureScale("_BaseMap", new Vector2(3f, 2.5f));
-        }
-        else floorMaterial.mainTexture = tex;
-        return floorMaterial;
-    }
+    static Material FloorMaterial(Material solid) => ModuleParts.Textured(solid, "Art/Base/moon_base_floor", new Vector2(3f, 2.5f));
 
     static Item[] LayoutFor(ModuleType type)
     {

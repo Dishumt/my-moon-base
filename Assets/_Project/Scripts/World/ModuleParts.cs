@@ -77,6 +77,17 @@ public static class ModuleParts
         return mat;
     }
 
+    static readonly int BaseMapST = Shader.PropertyToID("_BaseMap_ST");
+
+    /// <summary>Скільки разів повторити текстуру на цьому об'єкті (x — уздовж, y — угору). Не чіпає спільний матеріал.</summary>
+    public static void SetTiling(Renderer rend, Vector2 tiling)
+    {
+        if (block == null) block = new MaterialPropertyBlock();
+        rend.GetPropertyBlock(block);
+        block.SetVector(BaseMapST, new Vector4(tiling.x, tiling.y, 0f, 0f));
+        rend.SetPropertyBlock(block);
+    }
+
     /// <summary>Перефарбувати один об'єкт, не змінюючи спільний матеріал.</summary>
     public static void SetColor(Renderer rend, Color color)
     {
