@@ -98,6 +98,9 @@ public class FlightMapView
 
     public bool Ready => view != null && caption != null && fact != null;
 
+    /// <summary>true — закінчити на орбіті Місяця («Починаємо спуск!»): саму посадку покаже LandingView.</summary>
+    public bool EndInLunarOrbit;
+
     void Show(bool visible) => view?.EnableInClassList("flight-view--hidden", !visible);
 
     Label MapLabel(string cls)
@@ -137,7 +140,8 @@ public class FlightMapView
         yield return null;
         Build();
 
-        for (phase = 0; phase < PhaseSeconds.Length && !skip; phase++)
+        int lastPhase = EndInLunarOrbit ? PhaseSeconds.Length - 1 : PhaseSeconds.Length;
+        for (phase = 0; phase < lastPhase && !skip; phase++)
         {
             SetText(caption, T("flight.step" + (phase + 1)));
             SetText(fact, T("flight.fact" + (phase + 1)));
@@ -151,6 +155,17 @@ public class FlightMapView
                 yield return null;
             }
             missionHours = startHours + PhaseHours[phase];
+        }
+
+        if (EndInLunarOrbit)
+        {
+            // далі — сцена посадки
+            phase = 3;
+            if (skip) { missionHours = PhaseHours[0] + PhaseHours[1] + PhaseHours[2] + PhaseHours[3]; Step(3, 1f, 0f); }
+            SetText(caption, T("flight.descent"));
+            for (float t = 0f; t < (skip ? 0.3f : 1.2f); t += Time.unscaledDeltaTime) yield return null;
+            Show(false);
+            yield break;
         }
 
         // сіли (або пропустили — одразу на базі)

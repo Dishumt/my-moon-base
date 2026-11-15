@@ -415,3 +415,6 @@
 
 /* --- годинник місії на карті польоту (роль 04) --- */
 .flight-clock { position: absolute; right: 24px; top: 64px; font-size: 15px; color: #9FE8FF; -unity-text-align: upper-right; -unity-font-style: bold; }
+
+/* --- сцена посадки на Місяці (роль 04) --- */
+.landing-view { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: #020308; overflow: hidden; }

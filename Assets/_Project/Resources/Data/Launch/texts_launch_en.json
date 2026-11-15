@@ -1021,6 +1021,58 @@
     {
       "key": "flight.clock",
       "text": "Mission time: {0} d {1} h {2} min (sped up)"
+    },
+    {
+      "key": "flight.descent",
+      "text": "Moon orbit reached. Starting the descent!"
+    },
+    {
+      "key": "landing.title",
+      "text": "LANDING · MOON SOUTH POLE"
+    },
+    {
+      "key": "landing.telemetry",
+      "text": "altitude {0} m · speed {1} km/h"
+    },
+    {
+      "key": "landing.event.brake",
+      "text": "Braking with the engine"
+    },
+    {
+      "key": "landing.event.vertical",
+      "text": "Straight down: picking a flat spot without rocks"
+    },
+    {
+      "key": "landing.event.dust",
+      "text": "Dust from under the engine!"
+    },
+    {
+      "key": "landing.event.contact",
+      "text": "Contact! Engine off. We have landed!"
+    },
+    {
+      "key": "landing.event.crew",
+      "text": "The crew steps onto the Moon"
+    },
+    {
+      "key": "landing.fact.1",
+      "text": "Landing takes about 12 minutes. Parachutes need air, and the Moon has none, so the ship brakes with its engine."
+    },
+    {
+      "key": "landing.fact.2",
+      "text": "At the south pole the Sun always stays near the horizon, so shadows are very long. Deep craters never see sunlight and keep ice inside."
+    },
+    {
+      "key": "landing.fact.3",
+      "text": "There is no air on the Moon, so dust flies in straight lines and falls right away. No dust clouds!"
+    },
+    {
+      "key": "landing.fact.4",
+      "text": "On the Moon you weigh 6 times less. Astronauts don't walk, they hop!"
+    },
+    {
+      "key": "landing.fact.5",
+      "text": "Solar panels at the pole stand upright: the sunlight comes from the side, from just above the horizon."
     }
   ]
 }
