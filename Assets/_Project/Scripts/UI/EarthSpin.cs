@@ -55,7 +55,8 @@ public class EarthSpin : MonoBehaviour
         }
         if (targets.Count == 0) return;
 
-        int frame = (int)(Time.unscaledTime * FramesPerSecond) % frames.Length;
+        // Кадри Юлі йдуть із заходу на схід, а справжня Земля крутиться навпаки — граємо їх з кінця
+        int frame = frames.Length - 1 - (int)(Time.unscaledTime * FramesPerSecond) % frames.Length;
         if (frame == shownFrame) return;
         shownFrame = frame;
         var image = new StyleBackground(frames[frame]);

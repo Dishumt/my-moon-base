@@ -159,6 +159,10 @@ public class LandingView
 
     // ---------- Сцена ----------
 
+    // Картинка бази (Resources/Art/Flight/landing_base.png, 1942×809): висота / ширина і де на ній поверхня ґрунту (частка висоти)
+    const float BaseArtAspect = 809f / 1942f;
+    const float BaseArtGround = 0.832f;
+
     void Build()
     {
         W = view.resolvedStyle.width;
@@ -230,26 +234,41 @@ public class LandingView
             Circle(world, x, y, s * 0.5f, "#A9A7A2");
         }
 
-        // наша база: дві сонячні панелі (стоять вертикально — світло падає збоку) і посадковий майданчик
-        foreach (float px in new[] { W * 0.74f, W * 0.8f })
+        // наша база: картинка (житловий модуль з антеною ліворуч, сонячні панелі й ще один модуль праворуч);
+        // поверхня реголіту на ній — на 83,2 % висоти, саме там ставимо лінію ґрунту. Немає картинки — малюємо панелі.
+        var baseArt = FlightArt.Add(world, "Art/Flight/landing_base", "landing-base");
+        if (baseArt != null)
         {
-            Box(world, px, groundY - H * 0.1f, 3f, H * 0.1f, "#7E8692");
-            var panel = Box(world, px - H * 0.018f, groundY - H * 0.2f, H * 0.036f, H * 0.12f, "#2D5FA8");
-            panel.style.borderTopWidth = panel.style.borderBottomWidth = panel.style.borderLeftWidth = panel.style.borderRightWidth = 2f;
-            panel.style.borderTopColor = panel.style.borderBottomColor = panel.style.borderLeftColor = panel.style.borderRightColor = new Color(0.75f, 0.8f, 0.9f);
-            Box(world, px + 3f, groundY - 2f, H * 0.25f, 4f, "#2A2A2E").style.opacity = 0.7f;   // тінь панелі
+            float bh = W * BaseArtAspect;
+            FlightArt.Rect(baseArt, 0f, groundY - bh * BaseArtGround, W, bh);
+        }
+        else
+        {
+            foreach (float px in new[] { W * 0.74f, W * 0.8f })
+            {
+                Box(world, px, groundY - H * 0.1f, 3f, H * 0.1f, "#7E8692");
+                var panel = Box(world, px - H * 0.018f, groundY - H * 0.2f, H * 0.036f, H * 0.12f, "#2D5FA8");
+                panel.style.borderTopWidth = panel.style.borderBottomWidth = panel.style.borderLeftWidth = panel.style.borderRightWidth = 2f;
+                panel.style.borderTopColor = panel.style.borderBottomColor = panel.style.borderLeftColor = panel.style.borderRightColor = new Color(0.75f, 0.8f, 0.9f);
+                Box(world, px + 3f, groundY - 2f, H * 0.25f, 4f, "#2A2A2E").style.opacity = 0.7f;   // тінь панелі
+            }
         }
         var pad = Box(world, padX - L * 0.75f, groundY - 3f, L * 1.5f, 6f, "#B5B3AD");
         Round(pad, 3f);
         Circle(world, padX - L * 0.75f, groundY - 2f, 3f, "#FF6A4D");
         Circle(world, padX + L * 0.75f, groundY - 2f, 3f, "#FF6A4D");
 
-        var rocks = FlightArt.Add(world, "Art/Flight/moon_rocks", "landing-rocks");
-        FlightArt.Rect(rocks, W * 0.04f, groundY - L * 0.4f, L * 0.8f, L * 0.8f);
+        // Камені, бур і переробник льоду: з картинкою бази — у вільних місцях між модулями, щоб не налазили на них
+        bool withBase = baseArt != null;
+        if (!withBase)
+        {
+            var rocks = FlightArt.Add(world, "Art/Flight/moon_rocks", "landing-rocks");
+            FlightArt.Rect(rocks, W * 0.04f, groundY - L * 0.4f, L * 0.8f, L * 0.8f);
+        }
         var drill = FlightArt.Add(world, "ISRU/ice_drill", "landing-ice-drill");
-        FlightArt.Rect(drill, W * 0.86f, groundY - L * 0.75f, L * 0.8f, L * 0.8f);
+        FlightArt.Rect(drill, W * (withBase ? 0.6f : 0.86f), groundY - L * 0.75f, L * 0.8f, L * 0.8f);
         var processor = FlightArt.Add(world, "ISRU/ice_processor", "landing-ice-processor");
-        FlightArt.Rect(processor, W * 0.12f, groundY - L * 0.65f, L * 0.7f, L * 0.7f);
+        FlightArt.Rect(processor, W * (withBase ? 0.22f : 0.12f), groundY - L * 0.65f, L * 0.7f, L * 0.7f);
 
         // тінь посадкового модуля: витягнута праворуч, мчить до модуля, поки він знижується
         shadow = Box(world, 0f, groundY - 2f, Lw, 6f, "#1E1E22");

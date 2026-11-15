@@ -44,6 +44,16 @@ public class FlightMapView
     Vector2 E;
     float cityAngle, cityRadius, parkingEnd;
     float missionHours, earthSpin;
+
+    // Земля, що обертається (20 кадрів Юлі, Resources/Art/Earth). На старті — кадр 12: там видно Україну,
+    // і ракета злітає з Дніпра (точка нижче — Дніпро на цьому кадрі, частки картинки 0..1 від лівого верхнього кута).
+    // Після старту Земля крутиться на схід, як справжня: Африка їде праворуч, з лівого краю виходить Америка.
+    static Texture2D[] earthFrames;
+    const int LaunchFrame = 11;                                   // earth_12
+    static readonly Vector2 DniproOnFrame = new Vector2(0.679f, 0.235f);
+    const float EarthFramesPerSecond = 4f;
+    float spinClock;
+    int shownEarthFrame = -1;
     int phase;
     Vector2 ship, shipPrev;
     float lastAngle, landTilt;
@@ -87,6 +97,7 @@ public class FlightMapView
         canvas = new MapCanvas { Draw = DrawMap };
         view.Insert(0, canvas);
         earthArt = FlightArt.Add(canvas, "Art/Flight/earth", "flight-earth-art");
+        if (EarthFrames() != null && earthArt == null) earthArt = FlightArt.Add(canvas, "Art/Earth/earth_12", "flight-earth-art");
         moonArt = FlightArt.Add(canvas, "Art/Flight/moon", "flight-moon-art");
         cityPin = new VisualElement { pickingMode = PickingMode.Ignore };
         cityPin.AddToClassList("flight-city-pin");
@@ -252,7 +263,9 @@ public class FlightMapView
         missionHours = 0f;
         visualTime = 0f;
         earthSpin = DniproLon + 25f;          // Дніпро трохи ліворуч від центру диска
-        Vector2 city = Project(DniproLat, DniproLon, earthSpin);
+        spinClock = 0f;
+        shownEarthFrame = -1;
+        Vector2 city = CityPoint();
         cityAngle = Mathf.Atan2(city.y - E.y, city.x - E.x) * Mathf.Rad2Deg;
         cityRadius = (city - E).magnitude;
         // виток навколо Землі: від кінця старту до точки розгону (протилежно місцю зустрічі з Місяцем)
@@ -363,6 +376,20 @@ public class FlightMapView
         rocket.style.rotate = new Rotate(new Angle(lastAngle));
         FlightArt.Rect(earthArt, E.x - R, E.y - R, R * 2f, R * 2f);
         FlightArt.Rect(moonArt, moon.x - r, moon.y - r, r * 2f, r * 2f);
+        // Місяць завжди повернутий до Землі одним боком (так і є насправді), тож, облітаючи Землю, він повертається
+        if (moonArt != null)
+            moonArt.style.rotate = new Rotate(new Angle(Mathf.Atan2(E.y - moon.y, E.x - moon.x) * Mathf.Rad2Deg - 180f));
+        if (SpinningEarth)
+        {
+            if (ph > 0) spinClock += Mathf.Max(0f, dt);
+            int n = earthFrames.Length;
+            int frame = ph == 0 ? LaunchFrame % n : ((LaunchFrame - Mathf.FloorToInt(spinClock * EarthFramesPerSecond)) % n + n) % n;
+            if (frame != shownEarthFrame)
+            {
+                shownEarthFrame = frame;
+                earthArt.style.backgroundImage = new StyleBackground(earthFrames[frame]);
+            }
+        }
         float phases = EndInLunarOrbit ? 4f : 5f;
         progressFill.style.width = Length.Percent(Mathf.Clamp01((ph + u) / phases) * 100f);
         SetText(engineLabel, T(burning ? "flight.engine.burn" : "flight.engine.coast"));
@@ -371,8 +398,8 @@ public class FlightMapView
         Place(earthLabel, E + new Vector2(-100f, R + 10f));
         Place(moonLabel, moon + new Vector2(-100f, -r - 30f));
         Place(poleLabel, moon + new Vector2(-100f, r + 8f));
-        Vector2 city = Project(DniproLat, DniproLon, earthSpin);
-        bool cityVisible = ph == 0 && Depth(DniproLat, DniproLon, earthSpin) > 0.1f;
+        Vector2 city = CityPoint();
+        bool cityVisible = ph == 0 && (SpinningEarth || Depth(DniproLat, DniproLon, earthSpin) > 0.1f);
         cityLabel.style.display = cityVisible ? DisplayStyle.Flex : DisplayStyle.None;
         cityPin.style.display = cityVisible ? DisplayStyle.Flex : DisplayStyle.None;
         FlightArt.Rect(cityPin, city.x - 3f, city.y - 3f, 6f, 6f);
@@ -504,6 +531,28 @@ public class FlightMapView
     {
         float a = degrees * Mathf.Deg2Rad;
         return new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+    }
+
+    bool SpinningEarth => earthArt != null && EarthFrames() != null;
+
+    /// <summary>Де Дніпро на екрані: на кадрі Юлі (якщо є) або на намальованій кодом Землі.</summary>
+    Vector2 CityPoint() => SpinningEarth
+        ? E + R * new Vector2(DniproOnFrame.x * 2f - 1f, DniproOnFrame.y * 2f - 1f)
+        : Project(DniproLat, DniproLon, earthSpin);
+
+    static Texture2D[] EarthFrames()
+    {
+        if (earthFrames == null)
+        {
+            var list = new List<Texture2D>();
+            for (int i = 1; i <= 20; i++)
+            {
+                var t = Resources.Load<Texture2D>("Art/Earth/earth_" + i.ToString("00"));
+                if (t != null) list.Add(t);
+            }
+            earthFrames = list.ToArray();
+        }
+        return earthFrames.Length == 20 ? earthFrames : null;
     }
 
     /// <summary>Точка на диску Землі для широти/довготи (вид збоку; spin — яка довгота зараз у центрі).</summary>
