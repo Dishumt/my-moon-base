@@ -108,6 +108,7 @@ public class LaunchPadView
         for (int n = 10; n >= 1 && !skip; n--)
         {
             SetText(count, n.ToString());
+            GameAudio.Play(n <= 3 ? Sfx.Toggle : Sfx.Click); // піп щосекунди
             // факти під час відліку: як летить ракета → скільки летіти → коли можна летіти; на старті — перевантаження
             if (n == 10) SetText(fact, T("pad.fact.1"));
             else if (n == 8) SetText(fact, T("pad.fact.6"));   // справжня ракета — як 600 слонів
@@ -126,6 +127,7 @@ public class LaunchPadView
 
         // 4) СТАРТ!
         SetText(count, T("pad.liftoff"));
+        if (!skip) GameAudio.Play(success ? Sfx.Launch : Sfx.LaunchFail);
         count.AddToClassList("pad-count--word");   // слово довше за цифру — менший шрифт, щоб не налазило на ракету
         SetText(fact, T("pad.fact.3"));
         SetText(status, "");

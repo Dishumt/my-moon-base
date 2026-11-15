@@ -137,9 +137,15 @@ public class GameBootstrap : MonoBehaviour
         Clock.Update(Time.deltaTime);
     }
 
-    void OnDayEnded(DayReport report)
+    void OnDayEnded(DayReport report) => SaveNow();
+
+    /// <summary>
+    /// Зберегти гру зараз (кінець дня, меню паузи). Демо не зберігаємо; пройдений чи програний розділ теж
+    /// (інакше «Продовжити» поверне його).
+    /// </summary>
+    public void SaveNow()
     {
-        // демо не зберігаємо; пройдений чи програний розділ теж (інакше «Продовжити» поверне його)
+        if (State == null || Clock == null) return;
         var chapters = GetSystem<ChapterSystem>();
         if (autoSave && !IsDemo && (chapters == null || !chapters.IsFinished)) SaveSystem.Save(State);
     }

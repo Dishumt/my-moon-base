@@ -44,9 +44,15 @@
 
             <!-- tab contents: placeholders for now. Each tab becomes its own .uxml in the next steps -->
             <ui:VisualElement name="tbody" style="margin-top: 12px; height: 500px;">
-                <!-- MAP: only shows the world (placeholder for now) -->
-                <ui:VisualElement name="pane-map" class="panel" style="display: none; flex-grow: 1; align-items: center; justify-content: center;">
-                    <ui:Label name="pane-map-stub" class="t-label" />
+                <!-- MAP: a plan of the surface (made by MapTabView.cs) + a list of places with distances -->
+                <ui:VisualElement name="pane-map" class="panel" style="display: none; flex-grow: 1; flex-direction: row; padding: 12px;">
+                    <ui:VisualElement name="map-area" class="mp-area" />
+                    <ui:VisualElement name="map-side" style="flex-grow: 1; margin-left: 16px;">
+                        <ui:Label name="map-title" class="gt-big" />
+                        <ui:Label name="map-hint" class="gt-text" />
+                        <ui:Label name="map-storm" class="gt-text gt-text--warn" style="display: none;" />
+                        <ui:ScrollView name="map-legend" style="flex-grow: 1;" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
                 <!-- BUILD: base grid (squares are made by BuildGridView.cs) + side panel for the chosen square -->
                 <ui:VisualElement name="pane-build" class="panel" style="display: none; flex-grow: 1; flex-direction: row; padding: 12px;">
