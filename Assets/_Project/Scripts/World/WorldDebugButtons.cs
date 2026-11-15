@@ -34,6 +34,7 @@ public class WorldDebugButtons : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Світ: тип " + testType + " →")) testType = NextRoomType(testType);
         if (GUILayout.Button(savedPlan == null ? "Енергія кімнатам: 0" : "Енергія кімнатам: назад")) TogglePower(game);
+        if (GUILayout.Button("Енергія кімнатам +1")) AddRoomPower(game);
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Аптечки -1")) s.Res.MedKits = Mathf.Max(0, s.Res.MedKits - 1);
@@ -89,6 +90,22 @@ public class WorldDebugButtons : MonoBehaviour
             CopyRooms(savedPlan, s.Power);
             if (power != null) CopyRooms(savedPlan, power.Granted);
             savedPlan = null;
+        }
+        GameEvents.RaiseStateChanged();
+    }
+
+    /// <summary>+1 блок кожній кімнаті (і в плані, і в Granted — щоб меблі відреагували одразу). Батарея може не витягнути — це лише перевірка.</summary>
+    static void AddRoomPower(GameBootstrap game)
+    {
+        var power = game.GetSystem<PowerSystem>();
+        foreach (var p in new[] { game.State.Power, power != null ? power.Granted : null })
+        {
+            if (p == null) continue;
+            p.LifeSupport++;
+            p.Greenhouse++;
+            p.Medbay++;
+            p.Lab++;
+            p.Shelter++;
         }
         GameEvents.RaiseStateChanged();
     }
