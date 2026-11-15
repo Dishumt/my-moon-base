@@ -260,8 +260,10 @@ public class ModuleView : MonoBehaviour
                 {
                     float x = i * size.x * 0.22f;
                     ModuleParts.Box(root, "Leg", mat, new Vector3(x, 0.6f, 0f), new Vector3(0.15f, 1.2f, 0.15f), tint: metal);
-                    var panel = ModuleParts.Box(root, "Panel", mat, new Vector3(x, 1.25f, 0f), new Vector3(size.x * 0.4f, 0.08f, size.y * 0.6f),
-                                                collider: false, tint: c);
+                    // Текстура Юлі (сині комірки); без неї — просто колір панелі
+                    var solarMat = ModuleParts.Textured(mat, "Art/Base/solar_panel", new Vector2(1f, 1.5f));
+                    var panel = ModuleParts.Box(root, "Panel", solarMat, new Vector3(x, 1.25f, 0f), new Vector3(size.x * 0.4f, 0.08f, size.y * 0.6f),
+                                                collider: false, tint: solarMat != mat ? Color.white : c);
                     panel.transform.localRotation = Quaternion.Euler(-35f, 0f, 0f); // нахил до низького полярного сонця
                 }
                 break;

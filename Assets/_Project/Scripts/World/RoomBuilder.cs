@@ -254,6 +254,12 @@ public static class RoomBuilder
             go.transform.localScale = Vector3.one * it.scale; // до Billboard: він запам'ятовує масштаб в Awake
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = info.sprite;
+            // Новий унітаз Юлі (кабінка; її ж кадри грають, коли він ламається — IncidentView)
+            if (it.name == "shower_toilet")
+            {
+                var booth = Resources.Load<Sprite>("Art/Incidents/toilet_frame_01");
+                if (booth != null) sr.sprite = booth;
+            }
             go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
             // Предмет разом з лампами й товщиною сортується як одне ціле: лампи поверх предмета, але не поверх людей перед ним
             go.AddComponent<UnityEngine.Rendering.SortingGroup>();

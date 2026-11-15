@@ -49,6 +49,34 @@ public static class ModuleParts
         return go;
     }
 
+    static readonly System.Collections.Generic.Dictionary<string, Material> textured =
+        new System.Collections.Generic.Dictionary<string, Material>();
+
+    /// <summary>
+    /// Копія матеріалу з текстурою з Resources (наприклад "Art/Base/solar_panel"), плитки tiling разів на грань.
+    /// Одна копія на текстуру (кеш). Немає текстури — повертає звичайний матеріал.
+    /// </summary>
+    public static Material Textured(Material baseMat, string resource, Vector2 tiling)
+    {
+        if (baseMat == null) return null;
+        if (textured.TryGetValue(resource, out var cached) && cached != null) return cached;
+        var tex = Resources.Load<Texture2D>(resource);
+        if (tex == null) return baseMat;
+        var mat = new Material(baseMat) { name = baseMat.name + " + " + tex.name };
+        if (mat.HasProperty("_BaseMap"))
+        {
+            mat.SetTexture("_BaseMap", tex);
+            mat.SetTextureScale("_BaseMap", tiling);
+        }
+        else
+        {
+            mat.mainTexture = tex;
+            mat.mainTextureScale = tiling;
+        }
+        textured[resource] = mat;
+        return mat;
+    }
+
     /// <summary>Перефарбувати один об'єкт, не змінюючи спільний матеріал.</summary>
     public static void SetColor(Renderer rend, Color color)
     {
