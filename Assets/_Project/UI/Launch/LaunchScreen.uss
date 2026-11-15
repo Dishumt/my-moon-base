@@ -158,3 +158,29 @@
 
 .info-box { margin-top: 10px; flex-grow: 1; }
 .info-box > .t-body { font-size: 15px; }
+
+/* --- пусковий майданчик (роль 04): позиції ставить код LaunchPadView --- */
+.launch-hidden { display: none; }
+.pad-view { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: #12305A; overflow: hidden; }
+.pad-view--hidden { display: none; }
+.pad-scene { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.pad-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.pad-ground { background-color: #3B4250; border-top-width: 4px; border-color: #5A6272; }
+.pad-platform { background-color: #23272F; border-width: 2px; border-color: #5A6272; }
+.pad-tower { background-color: rgba(0, 0, 0, 0); border-left-width: 4px; border-right-width: 4px; border-color: #C9562E; }
+.pad-tower-bar { background-color: #C9562E; }
+.pad-arm { background-color: #C9562E; }
+.pad-rocket { -unity-background-scale-mode: scale-to-fit; }
+.pad-rocket--box { background-color: var(--color-soft); border-top-left-radius: 60px; border-top-right-radius: 60px; }
+.pad-flame { position: absolute; background-color: #FF8A2A; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; transform-origin: 50% 0%; opacity: 0; }
+.pad-flame-core { position: absolute; left: 25%; top: 0; width: 50%; height: 60%; background-color: #FFE27A; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
+.pad-trail { background-color: #FFB347; opacity: 0.8; }
+.pad-puff { position: absolute; background-color: #D9DDE3; }
+.pad-astronaut { position: absolute; -unity-background-scale-mode: scale-to-fit; }
+.pad-astronaut--box { background-color: var(--color-accent); }
+.pad-name { position: absolute; width: 120px; font-size: 13px; color: #FFFFFF; -unity-text-align: middle-center; }
+.pad-title { position: absolute; left: 24px; top: 18px; color: #FFFFFF; }
+.pad-status { position: absolute; left: 24px; top: 44px; right: 260px; color: #FFFFFF; white-space: normal; }
+.pad-count { position: absolute; left: 0; right: 0; top: 90px; font-size: 110px; -unity-font-style: bold; color: #FFE27A; -unity-text-align: middle-center; }
+.pad-fact { position: absolute; left: 24px; bottom: 24px; width: 520px; }
+.pad-skip { position: absolute; right: 24px; top: 18px; }

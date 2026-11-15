@@ -100,7 +100,7 @@
     },
     {
       "key": "launch.go",
-      "text": "LAUNCH"
+      "text": "CONFIRM"
     },
     {
       "key": "launch.send",
@@ -445,6 +445,54 @@
     {
       "key": "report.kit_unpacked",
       "text": "The kit for {0} was unpacked into building materials."
+    },
+    {
+      "key": "pad.title",
+      "text": "LAUNCH PAD"
+    },
+    {
+      "key": "pad.skip",
+      "text": "SKIP ▶▶"
+    },
+    {
+      "key": "pad.boarding",
+      "text": "The crew is boarding the rocket..."
+    },
+    {
+      "key": "pad.arm",
+      "text": "The tower arm moves away. Ready!"
+    },
+    {
+      "key": "pad.countdown",
+      "text": "Countdown"
+    },
+    {
+      "key": "pad.liftoff",
+      "text": "LIFT OFF!"
+    },
+    {
+      "key": "pad.success",
+      "text": "The crew is on the way to the Moon!"
+    },
+    {
+      "key": "pad.fail",
+      "text": "Not enough fuel! The rocket turns back to Earth."
+    },
+    {
+      "key": "pad.fact.1",
+      "text": "A rocket pushes hot gas down hard, so the rocket goes up."
+    },
+    {
+      "key": "pad.fact.2",
+      "text": "Most of a rocket's weight at launch is fuel."
+    },
+    {
+      "key": "pad.fact.3",
+      "text": "During launch astronauts feel 3 to 4 times heavier than usual."
+    },
+    {
+      "key": "pad.fact.4",
+      "text": "The Moon is about 384,000 km away. Real astronauts flew there in about 3 days."
     }
   ]
 }

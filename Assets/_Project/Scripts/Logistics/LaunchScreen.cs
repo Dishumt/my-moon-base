@@ -37,6 +37,21 @@ public class LaunchScreen : MonoBehaviour
     [Tooltip("Іконки вантажів: id як у Launch/cargo_items.json (water, food, oxygen...)")]
     [SerializeField] List<Look> cargoIcons = new List<Look>();
 
+    /// <summary>Скафандр астронавта для майданчика (якщо в сцені немає CrewLook від 01).</summary>
+    [Serializable]
+    public class CrewSuit
+    {
+        public CrewRole role;
+        public Texture2D[] walkRight;   // 4 кадри ходьби вправо (Art/Characters/*_outdoor/walk_right_0N)
+        public Texture2D back;          // спиною (back.png)
+    }
+
+    [Tooltip("Скафандри для пускового майданчика. Якщо в сцені є CrewLook (головна сцена), картинки беруться з нього — такі самі, як на Місяці.")]
+    [SerializeField] List<CrewSuit> crewSuits = new List<CrewSuit>();
+
+    [Tooltip("Показувати пусковий майданчик (екіпаж, відлік, злет) після ПІДТВЕРДИТИ")]
+    [SerializeField] bool showLaunchPad = true;
+
     [Tooltip("Скільки секунд летить ракета")]
     [SerializeField] float flightSeconds = 3f;
 
@@ -49,6 +64,8 @@ public class LaunchScreen : MonoBehaviour
     Label infoTitle, infoText, infoGives;
     Slider fuelSlider;
     Button launchButton, closeButton;
+    VisualElement tablet;
+    LaunchPadView pad;
     bool animating, modalPushed, ready;
 
     // що зараз показано в полі «Навіщо це?»: вантаж або ракета (null — загальна підказка)
@@ -97,6 +114,9 @@ public class LaunchScreen : MonoBehaviour
         fuelSlider = root.Q<Slider>("fuel-slider");
         launchButton = root.Q<Button>("launch-button");
         closeButton = root.Q<Button>("close-button");
+        tablet = root.Q("launch");
+        pad = new LaunchPadView(root);
+        if (!pad.Ready) pad = null; // у UXML немає майданчика — буде тільки політ по дузі
 
         ready = stage != null && cargoList != null && ship != null && fuelSlider != null && launchButton != null;
         if (!ready)
@@ -458,13 +478,76 @@ public class LaunchScreen : MonoBehaviour
         if (IsFirstMission)
         {
             bool ok = Supply.LaunchFirstMission(State); // розрахунок і «кубик» — у SupplySystem
-            StartCoroutine(Fly(ok));
+            if (pad != null && showLaunchPad) StartCoroutine(PadLaunch(ok));
+            else StartCoroutine(Fly(ok));
         }
         else
         {
             SetResult(Supply.Send(State) ?? "launch.order_sent");
             Refresh();
         }
+    }
+
+    // ---------- Пусковий майданчик ----------
+
+    /// <summary>Майданчик: екіпаж заходить у ракету, відлік, злет. Успіх — екран закривається; невдача — ракета повертається.</summary>
+    IEnumerator PadLaunch(bool success)
+    {
+        animating = true;
+        Refresh();
+        tablet?.AddToClassList("launch-hidden");
+
+        var rocket = Supply.GetRocket(State);
+        var tex = rocket != null ? FindLook(rocketLooks, rocket.id) : null;
+        if (tex == null) tex = rocketTexture;
+        float scale = rocket != null && rocket.scale > 0f ? rocket.scale : 1f;
+
+        var crew = new List<(string name, PadCrewFrames frames)>();
+        foreach (var a in State.Crew)
+        {
+            if (crew.Count >= Supply.People(State, true)) break;
+            crew.Add((a.Name, CrewFrames(a.Role)));
+        }
+
+        yield return pad.Play(crew, tex != null ? new StyleBackground(tex) : default, tex != null, scale, success);
+
+        tablet?.RemoveFromClassList("launch-hidden");
+        if (success)
+        {
+            animating = false;
+            GameEvents.RaiseLaunchFinished(true);
+            Close();   // гра на Місяці продовжується
+        }
+        else
+        {
+            yield return Fly(false); // ракета розвертається на Землю, гравець перепаковує
+        }
+    }
+
+    /// <summary>Кадри скафандра: з CrewLook (як на Місяці), інакше з crewSuits в інспекторі. null — картинок немає.</summary>
+    PadCrewFrames CrewFrames(CrewRole role)
+    {
+        var look = CrewLook.Instance != null ? CrewLook.Instance.Find(role) : null;
+        if (look != null && look.suit != null)
+        {
+            var set = look.suit;
+            bool flip = CharacterSprites.IsEmpty(set.walkRight);
+            var walk = flip ? set.walkLeft : set.walkRight;
+            if (!CharacterSprites.IsEmpty(walk))
+            {
+                var frames = new PadCrewFrames { flip = flip, walk = new StyleBackground[walk.Length] };
+                for (int i = 0; i < walk.Length; i++) frames.walk[i] = new StyleBackground(walk[i]);
+                frames.back = new StyleBackground(set.idleBack != null ? set.idleBack : walk[0]);
+                return frames;
+            }
+        }
+
+        var suit = crewSuits.Find(c => c != null && c.role == role);
+        if (suit == null || suit.walkRight == null || suit.walkRight.Length == 0 || suit.walkRight[0] == null) return null;
+        var result = new PadCrewFrames { walk = new StyleBackground[suit.walkRight.Length] };
+        for (int i = 0; i < suit.walkRight.Length; i++) result.walk[i] = new StyleBackground(suit.walkRight[i]);
+        result.back = new StyleBackground(suit.back != null ? suit.back : suit.walkRight[0]);
+        return result;
     }
 
     // ---------- Анімація польоту ----------

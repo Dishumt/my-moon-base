@@ -93,5 +93,27 @@
             </ui:VisualElement>
 
         </ui:VisualElement>
+
+        <ui:VisualElement name="pad-view" class="pad-view pad-view--hidden">
+            <ui:VisualElement name="pad-scene" class="pad-scene" picking-mode="Ignore">
+                <ui:VisualElement name="pad-ground" class="pad-ground" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-platform" class="pad-platform" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-trail" class="pad-trail" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-tower" class="pad-tower" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-arm" class="pad-arm" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-rocket" class="pad-rocket" picking-mode="Ignore">
+                    <ui:VisualElement name="pad-flame" class="pad-flame" picking-mode="Ignore">
+                        <ui:VisualElement class="pad-flame-core" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="pad-smoke" class="pad-layer" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-crew" class="pad-layer" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="pad-title" text="LAUNCH PAD" class="t-label pad-title" />
+            <ui:Label name="pad-status" text="" class="t-big pad-status" />
+            <ui:Label name="pad-count" text="" class="pad-count" />
+            <ui:Label name="pad-fact" text="" class="note note--fact pad-fact" />
+            <ui:Button name="pad-skip" text="SKIP" class="btn btn--small pad-skip" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

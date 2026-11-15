@@ -539,6 +539,36 @@ MonoBehaviour:
     texture: {fileID: 2800000, guid: 01ba0421cdac8524b8d34dc20af7612a, type: 3}
   - id: materials
     texture: {fileID: 2800000, guid: 3f8c66128c1fe944da5098a973be5960, type: 3}
+  crewSuits:
+  - role: 0
+    walkRight:
+    - {fileID: 2800000, guid: 55a6a2fd54f850846ae4e534417237bb, type: 3}
+    - {fileID: 2800000, guid: ae32e1ba1fc49274db5cfc2025e5e5bf, type: 3}
+    - {fileID: 2800000, guid: dbedeae83582979489a1d2da71f49f51, type: 3}
+    - {fileID: 2800000, guid: 315c151f5da58c14489b32aed1555658, type: 3}
+    back: {fileID: 2800000, guid: 9d6c4fad46b271245a242739ff31b1f7, type: 3}
+  - role: 1
+    walkRight:
+    - {fileID: 2800000, guid: a303a4b3407aa6c46a7981e0c181c330, type: 3}
+    - {fileID: 2800000, guid: 3ff53949e6d340849bb563795052ed99, type: 3}
+    - {fileID: 2800000, guid: 7917c2a26dc5b6945a3757300cb48f00, type: 3}
+    - {fileID: 2800000, guid: 6d90069ae3aff9b4cbe8c1c94d5790e1, type: 3}
+    back: {fileID: 2800000, guid: e896831f55c2e2243a2f3229431a7072, type: 3}
+  - role: 2
+    walkRight:
+    - {fileID: 2800000, guid: e80ff2afbe5aeab43a71fc7fca317a27, type: 3}
+    - {fileID: 2800000, guid: 9642aeeb7747e104bb2243f45c279256, type: 3}
+    - {fileID: 2800000, guid: c913d0713584e6b46b83ae565b0c7312, type: 3}
+    - {fileID: 2800000, guid: 357fac6f32627d149ab625d74a1f8c52, type: 3}
+    back: {fileID: 2800000, guid: d93fc3a13af69b947b7836bc0e0e4475, type: 3}
+  - role: 3
+    walkRight:
+    - {fileID: 2800000, guid: 56a6e4947b032ef4584e143fec3cbe92, type: 3}
+    - {fileID: 2800000, guid: 3fc046f9bd29b724db142cfef575c07b, type: 3}
+    - {fileID: 2800000, guid: f39ad85f674a0874096f8a23c664ef2a, type: 3}
+    - {fileID: 2800000, guid: 38dc5ec47e086b445b2d1faf7e7a74c8, type: 3}
+    back: {fileID: 2800000, guid: b5b9e0ef2a7071b4b84bd92a81e22c31, type: 3}
+  showLaunchPad: 1
   flightSeconds: 3
 --- !u!1 &2100000001
 GameObject:
