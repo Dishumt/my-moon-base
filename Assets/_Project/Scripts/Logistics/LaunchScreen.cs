@@ -79,6 +79,7 @@ public class LaunchScreen : MonoBehaviour
     SupplyTabView supplyTab;           // вміст вкладки «ПОСТАВКИ» в планшеті
     TabletController checkedTablet;    // планшет, який уже перевірили (щоб не пробувати щокадру)
     SimBalanceData balance;   // правила витрат ролі 03 — для «на скільки днів вистачить»
+    TasksData tasks;          // швидкості завдань (лід) — щоб порадник рахував добування води
 
     const float ShipBaseScale = 0.92f; // ракета на планшеті менша, ніж на майданчику
     Slider fuelSlider;
@@ -161,6 +162,7 @@ public class LaunchScreen : MonoBehaviour
         reportNext = root.Q<Button>("report-next");
         if (reportNext != null) reportNext.clicked += () => reportClosed = true;
         if (balance == null) balance = DataLoader.Load<SimBalanceData>("Balance/balance");
+        if (tasks == null) tasks = TasksData.Load();
         pad = new LaunchPadView(root);
         if (!pad.Ready) pad = null; // у UXML немає майданчика — буде тільки політ по дузі
         flight = new FlightMapView(root);
@@ -264,7 +266,7 @@ public class LaunchScreen : MonoBehaviour
     public MissionPlan PlanFor(bool firstMission, LaunchResult r)
     {
         var chapters = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ChapterSystem>() : null;
-        return MissionPlanner.Build(State, Supply, firstMission, r, balance, chapters != null ? chapters.Current : null);
+        return MissionPlanner.Build(State, Supply, firstMission, r, balance, chapters != null ? chapters.Current : null, tasks);
     }
 
     /// <summary>Картинка ракети з інспектора (null — немає).</summary>
@@ -790,7 +792,7 @@ public class LaunchScreen : MonoBehaviour
         var s = State;
         var r = Supply.Evaluate(s, true);
         var chapters = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ChapterSystem>() : null;
-        var plan = MissionPlanner.Build(s, Supply, true, r, balance, chapters != null ? chapters.Current : null);
+        var plan = MissionPlanner.Build(s, Supply, true, r, balance, chapters != null ? chapters.Current : null, tasks);
         var smaller = MissionPlanner.SmallerRocketThatFits(s, Supply, true);
         bool oxygenWasted = plan.Oxygen.RawTotal > plan.OxygenTankMax + 0.01f;
 

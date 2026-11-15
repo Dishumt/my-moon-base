@@ -324,15 +324,15 @@
     },
     {
       "key": "cargo.water.hint",
-      "text": "Astronauts drink water, and the base also makes oxygen from it."
+      "text": "Water from Earth is VERY heavy: one tank gives only a little. It is better to mine ice on the Moon. Take water only for emergencies!"
     },
     {
       "key": "cargo.food.hint",
-      "text": "Food keeps the crew full and strong. Hungry astronauts work slower."
+      "text": "Food is hard to make on the Moon, so it is the main thing ships bring. Hungry astronauts work slowly."
     },
     {
       "key": "cargo.oxygen.hint",
-      "text": "Air to breathe. The Moon has no air at all! The base tank holds up to 100."
+      "text": "Air to breathe. The base makes oxygen from water (life support), so from Earth take only a little, for emergencies. The tank holds up to 100."
     },
     {
       "key": "cargo.medkits.hint",
@@ -544,15 +544,15 @@
     },
     {
       "key": "tip.oxygen_low",
-      "text": "Oxygen for only {0} days. The next ship comes in {1} days (with reserve). Take oxygen tanks!"
+      "text": "Oxygen for only {0} days out of {1}. Give more power to life support: it makes oxygen from water."
     },
     {
       "key": "tip.water_low",
-      "text": "Water for only {0} days, but you must wait {1} days for the next ship. The base makes oxygen from water. Take water tanks!"
+      "text": "Water for only {0} days, and the next ship comes in {1} (with reserve). Send the geologist to mine ice: it is much cheaper than water from Earth!"
     },
     {
       "key": "tip.food_low",
-      "text": "Food for only {0} days, but the next ship comes in {1} days (with reserve). Hungry astronauts work slowly. Take food boxes!"
+      "text": "Food for only {0} days, but the next ship comes in {1} (with reserve). Take food boxes: food is hard to make on the Moon!"
     },
     {
       "key": "tip.goal",
@@ -889,6 +889,10 @@
     {
       "key": "error.unknown_plan",
       "text": "Unknown supply plan."
+    },
+    {
+      "key": "days.ice",
+      "text": "ice +{0}/day"
     }
   ]
 }

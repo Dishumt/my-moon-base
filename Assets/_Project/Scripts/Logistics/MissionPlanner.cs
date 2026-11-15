@@ -47,6 +47,8 @@ public class MissionPlan
     public object[] TipArgs = new object[0];
     public bool TipIsWarning;        // червона/жовта порада чи зелена
 
+    public float IceWaterPerDay;     // скільки води дає лід (добувають астронавти)
+
     public bool SurviveOk => Food.Days >= MissionDays && Water.Days >= MissionDays && Oxygen.Days >= MissionDays;
 }
 
@@ -57,7 +59,7 @@ public class MissionPlan
 public static class MissionPlanner
 {
     public static MissionPlan Build(GameState s, SupplySystem sup, bool firstMission, LaunchResult launch,
-                                    SimBalanceData balance, ChapterData chapter)
+                                    SimBalanceData balance, ChapterData chapter, TasksData tasks = null)
     {
         var plan = new MissionPlan();
         var data = sup.Data;
@@ -89,6 +91,8 @@ public static class MissionPlanner
         plan.Oxygen.PerDay = Math.Max(0f, oxygenUse - oxygenMade);
         plan.Water.PerDay = s.Power.LifeSupport * (life != null ? life.waterUsePerBlockPerDay : 2f)
                           + s.Power.Greenhouse * (green != null ? green.waterUsePerBlockPerDay : 1f);
+        plan.IceWaterPerDay = IceWaterPerDay(s, tasks);
+        plan.Water.PerDay = Math.Max(0f, plan.Water.PerDay - plan.IceWaterPerDay);   // лід із кратерів зменшує, скільки треба везти
         plan.OxygenTankMax = life != null && life.oxygenTankMax > 0f ? life.oxygenTankMax : 100f;
         plan.Oxygen.Cap = plan.OxygenTankMax;   // кисень понад бак пропадає — і в днях його не рахуємо
 
@@ -150,6 +154,23 @@ public static class MissionPlanner
         p.TipKey = key;
         p.TipArgs = args;
         p.TipIsWarning = warning;
+    }
+
+    /// <summary>Скільки води за день дають ті, хто зараз добуває лід (як у CrewSystem: спеціаліст ×2, хворий ×0.5).</summary>
+    public static float IceWaterPerDay(GameState s, TasksData tasks)
+    {
+        var rate = tasks != null ? tasks.Find(CrewTask.MineIce) : null;
+        if (rate == null) return 0f;
+        float total = 0f;
+        foreach (var a in s.Crew)
+        {
+            if (a.Task != CrewTask.MineIce) continue;
+            float k = a.Role.ToString() == rate.specialist ? tasks.specialistMultiplier : 1f;
+            if (a.Health == HealthStatus.Sick) k *= tasks.sickMultiplier;
+            if (a.Health == HealthStatus.Severe) k = 0f;
+            total += rate.perDay * k;
+        }
+        return total;
     }
 
     /// <summary>

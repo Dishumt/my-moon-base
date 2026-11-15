@@ -235,6 +235,17 @@ public class MissionPlannerTests
     }
 
     [Test]
+    public void IceMining_LowersWaterNeed()
+    {
+        var tasks = new TasksData { specialistMultiplier = 2f, sickMultiplier = 0.5f };
+        tasks.items.Add(new TaskRateData { task = "MineIce", specialist = "Geologist", perDay = 6f });
+        s.Crew.Add(new Astronaut { Name = "Nora", Role = CrewRole.Geologist, Task = CrewTask.MineIce });
+        var p = MissionPlanner.Build(s, sup, true, sup.Evaluate(s, true), bal, chapter, tasks);
+        Assert.AreEqual(12f, p.IceWaterPerDay, 0.01f);          // геолог ×2
+        Assert.IsTrue(float.IsInfinity(p.Water.Days));          // 4 витрачаємо, 12 добуваємо — вистачить
+    }
+
+    [Test]
     public void LifeSupportMakesEnough_IsEndless()
     {
         s.Power.LifeSupport = 4; // 16 робить = 16 дихають
