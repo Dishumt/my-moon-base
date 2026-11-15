@@ -30,6 +30,32 @@ public class WorldDebugButtons : MonoBehaviour
         if (GUILayout.Button("Світ: прибрати модулі")) s.Modules.Clear();
         GUILayout.EndHorizontal();
 
+        // ----- Живі меблі: тип нового модуля, енергія кімнатам, аптечки -----
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Світ: тип " + testType + " →")) testType = NextRoomType(testType);
+        if (GUILayout.Button(savedPlan == null ? "Енергія кімнатам: 0" : "Енергія кімнатам: назад")) TogglePower(game);
+        if (GUILayout.Button("Енергія кімнатам +1")) AddRoomPower(game);
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button(ModulePower.DebugOutage ? "Аварія: прибрати" : "Аварія: немає енергії")) ModulePower.DebugOutage = !ModulePower.DebugOutage;
+        GUILayout.EndHorizontal();
+        GUILayout.Label("Світ бачить енергію (отримано/план): " + RoomPowerText());
+
+        // ----- Ефекти світу: буря, тінь від хребта -----
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Буря: " + StormNames[StormFx.DebugMode] + " →")) StormFx.DebugMode = (StormFx.DebugMode + 1) % StormNames.Length;
+        if (GUILayout.Button("Тінь: до 17:00"))
+        {
+            int hours = (17 - s.Hour + 24) % 24;
+            game.Clock.AdvanceHours(hours == 0 ? 24 : hours); // о 17:00 починає сутеніти, о 18:00 — тінь від хребта
+        }
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Аптечки -1")) s.Res.MedKits = Mathf.Max(0, s.Res.MedKits - 1);
+        if (GUILayout.Button("Аптечки +1")) s.Res.MedKits++;
+        GUILayout.Label("аптечок: " + s.Res.MedKits + ", кисню: " + Mathf.RoundToInt(s.Res.Oxygen), GUILayout.Width(170));
+        GUILayout.EndHorizontal();
+
         // ----- Екіпаж: перемкнути завдання (поки CrewSystem.Assign від 04 не готовий) -----
         foreach (var a in s.Crew)
         {
@@ -45,10 +71,92 @@ public class WorldDebugButtons : MonoBehaviour
         GUILayout.EndHorizontal();
     }
 
+    static readonly string[] StormNames = { "як у грі", "попередження", "буря" };
+
+    static readonly ModuleType[] RoomCycle =
+    {
+        ModuleType.Habitat, ModuleType.Greenhouse, ModuleType.Medbay, ModuleType.Lab, ModuleType.Shelter,
+    };
+
+    static ModuleType NextRoomType(ModuleType t)
+    {
+        int i = System.Array.IndexOf(RoomCycle, t);
+        return RoomCycle[(i + 1) % RoomCycle.Length];
+    }
+
+    PowerPlan savedPlan; // план енергії до натискання «Енергія кімнатам: 0»
+
+    /// <summary>
+    /// Забрати енергію в усіх кімнат (житловий, теплиця, медмодуль, лабораторія, укриття) або повернути як було.
+    /// Міняємо і план гравця, і Granted, щоб меблі відреагували одразу, не чекаючи наступної години.
+    /// </summary>
+    void TogglePower(GameBootstrap game)
+    {
+        var s = game.State;
+        var power = game.GetSystem<PowerSystem>();
+        if (savedPlan == null)
+        {
+            savedPlan = new PowerPlan();
+            CopyRooms(s.Power, savedPlan);
+            CopyRooms(new PowerPlan(), s.Power);
+            if (power != null) CopyRooms(new PowerPlan(), power.Granted);
+        }
+        else
+        {
+            CopyRooms(savedPlan, s.Power);
+            if (power != null) CopyRooms(savedPlan, power.Granted);
+            savedPlan = null;
+        }
+        GameEvents.RaiseStateChanged();
+    }
+
+    /// <summary>+1 блок кожній кімнаті (і в плані, і в Granted — щоб меблі відреагували одразу). Батарея може не витягнути — це лише перевірка.</summary>
+    static void AddRoomPower(GameBootstrap game)
+    {
+        var power = game.GetSystem<PowerSystem>();
+        foreach (var p in new[] { game.State.Power, power != null ? power.Granted : null })
+        {
+            if (p == null) continue;
+            p.LifeSupport++;
+            p.Greenhouse++;
+            p.Medbay++;
+            p.Lab++;
+            p.Shelter++;
+        }
+        GameEvents.RaiseStateChanged();
+    }
+
+    static readonly ModuleType[] RoomsForText = { ModuleType.Habitat, ModuleType.Greenhouse, ModuleType.Medbay, ModuleType.Lab, ModuleType.Shelter };
+    static readonly string[] RoomShort = { "Жит", "Тепл", "Мед", "Лаб", "Укр" };
+
+    /// <summary>Рядок для перевірки: що бачать меблі й світло в кожній кімнаті.</summary>
+    static string RoomPowerText()
+    {
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < RoomsForText.Length; i++)
+        {
+            var t = RoomsForText[i];
+            var st = ModulePower.StateOf(t);
+            string mark = st == RoomPower.On ? "" : (st == RoomPower.Standby ? " сон" : " АВАРІЯ");
+            sb.Append(RoomShort[i]).Append(' ').Append(ModulePower.Blocks(t)).Append('/').Append(ModulePower.Planned(t)).Append(mark);
+            if (i < RoomsForText.Length - 1) sb.Append(" · ");
+        }
+        return sb.ToString();
+    }
+
+    static void CopyRooms(PowerPlan from, PowerPlan to)
+    {
+        to.LifeSupport = from.LifeSupport;
+        to.Greenhouse = from.Greenhouse;
+        to.Medbay = from.Medbay;
+        to.Lab = from.Lab;
+        to.Shelter = from.Shelter;
+    }
+
     static readonly CrewTask[] TaskCycle =
     {
         CrewTask.None, CrewTask.Rest, CrewTask.MineIce, CrewTask.CollectSamples,
-        CrewTask.Greenhouse, CrewTask.Lab, CrewTask.Medbay, CrewTask.Shelter,
+        CrewTask.Greenhouse, CrewTask.Lab, CrewTask.Medbay, CrewTask.Heal, CrewTask.Shelter,
     };
 
     /// <summary>Наступне завдання по колу. TaskTarget порожній — світ сам знайде перше відповідне місце.</summary>

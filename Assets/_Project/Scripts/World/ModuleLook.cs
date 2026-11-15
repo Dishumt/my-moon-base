@@ -70,7 +70,14 @@ public class ModuleLook : MonoBehaviour
     {
         public string name;   // назва файлу без .png, наприклад "bunk_bed"
         public Sprite sprite;
+        [Tooltip("Ширина самого предмета (без прозорих країв), метри. Рахує меню Moon → Налаштувати меблі. 0 = не пораховано.")]
+        public float width;
+        [Tooltip("На скільки середина предмета зсунута вбік від середини картинки, метри (для тіні).")]
+        public float centerX;
     }
+
+    [Header("Написи світу поверх гри (UI Toolkit): «Увага, буря!» — ставить меню Moon → Напис «Увага, буря»")]
+    public UnityEngine.UIElements.PanelSettings uiPanel;
 
     [Header("Меблі (заповнює меню Moon → Налаштувати меблі)")]
     public List<FurnitureSprite> furniture = new List<FurnitureSprite>();
@@ -85,6 +92,13 @@ public class ModuleLook : MonoBehaviour
         return null;
     }
 
+    /// <summary>Усі дані про меблі за назвою файлу (картинка, ширина) або null.</summary>
+    public FurnitureSprite FurnitureInfo(string name)
+    {
+        foreach (var f in furniture) if (f.name == name) return f;
+        return null;
+    }
+
     /// <summary>Колір типу модуля (білий, якщо не задано).</summary>
     public Color ColorOf(ModuleType type)
     {
@@ -95,6 +109,10 @@ public class ModuleLook : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        // Ефекти світу (буря, тінь від хребта, сліди) — на тому ж об'єкті World, руками ставити не треба
+        if (GetComponent<StormFx>() == null) gameObject.AddComponent<StormFx>();
+        if (GetComponent<ShadeFx>() == null) gameObject.AddComponent<ShadeFx>();
+        if (GetComponent<Footprints>() == null) gameObject.AddComponent<Footprints>();
         if (wallMaterial == null || roofMaterial == null)
             Debug.LogWarning("ModuleLook: не задано матеріали. Модулі будуть рожевими у веб-збірці.");
     }

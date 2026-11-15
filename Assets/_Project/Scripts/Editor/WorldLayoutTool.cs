@@ -36,7 +36,19 @@ public static class WorldLayoutTool
         ground.transform.localScale = new Vector3(40f, 1f, 40f); // Plane 10 м × 40 = 400 м
     }
 
-    static void LayoutPois()
+    // Кратери з льодом — у різних кутках долини (кожен лід — свій великий кратер, MoonTerrain)
+    static readonly float[] IceAngle = { 200f, 325f, 105f };
+    static readonly float[] IceDist = { 140f, 125f, 130f };
+
+    /// <summary>Номер точки з id: "ice_02" → 2 (немає номера — 1).</summary>
+    static int IdNumber(string id)
+    {
+        int us = id.LastIndexOf('_');
+        return us >= 0 && int.TryParse(id.Substring(us + 1), out int n) && n > 0 ? n : 1;
+    }
+
+    /// <summary>Ставить маркери точок з усіх розділів, яких ще немає в сцені (використовує й меню рельєфу).</summary>
+    internal static void LayoutPois()
     {
         // Точки з УСІХ розділів (chapter_01, 02, 03...): у пізніших розділах відкриваються нові точки,
         // а маркер точки, якої ще немає в поточному розділі, у грі схований (PoiMarker).
@@ -55,7 +67,7 @@ public static class WorldLayoutTool
         var parent = GetOrCreate("Pois").transform;
         var existing = Object.FindObjectsByType<PoiMarker>();
 
-        int sample = 0, fact = 0, other = 0;
+        int other = 0;
         foreach (var p in data.pois)
         {
             bool found = false;
@@ -66,12 +78,15 @@ public static class WorldLayoutTool
 
             // Що цінніше — то далі від бази (GAME.md). Кут розкидає точки довкола.
             float dist, angle;
+            // Місце залежить від номера точки (ice_02 — друге місце), а не від того, скільки точок створили зараз,
+            // інакше нові точки лягали б на вже поставлені.
+            int k = IdNumber(p.id) - 1;
             switch (type)
             {
-                case PoiType.Ice: dist = 140f; angle = 200f; break;
-                case PoiType.Sample: dist = 70f + 25f * sample; angle = 60f + 110f * sample++; break;
+                case PoiType.Ice: dist = IceDist[k % IceDist.Length]; angle = IceAngle[k % IceAngle.Length]; break;
+                case PoiType.Sample: dist = 70f + 25f * k; angle = 60f + 110f * k; break;
                 case PoiType.LandingPad: dist = 35f; angle = 270f; break;
-                case PoiType.Fact: dist = 50f + 30f * fact; angle = 20f + 140f * fact++; break;
+                case PoiType.Fact: dist = 50f + 30f * k; angle = 20f + 140f * k; break;
                 default: dist = 60f; angle = 90f * other++; break;
             }
             float rad = angle * Mathf.Deg2Rad;

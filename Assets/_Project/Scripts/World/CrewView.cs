@@ -13,6 +13,7 @@ public class CrewView : MonoBehaviour
     readonly Dictionary<RobotState, RobotView> robots = new Dictionary<RobotState, RobotView>();
     readonly List<Astronaut> goneCrew = new List<Astronaut>();
     readonly List<RobotState> goneRobots = new List<RobotState>();
+    Transform player;
 
     void Update()
     {
@@ -21,9 +22,21 @@ public class CrewView : MonoBehaviour
         var s = game.State;
 
         // ----- Астронавти -----
+        // Інженер — це гравець (GAME.md): окремого астронавта-двійника не створюємо,
+        // а в його InsideSlot пишемо, де зараз гравець (для радіації: надворі чи в модулі).
+        if (player == null)
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+        }
         for (int i = 0; i < s.Crew.Count; i++)
         {
             var a = s.Crew[i];
+            if (a.Role == CrewRole.Engineer)
+            {
+                if (player != null) a.InsideSlot = BaseView.SlotAt(player.position);
+                continue;
+            }
             if (crew.ContainsKey(a)) continue;
             var go = new GameObject("Astronaut " + a.Name);
             go.transform.SetParent(transform, false);

@@ -24,6 +24,12 @@ public class Billboard : MonoBehaviour
     /// <summary>Додатковий масштаб (сплющення при приземленні — ставить MoonHop). 1,1 = без змін.</summary>
     public Vector2 ExtraScale { get; set; } = Vector2.one;
 
+    /// <summary>Поворот картинки в площині екрана, градуси (лише FaceCamera): так лежить людина в ліжку. 0 = рівно.</summary>
+    public float Roll { get; set; }
+
+    /// <summary>Загальний розмір (1 = як є). Лежача людина менша, щоб уміститися в ліжко.</summary>
+    public float Size { get; set; } = 1f;
+
     Transform cam;
     Vector3 baseScale;
 
@@ -39,8 +45,8 @@ public class Billboard : MonoBehaviour
 
         if (mode == Mode.FaceCamera)
         {
-            transform.rotation = cam.rotation;
-            transform.localScale = new Vector3(baseScale.x * ExtraScale.x, baseScale.y * ExtraScale.y, baseScale.z);
+            transform.rotation = Roll != 0f ? cam.rotation * Quaternion.Euler(0f, 0f, Roll) : cam.rotation;
+            transform.localScale = new Vector3(baseScale.x * ExtraScale.x * Size, baseScale.y * ExtraScale.y * Size, baseScale.z);
             return;
         }
 
@@ -53,6 +59,6 @@ public class Billboard : MonoBehaviour
 
         // Камера під кутом бачить вертикальну фігурку коротшою в cos(кута) разів — компенсуємо.
         float stretch = Mathf.Min(1f / flat, 2f);
-        transform.localScale = new Vector3(baseScale.x * ExtraScale.x, baseScale.y * stretch * ExtraScale.y, baseScale.z);
+        transform.localScale = new Vector3(baseScale.x * ExtraScale.x * Size, baseScale.y * stretch * ExtraScale.y * Size, baseScale.z);
     }
 }
