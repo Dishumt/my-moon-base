@@ -76,24 +76,32 @@
 .win-btn--main:hover { background-color: #8BE3FA; }
 
 /* ---------- start menu ---------- */
+/* the menu hides the game world completely: a sky with stars, Earth and the edge of the Moon (StartMenu.BuildSky) */
 .menu-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center;
-              background-color: rgba(2, 7, 13, 0.82); }
-.menu { width: 620px; padding: 24px 28px; background-color: rgba(4, 16, 26, 0.95); border-width: 2px; border-color: var(--color-accent); }
-.menu-title { font-size: 44px; letter-spacing: 4px; -unity-font-style: bold; color: var(--color-accent); -unity-text-align: middle-center; }
-.menu-sub { font-size: 16px; color: var(--color-soft); -unity-text-align: middle-center; white-space: normal; margin-bottom: 16px; }
-.menu-btn { flex-grow: 0; height: 58px; margin: 0 0 8px 0; font-size: 20px; letter-spacing: 2px; border-radius: 0;
+              background-color: #02050B; }
+.menu-sky { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.menu-star { position: absolute; background-color: #FFFFFF; border-radius: 2px; }
+.menu-earth { position: absolute; right: 9%; top: 10%; width: 64px; height: 64px; border-radius: 32px;
+              background-color: #3D8BFF; border-width: 3px; border-color: rgba(216, 243, 255, 0.55); }
+.menu-earth__land { position: absolute; left: 14px; top: 16px; width: 24px; height: 16px; border-radius: 8px; background-color: #58C46A; }
+.menu-moon { position: absolute; left: -10%; right: -10%; bottom: -560px; height: 680px; border-radius: 1000px;
+             background-color: #3A3D44; border-top-width: 3px; border-color: #6F7480; }
+.menu { width: 600px; padding: 16px 24px; background-color: rgba(4, 16, 26, 0.94); border-width: 2px; border-color: var(--color-accent); }
+.menu-title { font-size: 40px; letter-spacing: 4px; -unity-font-style: bold; color: var(--color-accent); -unity-text-align: middle-center; }
+.menu-sub { font-size: 15px; color: var(--color-soft); -unity-text-align: middle-center; white-space: normal; margin-bottom: 10px; }
+.menu-btn { flex-grow: 0; height: 46px; margin: 0 0 6px 0; font-size: 19px; letter-spacing: 2px; border-radius: 0;
             background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-accent); color: var(--color-accent); }
 .menu-btn:hover { background-color: rgba(95, 212, 244, 0.12); }
 .menu-btn--main { background-color: var(--color-accent); color: var(--color-panel); -unity-font-style: bold; }
 .menu-btn--main:hover { background-color: #8BE3FA; }
 .menu-btn--demo { border-color: var(--color-energy); color: var(--color-energy); }
 .menu-btn--demo:hover { background-color: rgba(255, 200, 61, 0.12); }
-.menu-chapters { flex-direction: row; margin-bottom: 8px; }
-.menu-ch { flex-grow: 1; height: 48px; margin: 0 6px 0 0; font-size: 15px; border-radius: 0; white-space: normal;
+.menu-chapters { flex-direction: row; margin-bottom: 6px; }
+.menu-ch { flex-grow: 1; height: 42px; margin: 0 6px 0 0; font-size: 15px; border-radius: 0; white-space: normal;
            background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-line); color: var(--color-soft); }
 .menu-ch:hover { border-color: var(--color-accent); }
 .menu-ch--locked { opacity: 0.4; }
-.menu-lang { flex-direction: row; justify-content: center; margin: 6px 0 12px 0; }
+.menu-lang { flex-direction: row; justify-content: center; margin: 2px 0 8px 0; }
 .menu-lang-btn { width: 70px; height: 34px; margin: 0 4px; font-size: 14px; border-radius: 0;
                  background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--color-line); color: var(--color-muted); }
 .menu-lang-btn--on { border-color: var(--color-accent); color: var(--color-accent); -unity-font-style: bold; }
@@ -103,7 +111,7 @@
 .menu-badge { align-self: flex-start; margin-top: 4px; padding: 1px 8px; font-size: 12px; letter-spacing: 2px; -unity-font-style: bold;
               border-width: 1.5px; border-color: var(--color-muted); color: var(--color-muted); }
 .menu-badge--live { border-color: var(--color-ok); color: var(--color-ok); }
-.menu-credit { margin-top: 12px; font-size: 12px; color: var(--color-muted); -unity-text-align: middle-center; white-space: normal; }
+.menu-credit { margin-top: 8px; font-size: 12px; color: var(--color-muted); -unity-text-align: middle-center; white-space: normal; }
 
 /* ---------- NASA data (NasaDataView.cs) ---------- */
 .menu-btn--data { border-color: var(--color-radiation); color: var(--color-radiation); }

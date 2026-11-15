@@ -74,6 +74,7 @@ public class StartMenu : MonoBehaviour
         }
         bound = true;
         root.pickingMode = PickingMode.Ignore;
+        BuildSky();
         message = root.Q<Label>("menu-msg");
         weatherTitle = root.Q<Label>("menu-weather-title");
         weatherText = root.Q<Label>("menu-weather-text");
@@ -102,6 +103,32 @@ public class StartMenu : MonoBehaviour
     {
         var button = root.Q<Button>(name);
         if (button != null) button.clicked += action;
+    }
+
+    /// <summary>Space behind the menu: stars, Earth and the edge of the Moon. The game world must not show through.</summary>
+    void BuildSky()
+    {
+        if (stage.Q("menu-sky") != null) return;
+        var sky = new VisualElement { name = "menu-sky", pickingMode = PickingMode.Ignore };
+        sky.AddToClassList("menu-sky");
+        var rnd = new System.Random(2026); // the same stars every time
+        for (int i = 0; i < 140; i++)
+        {
+            var star = new VisualElement { pickingMode = PickingMode.Ignore };
+            star.AddToClassList("menu-star");
+            float size = rnd.NextDouble() < 0.85 ? 2f : 3f;
+            star.style.width = size;
+            star.style.height = size;
+            star.style.left = Length.Percent((float)rnd.NextDouble() * 100f);
+            star.style.top = Length.Percent((float)rnd.NextDouble() * 80f);
+            star.style.opacity = 0.25f + 0.75f * (float)rnd.NextDouble();
+            sky.Add(star);
+        }
+        var earth = UiKit.Box(sky, "menu-earth");
+        earth.pickingMode = PickingMode.Ignore;
+        UiKit.Box(earth, "menu-earth__land").pickingMode = PickingMode.Ignore;
+        UiKit.Box(sky, "menu-moon").pickingMode = PickingMode.Ignore;
+        stage.Insert(0, sky); // behind the menu panel
     }
 
     // ---------- buttons ----------

@@ -106,6 +106,8 @@ public class HudController : MonoBehaviour
         var game = GameBootstrap.Instance;
         if (game == null || game.State == null || game.Clock == null) return;
         var s = game.State;
+        // the start menu covers everything: no HUD under it
+        UiKit.Show(root.Q("hud"), !StartMenu.IsShown);
         var power = game.GetSystem<PowerSystem>();
         var chapters = game.GetSystem<ChapterSystem>();
 
