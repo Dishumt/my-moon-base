@@ -90,6 +90,7 @@ public class ConstructionSystem : ISimSystem
         ModuleState m = s.FindModule(slotId);
         if (m == null) return "build.err.no_module";
         if (!m.IsBuilt) return "build.err.not_built";
+        if (!ModuleKinds.IsRoom(m.Type)) return "build.err.shield_rooms_only";   // панель під пилом не бачила б Сонця (роль 04)
         if (m.RegolithShield) return "build.err.already_shielded";
         if (_shieldHoursLeft.ContainsKey(slotId)) return "build.err.shield_in_progress";
         if (s.Robots.Count == 0) return "build.err.no_robots";
@@ -101,6 +102,22 @@ public class ConstructionSystem : ISimSystem
         AssignWork(s);
         return null;
     }
+
+    /// <summary>
+    /// Скільки модуля вже засипано реголітом: 0 — не замовлено, 1 — готово, між ними — роботи працюють.
+    /// Світ (RegolithCover) за цим числом поступово насипає пагорб, планшет показує відсотки. Додано роллю 04.
+    /// </summary>
+    public float ShieldProgress(GameState s, int slotId)
+    {
+        ModuleState m = s.FindModule(slotId);
+        if (m != null && m.RegolithShield) return 1f;
+        if (!_shieldHoursLeft.TryGetValue(slotId, out float left)) return 0f;
+        float total = _costs.Regolith.BuildHours;
+        return total > Eps ? Math.Max(0f, Math.Min(1f, 1f - left / total)) : 1f;
+    }
+
+    /// <summary>Чи роботи зараз засипають цей модуль.</summary>
+    public bool IsShielding(int slotId) => _shieldHoursLeft.ContainsKey(slotId);
 
     /// <summary>Ціна тунелю довжиною length квадратиків: modules.json → "tunnel" за кожен квадратик.</summary>
     public BuildCost TunnelCost(int length) =>

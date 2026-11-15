@@ -1149,6 +1149,14 @@
     {
       "key": "error.tunnel_blocked",
       "text": "Something already stands between the rooms. A tunnel needs empty squares."
+    },
+    {
+      "key": "map.shield_progress",
+      "text": "COVERING WITH REGOLITH · {0}%"
+    },
+    {
+      "key": "build.err.shield_rooms_only",
+      "text": "Only rooms are covered with regolith: it protects people inside from radiation. A solar panel under dust would not see the Sun."
     }
   ]
 }
