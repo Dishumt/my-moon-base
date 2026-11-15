@@ -798,7 +798,10 @@ public class LaunchScreen : MonoBehaviour
         var plan = PlanFor(IsFirstMission, r);
 
         // цілі місії
-        SetText(goalsTitle, T("mission.title"));
+        // «Цілі першого етапу місії»: етап = розділ гри; якщо для розділу тексту немає — просто «Цілі місії»
+        string goalsKey = "mission.title." + State.Chapter;
+        string goals = T(goalsKey);
+        SetText(goalsTitle, goals.StartsWith("#") ? T("mission.title") : goals);
         if (goalsList != null)
         {
             goalsList.Clear();

@@ -381,3 +381,4 @@
 .sup-open { white-space: normal; font-size: 16px; }
 .report-text { white-space: normal; }
 .goal-text { white-space: normal; }
+#goals-title { white-space: normal; }

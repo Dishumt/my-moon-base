@@ -821,6 +821,18 @@
     {
       "key": "flight.fact5",
       "text": "Dark craters at the Moon's south pole hide ice. That's water for our base!"
+    },
+    {
+      "key": "mission.title.1",
+      "text": "MISSION STAGE 1 GOALS"
+    },
+    {
+      "key": "mission.title.2",
+      "text": "MISSION STAGE 2 GOALS"
+    },
+    {
+      "key": "mission.title.3",
+      "text": "MISSION STAGE 3 GOALS"
     }
   ]
 }
