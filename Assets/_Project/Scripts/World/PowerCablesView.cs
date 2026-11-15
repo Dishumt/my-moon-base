@@ -101,7 +101,11 @@ public class PowerCablesView : MonoBehaviour
             if (v == null) { shownKey = null; continue; } // модуль ще не намальований — спробуємо за секунду
             if (m.Type == ModuleType.Solar) solars.Add(v);
             else if (m.Type == ModuleType.Battery) { if (hub == null || hub.Type != ModuleType.Battery) hub = v; }
-            else if (ModuleKinds.IsRoom(m.Type)) rooms.Add(v);
+            else if (ModuleKinds.IsRoom(m.Type))
+            {
+                if (!v.IsEnterableRoom) shownKey = null; // кімната ще будує стіни — переробимо кабелі за секунду
+                rooms.Add(v);
+            }
         }
         if (hub == null) // батареї ще немає — центр мережі житловий модуль (або будь-яка кімната)
         {
@@ -110,18 +114,17 @@ public class PowerCablesView : MonoBehaviour
         }
         if (hub == null) return;
 
-        Vector3 hubIn = Socket(hub, 3);   // сюди приходять кабелі від панелей (праворуч від дверей)
-        Vector3 hubOut = Socket(hub, 0);  // звідси йдуть до кімнат (ліворуч від дверей)
+        // Кабелі заходять у БОКОВІ стіни модулів (не біля дверей): від панелей — до батареї, від батареї — до кімнат
         foreach (var sv in solars)
-            Add(Route(Socket(sv, 0), hubIn), ModuleType.Solar, fromSun: true, toIce: false);
+            Add(Route(sv, hub, 0f, -0.8f), ModuleType.Solar, fromSun: true, toIce: false);
         foreach (var r in rooms)
-            if (r != hub) Add(Route(hubOut, Socket(r, 3)), r.Type, fromSun: false, toIce: false); // кімната-центр живить себе сама
+            if (r != hub) Add(Route(hub, r, 0.8f, 0f), r.Type, fromSun: false, toIce: false); // кімната-центр живить себе сама
 
         // Переробник льоду і бур теж беруть струм з батареї
         var plant = FindAnyObjectByType<IcePlantView>();
         if (plant != null && s.IcePlant.ProcessorBuilt && plant.HasPositions)
         {
-            Add(Route(hubOut, plant.ProcessorCablePoint), ModuleType.Solar, fromSun: false, toIce: true);
+            Add(RouteTo(hub, plant.ProcessorCablePoint, 0.8f), ModuleType.Solar, fromSun: false, toIce: true);
             if (s.IcePlant.DrillBuilt)
                 Add(WorldPipe.Straight(plant.ProcessorCablePoint, plant.DrillCablePoint, 0.12f), ModuleType.Solar, fromSun: false, toIce: true);
         }
@@ -134,17 +137,39 @@ public class PowerCablesView : MonoBehaviour
         cables.Add(new Cable { Pipe = pipe, Type = type, FromSun = fromSun, ToIcePlant = toIce });
     }
 
-    /// <summary>Точка біля модуля, куди підходить кабель: перед модулем, збоку від дверей (i = 0..3).</summary>
-    static Vector3 Socket(ModuleView v, int i) => v.FrontPoint(i) + v.transform.forward * 0.6f;
+    /// <summary>Кабель від бокової стіни модуля a до бокової стіни модуля b, проходами між модулями.</summary>
+    static List<Vector3> Route(ModuleView a, ModuleView b, float alongA, float alongB)
+    {
+        Vector3 start = WorldPipe.ModuleSide(a, b.transform.position, alongA, 0.4f);
+        Vector3 end = WorldPipe.ModuleSide(b, a.transform.position, alongB, 0.4f);
+        var pts = Path(start, end);
+        pts.Insert(0, WorldPipe.ModuleSide(a, b.transform.position, alongA, 0.08f));
+        pts.Add(WorldPipe.ModuleSide(b, a.transform.position, alongB, 0.08f));
+        var ground = WorldPipe.Densify(pts, 0.12f);
+        ground.Insert(0, ground[0] + Vector3.up * 0.8f); // виходить зі стіни зверху
+        WorldPipe.AddRiser(ground, 0.8f);                // і заходить у стіну зверху
+        return ground;
+    }
 
-    /// <summary>Кабель проходами між модулями (як ходять астронавти), по землі.</summary>
-    static List<Vector3> Route(Vector3 from, Vector3 to)
+    /// <summary>Кабель від бокової стіни модуля до точки надворі (переробник льоду).</summary>
+    static List<Vector3> RouteTo(ModuleView a, Vector3 end, float alongA)
+    {
+        Vector3 start = WorldPipe.ModuleSide(a, end, alongA, 0.4f);
+        var pts = Path(start, end);
+        pts.Insert(0, WorldPipe.ModuleSide(a, end, alongA, 0.08f));
+        var ground = WorldPipe.Densify(pts, 0.12f);
+        ground.Insert(0, ground[0] + Vector3.up * 0.8f);
+        return ground;
+    }
+
+    /// <summary>Шлях по землі в обхід модулів (як ходять астронавти).</summary>
+    static List<Vector3> Path(Vector3 from, Vector3 to)
     {
         var path = BaseView.PathTo(from, to, 0.05f);
         var pts = new List<Vector3> { from };
         pts.AddRange(path);
         if ((pts[pts.Count - 1] - to).sqrMagnitude > 0.01f) pts.Add(to);
-        return WorldPipe.Densify(pts, 0.12f);
+        return pts;
     }
 
     void Clear()

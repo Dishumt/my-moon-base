@@ -46,7 +46,7 @@ public static class RoomBuilder
         var interior = new List<Renderer>();
 
         // ----- Внутрішнє: підлога і низький бортик по краю -----
-        interior.Add(R(ModuleParts.Box(root, "Floor", solid, new Vector3(0f, 0.05f, roomMid), new Vector3(w, 0.1f, roomDepth),
+        interior.Add(R(ModuleParts.Box(root, "Floor", FloorMaterial(solid), new Vector3(0f, 0.05f, roomMid), new Vector3(w, 0.1f, roomDepth),
                                        collider: false, tint: Color.Lerp(typeColor, Color.white, 0.65f))));
         Color curb = new Color(0.55f, 0.56f, 0.6f);
         const float curbH = 0.25f;
@@ -190,6 +190,27 @@ public static class RoomBuilder
 
     // Ліжко-капсула більше за інші меблі: у ньому лежить людина звичайного розміру (AstronautView).
     const float BedScale = 1.6f;
+
+    static Material floorMaterial;
+
+    /// <summary>
+    /// Підлога кімнати з плитками Юлі (Resources/Art/Base/moon_base_floor): копія матеріалу стін з текстурою,
+    /// плитки ≈ 2 м. Колір кімнати (тінт) накладається поверх. Немає текстури — звичайна підлога.
+    /// </summary>
+    static Material FloorMaterial(Material solid)
+    {
+        if (floorMaterial != null) return floorMaterial;
+        var tex = Resources.Load<Texture2D>("Art/Base/moon_base_floor");
+        if (tex == null || solid == null) return solid;
+        floorMaterial = new Material(solid) { name = "Module Floor (runtime)" };
+        if (floorMaterial.HasProperty("_BaseMap"))
+        {
+            floorMaterial.SetTexture("_BaseMap", tex);
+            floorMaterial.SetTextureScale("_BaseMap", new Vector2(3f, 2.5f));
+        }
+        else floorMaterial.mainTexture = tex;
+        return floorMaterial;
+    }
 
     static Item[] LayoutFor(ModuleType type)
     {

@@ -112,6 +112,30 @@ public class WorldPipe
         return p;
     }
 
+    /// <summary>
+    /// Точка біля БОКОВОЇ стіни модуля (не біля дверей) — з того боку, звідки прийде труба чи кабель.
+    /// toward — звідки йде труба; along — зсув уздовж стіни (щоб кілька труб не лягли одна на одну), метри;
+    /// out — наскільки далеко від стіни (додатне — надворі, у проході між модулями).
+    /// Кімната (RoomBuilder): ширина size.x, середина кімнати по глибині — на 1 м углиб від центру квадратика.
+    /// </summary>
+    public static Vector3 ModuleSide(ModuleView v, Vector3 toward, float along, float out_)
+    {
+        Vector2 size = ModuleLook.Instance != null ? ModuleLook.Instance.moduleSize : new Vector2(6f, 6f);
+        bool room = v.IsEnterableRoom;
+        float half = room ? size.x * 0.5f : size.x * 0.4f;                       // обладнання стоїть на площадці 0,8 квадратика
+        float mid = room ? size.y * 0.5f + 0.5f - (size.y - 1f) * 0.5f : 0f;      // = (roomFront + roomBack) / 2
+        Vector3 local = v.transform.InverseTransformPoint(toward);
+        float side = local.x >= 0f ? 1f : -1f;
+        return v.transform.TransformPoint(new Vector3(side * (half + out_), 0f, mid + along));
+    }
+
+    /// <summary>Труба біля стіни піднімається вгору і «входить» у модуль: остання точка на висоті height.</summary>
+    public static void AddRiser(List<Vector3> pts, float height)
+    {
+        if (pts == null || pts.Count == 0) return;
+        pts.Add(pts[pts.Count - 1] + Vector3.up * height);
+    }
+
     /// <summary>Довжина ламаної, метри.</summary>
     public static float PathLength(List<Vector3> pts)
     {

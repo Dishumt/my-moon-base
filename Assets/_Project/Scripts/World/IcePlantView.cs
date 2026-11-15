@@ -407,18 +407,23 @@ public class IcePlantView : MonoBehaviour
         return new WorldPipe(kind == PipeKind.Water ? "Water Pipe" : "Oxygen Pipe", pts, 0.14f, c, Color.white);
     }
 
-    /// <summary>Шлях труби від переробника до дверей модуля — проходами між модулями (як ходять астронавти).</summary>
+    /// <summary>
+    /// Шлях труби від переробника до БОКОВОЇ стіни модуля (не до дверей) — проходами між модулями.
+    /// Біля стіни труба піднімається й заходить у модуль. Вода трохи ближче до дверей, кисень — глибше.
+    /// </summary>
     List<Vector3> PipeRoute(PipeKind kind, ModuleView view)
     {
         Vector3 from = Outlet(kind);
-        Vector3 side = view.transform.right * (kind == PipeKind.Water ? -1.1f : 1.1f); // труби поруч із дверима, а не в них
-        Vector3 to = view.OuterDoorPoint + side;
+        float along = kind == PipeKind.Water ? -1.2f : 1.2f;
+        Vector3 to = WorldPipe.ModuleSide(view, from, along, 0.45f);   // у проході біля стіни
         var path = BaseView.PathTo(from, to);
         var pts = new List<Vector3> { from };
         pts.AddRange(path);
         if (pts.Count < 2 || (pts[pts.Count - 1] - to).sqrMagnitude > 0.01f) pts.Add(to);
-        pts.Add(view.InnerDoorPoint + side * 0.9f); // заходить у стіну модуля
-        return WorldPipe.Densify(pts);
+        pts.Add(WorldPipe.ModuleSide(view, from, along, 0.12f));       // впритул до стіни
+        var ground = WorldPipe.Densify(pts);
+        WorldPipe.AddRiser(ground, 1.1f);                                // угору по стіні — і в модуль
+        return ground;
     }
 
     // ---------- гравець: F біля бура, переробника, модуля ----------
@@ -504,7 +509,9 @@ public class IcePlantView : MonoBehaviour
         {
             view = null;
             foreach (var v in BaseView.All)
-                if (v != null && v.IsEnterableRoom && FlatDistance(pos, v.OuterDoorPoint) < DoorReach) { view = v; break; }
+                if (v != null && v.IsEnterableRoom &&
+                    (FlatDistance(pos, v.OuterDoorPoint) < DoorReach || FlatDistance(pos, WorldPipe.ModuleSide(v, pos, 0f, 0.45f)) < DoorReach + 1f))
+                { view = v; break; }
         }
 
         // Довжину труби по проходах рахуємо двічі на секунду (це пошук шляху, не щокадру)

@@ -1,4 +1,5 @@
 // AI-assisted: written with Claude. See docs/AI_USE.md
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -75,6 +76,7 @@ public class IncidentView : MonoBehaviour
 
         ModuleView view = active != null ? BaseView.Find(sys.ActiveSlot) : null;
         SetMarker(view);
+        UpdateToilet(active, view);
 
         bool inRange = view != null && EngineerInRange(view);
         if (active != null && inRange && CanWork(game) && FixHeld())
@@ -328,8 +330,60 @@ public class IncidentView : MonoBehaviour
         if (err != null) Debug.Log("Поломка не почалась: " + Loc.Get(err));
     }
 
+    // ---------- зламаний унітаз: анімація Юлі замість звичайного унітаза в житловому модулі ----------
+
+    static Sprite[] toiletFrames;
+    readonly List<SpriteRenderer> toiletRenderers = new List<SpriteRenderer>();
+    Sprite toiletOriginal;
+
+    void UpdateToilet(IncidentData active, ModuleView view)
+    {
+        bool want = active != null && active.id == "toilet" && view != null;
+        if (!want) { RestoreToilet(); return; }
+        if (toiletRenderers.Count == 0 || toiletRenderers[0] == null)
+        {
+            toiletRenderers.Clear();
+            var f = view.FindFurniture("shower_toilet", 0);
+            var frames = ToiletFrames();
+            if (f == null || frames == null) return;
+            var main = f.GetComponent<SpriteRenderer>();
+            if (main == null) return;
+            toiletOriginal = main.sprite;
+            // і сам предмет, і його «товщина» (копія спрайта позаду) — щоб анімація була цілою
+            foreach (var r in f.GetComponentsInChildren<SpriteRenderer>(true))
+                if (r.sprite == toiletOriginal) toiletRenderers.Add(r);
+        }
+        int frame = (int)(Time.time * 10f) % toiletFrames.Length; // 10 кадрів на секунду: вода б'є фонтаном
+        foreach (var r in toiletRenderers)
+            if (r != null) r.sprite = toiletFrames[frame];
+    }
+
+    void RestoreToilet()
+    {
+        foreach (var r in toiletRenderers)
+            if (r != null && toiletOriginal != null) r.sprite = toiletOriginal;
+        toiletRenderers.Clear();
+    }
+
+    /// <summary>Кадри Юлі (Resources/Art/Incidents/toilet_frame_01..09). Немає — лишається звичайний унітаз.</summary>
+    static Sprite[] ToiletFrames()
+    {
+        if (toiletFrames == null)
+        {
+            var list = new List<Sprite>();
+            for (int i = 1; i <= 9; i++)
+            {
+                var sp = Resources.Load<Sprite>("Art/Incidents/toilet_frame_" + i.ToString("00"));
+                if (sp != null) list.Add(sp);
+            }
+            toiletFrames = list.ToArray();
+        }
+        return toiletFrames.Length > 0 ? toiletFrames : null;
+    }
+
     void OnDestroy()
     {
+        RestoreToilet();
         if (marker != null) Destroy(marker);
     }
 }
