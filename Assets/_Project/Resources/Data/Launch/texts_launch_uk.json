@@ -256,7 +256,7 @@
     },
     {
       "key": "rocket.stats",
-      "text": "Бак {0} кг · політ {1} год"
+      "text": "паливо {0} т · {1} год"
     },
     {
       "key": "rocket.why",
@@ -724,7 +724,7 @@
     },
     {
       "key": "supply.no_link_btn",
-      "text": "НЕМАЄ ЗВ'ЯЗКУ · ЧЕКАЙ {0} ГОД"
+      "text": "НЕМАЄ ЗВ'ЯЗКУ · {0} ГОД"
     },
     {
       "key": "supply.no_power_btn",

@@ -80,6 +80,7 @@ public class LaunchPadView
         SetText(title, T("pad.title"));
         SetText(skipButton, T("pad.skip"));
         SetText(count, "");
+        count.RemoveFromClassList("pad-count--word");
         SetText(fact, "");
         SetText(status, T("pad.boarding"));
 
@@ -125,6 +126,7 @@ public class LaunchPadView
 
         // 4) СТАРТ!
         SetText(count, T("pad.liftoff"));
+        count.AddToClassList("pad-count--word");   // слово довше за цифру — менший шрифт, щоб не налазило на ракету
         SetText(fact, T("pad.fact.3"));
         SetText(status, "");
         count.style.scale = new Scale(Vector3.one);

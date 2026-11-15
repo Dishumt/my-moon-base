@@ -256,7 +256,7 @@
     },
     {
       "key": "rocket.stats",
-      "text": "Tank {0} kg · flight {1} h"
+      "text": "fuel {0} t · {1} h"
     },
     {
       "key": "rocket.why",
@@ -724,7 +724,7 @@
     },
     {
       "key": "supply.no_link_btn",
-      "text": "NO LINK · WAIT {0} H"
+      "text": "NO LINK · {0} H"
     },
     {
       "key": "supply.no_power_btn",

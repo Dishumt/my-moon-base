@@ -233,13 +233,13 @@ public class FlightMapView
         rocket.style.top = pos.y - rocketH * 0.5f;
         rocket.style.rotate = new Rotate(new Angle(ang));
 
-        Place(earthLabel, E + new Vector2(-60f, R + 10f));
-        Place(moonLabel, moonNow + new Vector2(-60f, -r - 30f));
-        Place(poleLabel, moonEnd + new Vector2(-60f, r + 8f));
+        Place(earthLabel, E + new Vector2(-100f, R + 10f));
+        Place(moonLabel, moonNow + new Vector2(-100f, -r - 30f));
+        Place(poleLabel, moonEnd + new Vector2(-100f, r + 8f));
         Vector2 city = Project(DniproLat, DniproLon, earthSpin);
         bool cityVisible = Depth(DniproLat, DniproLon, earthSpin) > 0.1f;
         cityLabel.style.display = cityVisible ? DisplayStyle.Flex : DisplayStyle.None;
-        Place(cityLabel, city + new Vector2(-60f, -26f));
+        Place(cityLabel, city + new Vector2(-100f, -26f));
 
         canvas.MarkDirtyRepaint();
     }

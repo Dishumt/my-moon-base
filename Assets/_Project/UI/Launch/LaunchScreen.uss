@@ -344,3 +344,40 @@
 .flight-rocket--box { background-color: #FF9A3D; }
 .flight-map-label { position: absolute; width: 120px; font-size: 14px; letter-spacing: 3px; color: var(--color-muted); -unity-text-align: middle-center; }
 .flight-city { position: absolute; width: 120px; font-size: 13px; color: #FFE27A; -unity-text-align: middle-center; -unity-font-style: bold; }
+
+/* --- щоб текст нікуди не налазив (роль 04) --- */
+/* шапка: статус стискається, а не налазить на заголовок */
+#status-label { flex-shrink: 1; font-size: 13px; -unity-text-align: middle-right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#title-label { flex-shrink: 0; }
+/* картки ракет */
+.rocket-name { font-size: 14px; }
+.rocket-stats { font-size: 12px; }
+/* ракета на планшеті вміщується у свою область і не закриває назву та «Місця екіпажу» */
+.ship-area { height: 112px; overflow: hidden; }
+.ship { width: 90px; height: 108px; }
+/* плитки: місце на назву у 2 рядки */
+.cargo-row { height: 134px; }
+.tile-top { height: 36px; }
+.cargo-row .cargo-icon { width: 36px; height: 36px; }
+.cargo-row .cargo-name { font-size: 12px; white-space: normal; }
+/* «Навіщо це?»: вище і дрібніший шрифт */
+.info-box { height: 110px; }
+.info-box > .t-body { font-size: 12px; white-space: normal; }
+.info-box > .t-label { font-size: 12px; color: var(--color-energy); }
+.mass-like, .days-title, #days-title { white-space: normal; }
+/* кнопка: довгі написи (НЕМАЄ ЗВ'ЯЗКУ…) влазять */
+.launch-btn { font-size: 16px; letter-spacing: 1px; white-space: normal; }
+/* майданчик: «СТАРТ!» менше за цифри */
+.pad-count--word { font-size: 72px; }
+.pad-status { font-size: 20px; }
+.pad-fact { font-size: 15px; }
+/* політ: підписи ширші */
+.flight-map-label, .flight-city { width: 200px; white-space: normal; }
+.flight-caption { font-size: 22px; }
+.flight-fact { font-size: 15px; }
+/* вкладка планшета */
+.sup-next { max-width: 440px; }
+.sup-next > .t-body { white-space: normal; font-size: 14px; }
+.sup-open { white-space: normal; font-size: 16px; }
+.report-text { white-space: normal; }
+.goal-text { white-space: normal; }

@@ -80,7 +80,7 @@ public class LaunchScreen : MonoBehaviour
     TabletController checkedTablet;    // планшет, який уже перевірили (щоб не пробувати щокадру)
     SimBalanceData balance;   // правила витрат ролі 03 — для «на скільки днів вистачить»
 
-    const float ShipBaseScale = 0.75f; // ракета на планшеті менша, ніж на майданчику
+    const float ShipBaseScale = 0.92f; // ракета на планшеті менша, ніж на майданчику
     Slider fuelSlider;
     Button launchButton, closeButton;
     VisualElement tablet;
@@ -481,7 +481,8 @@ public class LaunchScreen : MonoBehaviour
         SetText(infoTitle, T("launch.info_title"));
         if (infoItem != null)
         {
-            string text = T(infoItem.nameKey) + ". " + T(infoItem.hintKey);
+            SetText(infoTitle, T(infoItem.nameKey));   // назва замість «Навіщо це?» — тексту менше, влазить
+            string text = T(infoItem.hintKey);
             if (infoItem.IsKit) text += " " + T("launch.kit_note");
             if (infoItem.TryGetModule(out var kit) && !Supply.KitUnlocked(kit)) text += " " + T("launch.locked_hint");
             SetText(infoText, text);
@@ -489,8 +490,9 @@ public class LaunchScreen : MonoBehaviour
         }
         else if (infoRocket != null)
         {
-            SetText(infoText, T(infoRocket.nameKey) + ". " + T(infoRocket.hintKey) + " " + T("rocket.why"));
-            SetText(infoGives, T("rocket.stats", infoRocket.maxFuelKg.ToString("0"), infoRocket.flightHours));
+            SetText(infoTitle, T(infoRocket.nameKey));
+            SetText(infoText, T(infoRocket.hintKey) + " " + T("rocket.why"));
+            SetText(infoGives, T("rocket.stats", (infoRocket.maxFuelKg / 1000f).ToString("0.#"), infoRocket.flightHours));
         }
         else if (infoMass)
         {
@@ -578,7 +580,8 @@ public class LaunchScreen : MonoBehaviour
                 launchButton.text = T("supply.flying_btn");
                 launchButton.SetEnabled(false);
             }
-            SetText(statusLabel, T("launch.status." + status) + " · " + T(link ? "launch.link_ok" : "launch.link_off") + " · "
+            // зв'язок видно з вогника поруч, тому в рядку тільки статус і розклад (коротше — не налазить на заголовок)
+            SetText(statusLabel, T("launch.status." + status) + " · "
                 + T("launch.schedule", DayTime(Supply.ExpectedLaunchAt(s)), DayTime(Supply.ExpectedArrivalAt(s))));
         }
 
@@ -589,7 +592,7 @@ public class LaunchScreen : MonoBehaviour
             {
                 if (!(card.userData is RocketData rd)) continue;
                 card.Q<Label>("name").text = T(rd.nameKey);
-                card.Q<Label>("stats").text = T("rocket.stats", rd.maxFuelKg.ToString("0"), rd.flightHours);
+                card.Q<Label>("stats").text = T("rocket.stats", (rd.maxFuelKg / 1000f).ToString("0.#"), rd.flightHours);
                 card.EnableInClassList("rocket-card--on", rocket == rd);
                 card.SetEnabled(editable);
             }
