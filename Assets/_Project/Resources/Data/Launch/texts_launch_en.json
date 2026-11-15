@@ -1073,6 +1073,10 @@
     {
       "key": "report.tunnel_built",
       "text": "Robots finished a tunnel! Now the crew walks between the modules without spacesuits."
+    },
+    {
+      "key": "error.tunnel_no_neighbor",
+      "text": "This square is empty. First build a room here (in the same row), then join them with a tunnel."
     }
   ]
 }

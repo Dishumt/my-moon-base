@@ -38,7 +38,7 @@ public class TunnelTests
     public void CanConnect_Rules()
     {
         Assert.IsNull(BaseGrid.CanConnect(s, 0));                                    // житло ↔ лабораторія
-        Assert.AreEqual("error.tunnel_rooms", BaseGrid.CanConnect(s, 1));            // праворуч від лабораторії порожньо
+        Assert.AreEqual("error.tunnel_no_neighbor", BaseGrid.CanConnect(s, 1));      // праворуч від лабораторії порожньо
         Assert.AreEqual("error.tunnel_place", BaseGrid.CanConnect(s, BaseGrid.Width - 1)); // край ряду
         s.Modules.Add(new ModuleState { Type = ModuleType.Solar, SlotId = 2 });
         Assert.AreEqual("error.tunnel_rooms", BaseGrid.CanConnect(s, 1));            // панель — не кімната

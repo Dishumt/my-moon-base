@@ -57,7 +57,8 @@ public static class BaseGrid
         if (!IsValid(slotA) || Column(slotA) >= Width - 1) return "error.tunnel_place";
         var a = s.FindModule(slotA);
         var b = s.FindModule(slotA + 1);
-        if (a == null || b == null || !ModuleKinds.IsRoom(a.Type) || !ModuleKinds.IsRoom(b.Type)) return "error.tunnel_rooms";
+        if (a == null || b == null) return "error.tunnel_no_neighbor";   // з одного боку порожній квадратик
+        if (!ModuleKinds.IsRoom(a.Type) || !ModuleKinds.IsRoom(b.Type)) return "error.tunnel_rooms";
         if (!a.IsBuilt || !b.IsBuilt) return "error.tunnel_not_built";
         if (s.FindTunnel(slotA) != null) return "error.tunnel_exists";
         return null;
