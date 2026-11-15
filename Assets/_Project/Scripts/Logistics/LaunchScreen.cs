@@ -194,6 +194,7 @@ public class LaunchScreen : MonoBehaviour
                 sounds = new LaunchSounds(gameObject, countdownBeep, liftoffSound, engineRumble, padVolume);
             pad.Sounds = sounds;
         }
+        flight?.Dispose();
         flight = new FlightMapView(root);
         if (!flight.Ready) flight = null;
         root.Q("landing-view")?.RemoveFromHierarchy();   // OnEnable може викликатись кілька разів

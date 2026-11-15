@@ -97,6 +97,9 @@
 .menu-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center;
               background-color: #02050B; }
 .menu-sky { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.flight-art { -unity-background-scale-mode: scale-to-fit; }
+.menu-earth-art { right: 7%; top: 7%; width: 140px; height: 140px; }
+.menu-outpost-art { left: -3%; right: -3%; bottom: -2%; height: 47%; -unity-background-scale-mode: scale-to-fit; }
 .menu-star { position: absolute; background-color: #FFFFFF; border-radius: 2px; }
 .menu-earth { position: absolute; right: 9%; top: 10%; width: 64px; height: 64px; border-radius: 32px;
               background-color: #3D8BFF; border-width: 3px; border-color: rgba(216, 243, 255, 0.55); }

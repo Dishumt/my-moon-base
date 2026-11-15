@@ -124,10 +124,17 @@ public class StartMenu : MonoBehaviour
             star.style.opacity = 0.25f + 0.75f * (float)rnd.NextDouble();
             sky.Add(star);
         }
-        var earth = UiKit.Box(sky, "menu-earth");
-        earth.pickingMode = PickingMode.Ignore;
-        UiKit.Box(earth, "menu-earth__land").pickingMode = PickingMode.Ignore;
-        UiKit.Box(sky, "menu-moon").pickingMode = PickingMode.Ignore;
+        var earthArt = FlightArt.Add(sky, "Art/Flight/earth", "menu-earth-art");
+        if (earthArt != null) earthArt.AddToClassList("menu-earth-art");
+        else
+        {
+            var earth = UiKit.Box(sky, "menu-earth");
+            earth.pickingMode = PickingMode.Ignore;
+            UiKit.Box(earth, "menu-earth__land").pickingMode = PickingMode.Ignore;
+        }
+        var outpost = FlightArt.Add(sky, "Art/Flight/menu_outpost", "menu-outpost-art");
+        if (outpost != null) outpost.AddToClassList("menu-outpost-art");
+        else UiKit.Box(sky, "menu-moon").pickingMode = PickingMode.Ignore;
         stage.Insert(0, sky); // behind the menu panel
     }
 
