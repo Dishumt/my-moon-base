@@ -25,6 +25,8 @@ There are **no third-party audio files** in the project, so no audio licences ar
 | `Props/` | furniture, Moon rocks, rockets | TODO (роль 02) | TODO | TODO |
 | `Icons/`, `UI/` | resource and status icons, UI | TODO (роль 02) | TODO | TODO |
 | `Launch/` | rockets, cargo kits | TODO (роль 02) | TODO | TODO |
+| `Assets/_Project/Resources/Art/Flight/` | Earth, Moon, lunar lander, rocks, menu outpost | Generated for this project with OpenAI image generation; style references are existing project art | Generated output; subject to applicable OpenAI terms, not a third-party stock asset licence | Yes |
+| `Assets/_Project/Art/Resources/ISRU/` | ice drill and ice processor | Generated for this project with OpenAI image generation | Generated output; subject to applicable OpenAI terms | Yes |
 
 Space Apps rule: pictures made with AI must be named in `docs/AI_USE.md`. Rule 11 of `CLAUDE.md`: no NASA logos, flags or mission emblems.
 

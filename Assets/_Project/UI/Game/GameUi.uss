@@ -37,7 +37,9 @@
 .hud-link--ok { color: var(--color-ok); border-color: var(--color-ok); }
 .hud-tablet { height: 52px; padding: 0 18px; margin: 0; font-size: 17px; letter-spacing: 2px; -unity-font-style: bold;
               background-color: var(--color-accent); border-width: 2px; border-color: var(--color-accent); border-radius: 0; color: var(--color-panel); }
-.hud-tablet:hover { background-color: #8BE3FA; }
+.hud-tablet { transition-property: scale, background-color; transition-duration: 0.14s; transition-timing-function: ease-out; }
+.hud-tablet:hover { background-color: #A9EEFF; scale: 1.07 1.07; }
+.hud-tablet:active { background-color: #5FD4F4; scale: 0.95 0.95; }
 .hud-walk { position: absolute; left: 10px; bottom: 10px; padding: 6px 10px; font-size: 13px; letter-spacing: 1px;
             background-color: rgba(4, 16, 26, 0.75); color: var(--color-soft); }
 .hud-hint { position: absolute; left: 50%; bottom: 74px; translate: -50% 0; max-width: 620px; padding: 10px 16px;
@@ -95,6 +97,9 @@
 .menu-stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center;
               background-color: #02050B; }
 .menu-sky { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.flight-art { -unity-background-scale-mode: scale-to-fit; }
+.menu-earth-art { right: 7%; top: 7%; width: 140px; height: 140px; }
+.menu-outpost-art { left: -3%; right: -3%; bottom: -2%; height: 47%; -unity-background-scale-mode: scale-to-fit; }
 .menu-star { position: absolute; background-color: #FFFFFF; border-radius: 2px; }
 .menu-earth { position: absolute; right: 9%; top: 10%; width: 64px; height: 64px; border-radius: 32px;
               background-color: #3D8BFF; border-width: 3px; border-color: rgba(216, 243, 255, 0.55); }

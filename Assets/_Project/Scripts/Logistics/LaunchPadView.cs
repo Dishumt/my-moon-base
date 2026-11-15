@@ -443,6 +443,7 @@ public class LaunchPadView
         {
             scenery.Build(W, H, groundTop, cx, rocketW, size, towerX);
             mountH = scenery.MountHeight;
+            if (scenery.HasArt) towerX = scenery.PaintedTowerCenterX - 18f; // драбина вже є на фоні — екіпаж піднімається по ній
         }
         mountTop = groundTop - mountH;
         float top = mountTop - size;
@@ -480,6 +481,8 @@ public class LaunchPadView
             tower.Add(bar);
         }
         Place(arm, towerX + 36f, armY - 8f, Mathf.Max(0f, doorX - (towerX + 36f)), 10f);
+        // На фоні Юлі вежа вже намальована: свою не малюємо (було дві драбини поруч)
+        tower.style.display = scenery != null && scenery.HasArt ? DisplayStyle.None : DisplayStyle.Flex;
 
         // слід вогню (видно після старту)
         trail.style.display = DisplayStyle.None;

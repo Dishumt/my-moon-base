@@ -117,7 +117,7 @@ public class AstronautView : MonoBehaviour
 
         // У закритому модулі (гравець надворі) людину не видно — тільки іконку стану над дахом
         var room = Data.InsideSlot >= 0 ? BaseView.Find(Data.InsideSlot) : null;
-        bool visible = room == null || room.InteriorOpen;
+        bool visible = room == null || room.InteriorOpen || BaseView.TunnelOpenAt(transform.position); // у тунелі без даху теж видно
         bodyVisible = visible;
         foreach (var r in bodyParts) if (r != null) r.enabled = visible;
         hop.Step(moving, suit, dt);
@@ -212,7 +212,21 @@ public class AstronautView : MonoBehaviour
         float suitTime = look != null ? look.suitSeconds : 1f;
         float dustTime = look != null ? look.dustSeconds : 1.5f;
 
-        if (here != null && here != room) // виходимо: тамбур → одягнути скафандр → надвір
+        // Тунелі: кімната-ціль у тому ж ряду і всі тунелі між нами готові — ідемо всередині,
+        // без шлюзу, скафандра й радіації (роль 04)
+        var indoor = here != null && room != null && here != room ? IndoorRoute(here.SlotId, room.SlotId) : null;
+        Vector3 roomPos0 = Vector3.zero;
+        if (indoor != null)
+        {
+            int dir = room.SlotId > here.SlotId ? 1 : -1;
+            for (int i = 0; i + 1 < indoor.Count; i++)
+            {
+                Add(Kind.Direct, indoor[i].SideDoorPoint(dir));
+                Add(Kind.Direct, indoor[i + 1].SideDoorPoint(-dir));
+            }
+            Add(Kind.Direct, RoomTarget(room));
+        }
+        else if (here != null && here != room) // виходимо: тамбур → одягнути скафандр → надвір
         {
             var al = here.GetComponentInChildren<Airlock>();
             Add(Kind.Direct, here.InnerDoorPoint);
@@ -221,9 +235,10 @@ public class AstronautView : MonoBehaviour
             Add(Kind.Direct, here.OuterDoorPoint);
         }
 
-        Vector3 roomPos = room != null ? RoomTarget(room) : Vector3.zero; // біля «своїх» меблів
+        Vector3 roomPos = room != null && indoor == null ? RoomTarget(room) : roomPos0; // біля «своїх» меблів
 
-        if (room != null && here != room) // заходимо: тамбур → пил і зняти скафандр → кімната
+        if (indoor != null) { } // уже дійдемо тунелями
+        else if (room != null && here != room) // заходимо: тамбур → пил і зняти скафандр → кімната
         {
             var al = room.GetComponentInChildren<Airlock>();
             Add(Kind.Walk, room.OuterDoorPoint);
@@ -241,6 +256,31 @@ public class AstronautView : MonoBehaviour
             lying = true;
             Data.AtTaskSite = goingToTask;
         }
+    }
+
+    /// <summary>
+    /// Кімнати від from до to, якщо всі вони в одному ряду і від кімнати до кімнати ведуть готові тунелі
+    /// (тунель може йти крізь кілька порожніх квадратиків). Інакше null — тоді йдемо надвір через шлюзи, як раніше.
+    /// </summary>
+    static List<ModuleView> IndoorRoute(int from, int to)
+    {
+        var state = GameBootstrap.Instance != null ? GameBootstrap.Instance.State : null;
+        if (state == null || BaseGrid.Row(from) != BaseGrid.Row(to)) return null;
+        int dir = to > from ? 1 : -1;
+        var route = new List<ModuleView>();
+        int slot = from;
+        for (int guard = 0; guard <= BaseGrid.Width; guard++)
+        {
+            var mv = BaseView.Find(slot);
+            if (mv == null || !mv.IsEnterableRoom) return null;
+            route.Add(mv);
+            if (slot == to) return route;
+            var t = dir > 0 ? state.FindTunnel(slot) : state.FindTunnelEndingAt(slot);
+            if (t == null || !t.IsBuilt) return null;
+            slot = dir > 0 ? t.SlotB : t.SlotA;
+            if ((dir > 0 && slot > to) || (dir < 0 && slot < to)) return null;   // проскочили
+        }
+        return null;
     }
 
     void Add(Kind kind, Vector3 pos, float seconds = 0f, Airlock airlock = null)

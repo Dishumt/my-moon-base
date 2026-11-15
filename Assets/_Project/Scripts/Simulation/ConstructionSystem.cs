@@ -7,6 +7,7 @@ using System.Collections.Generic;
 ///
 ///  Order(state, type, slotId)            — замовити модуль у слот.
 ///  ShieldWithRegolith(state, slotId)     — окреме замовлення: засипати збудований модуль реголітом.
+///  OrderTunnel(state, slotA, length)     — тунель між кімнатами slotA і slotA + length у ряду (додано роллю 04).
 ///
 /// Обидва методи повертають null, якщо все гаразд, або КЛЮЧ ТЕКСТУ з причиною відмови
 /// (наприклад "error.no_materials"); інтерфейс (роль 05) показує його через Loc.Get.
@@ -89,6 +90,7 @@ public class ConstructionSystem : ISimSystem
         ModuleState m = s.FindModule(slotId);
         if (m == null) return "build.err.no_module";
         if (!m.IsBuilt) return "build.err.not_built";
+        if (!ModuleKinds.IsRoom(m.Type)) return "build.err.shield_rooms_only";   // панель під пилом не бачила б Сонця (роль 04)
         if (m.RegolithShield) return "build.err.already_shielded";
         if (_shieldHoursLeft.ContainsKey(slotId)) return "build.err.shield_in_progress";
         if (s.Robots.Count == 0) return "build.err.no_robots";
@@ -97,6 +99,44 @@ public class ConstructionSystem : ISimSystem
         s.Res.Materials -= _costs.Regolith.Materials;
         _shieldHoursLeft[slotId] = _costs.Regolith.BuildHours;
 
+        AssignWork(s);
+        return null;
+    }
+
+    /// <summary>
+    /// Скільки модуля вже засипано реголітом: 0 — не замовлено, 1 — готово, між ними — роботи працюють.
+    /// Світ (RegolithCover) за цим числом поступово насипає пагорб, планшет показує відсотки. Додано роллю 04.
+    /// </summary>
+    public float ShieldProgress(GameState s, int slotId)
+    {
+        ModuleState m = s.FindModule(slotId);
+        if (m != null && m.RegolithShield) return 1f;
+        if (!_shieldHoursLeft.TryGetValue(slotId, out float left)) return 0f;
+        float total = _costs.Regolith.BuildHours;
+        return total > Eps ? Math.Max(0f, Math.Min(1f, 1f - left / total)) : 1f;
+    }
+
+    /// <summary>Чи роботи зараз засипають цей модуль.</summary>
+    public bool IsShielding(int slotId) => _shieldHoursLeft.ContainsKey(slotId);
+
+    /// <summary>Ціна тунелю довжиною length квадратиків: modules.json → "tunnel" за кожен квадратик.</summary>
+    public BuildCost TunnelCost(int length) =>
+        new BuildCost(_costs.Tunnel.BuildHours * Math.Max(1, length), _costs.Tunnel.Materials * Math.Max(1, length));
+
+    /// <summary>
+    /// Прокласти тунель від кімнати slotA до кімнати slotA + length праворуч (крізь порожні квадратики між ними).
+    /// Ціна — modules.json → "tunnel" × length. null = прийнято; інакше ключ тексту з причиною.
+    /// </summary>
+    public string OrderTunnel(GameState s, int slotA, int length = 1)
+    {
+        string err = BaseGrid.CanConnect(s, slotA, length);
+        if (err != null) return err;
+        if (s.Robots.Count == 0) return "build.err.no_robots";
+        var cost = TunnelCost(length);
+        if (s.Res.Materials + Eps < cost.Materials) return "error.no_materials";
+
+        s.Res.Materials -= cost.Materials;
+        s.Tunnels.Add(new TunnelState { SlotA = slotA, Length = Math.Max(1, length), BuildHoursLeft = cost.BuildHours });
         AssignWork(s);
         return null;
     }
@@ -118,13 +158,15 @@ public class ConstructionSystem : ISimSystem
 
         var touchedModules = new List<ModuleState>();
         var touchedShields = new List<int>();
+        var touchedTunnels = new List<TunnelState>();
         bool someoneWithoutPower = false;
 
         foreach (RobotState robot in s.Robots)
         {
             bool build = robot.Task == RobotTask.Build;
             bool shield = robot.Task == RobotTask.Shield;
-            if ((!build && !shield) || robot.TargetSlot < 0)
+            bool tunnel = robot.Task == RobotTask.Tunnel;
+            if ((!build && !shield && !tunnel) || robot.TargetSlot < 0)
             {
                 robot.Working = false;
                 continue;
@@ -140,7 +182,16 @@ public class ConstructionSystem : ISimSystem
             canWork--;
             robot.Working = true;
 
-            if (build)
+            if (tunnel)
+            {
+                TunnelState t = s.FindTunnel(robot.TargetSlot);
+                if (t != null)
+                {
+                    t.BuildHoursLeft = Math.Max(0f, t.BuildHoursLeft - hours);
+                    if (!touchedTunnels.Contains(t)) touchedTunnels.Add(t);
+                }
+            }
+            else if (build)
             {
                 ModuleState m = s.FindModule(robot.TargetSlot);
                 float speed = m.EngineerNearby ? _engineerMultiplier : 1f;
@@ -163,6 +214,13 @@ public class ConstructionSystem : ISimSystem
             if (!m.IsBuilt) continue;
             r.Add("report.module_built", 0f, m.Type.ToString());
             FreeRobots(s, RobotTask.Build, m.SlotId);
+        }
+
+        foreach (TunnelState t in touchedTunnels)
+        {
+            if (!t.IsBuilt) continue;
+            r.Add("report.tunnel_built");
+            FreeRobots(s, RobotTask.Tunnel, t.SlotA);
         }
 
         foreach (int slot in touchedShields)
@@ -197,6 +255,8 @@ public class ConstructionSystem : ISimSystem
             if (!m.IsBuilt) pending.Add(new KeyValuePair<RobotTask, int>(RobotTask.Build, m.SlotId));
         foreach (int slot in _shieldHoursLeft.Keys)
             pending.Add(new KeyValuePair<RobotTask, int>(RobotTask.Shield, slot));
+        foreach (TunnelState t in s.Tunnels)
+            if (!t.IsBuilt) pending.Add(new KeyValuePair<RobotTask, int>(RobotTask.Tunnel, t.SlotA));
 
         if (pending.Count == 0) return;
 
@@ -241,6 +301,13 @@ public class ConstructionSystem : ISimSystem
         foreach (RobotState robot in s.Robots)
         {
             if (robot.Task == RobotTask.Idle) continue;
+
+            if (robot.Task == RobotTask.Tunnel)
+            {
+                TunnelState t = s.FindTunnel(robot.TargetSlot);
+                if (t == null || t.IsBuilt) Release(robot);
+                continue;
+            }
 
             ModuleState m = s.FindModule(robot.TargetSlot);
             bool dead = m == null

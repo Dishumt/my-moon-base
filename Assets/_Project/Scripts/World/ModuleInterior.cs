@@ -56,6 +56,8 @@ public class ModuleInterior : MonoBehaviour
 
     /// <summary>Чи модуль зараз «відкритий» (оболонка майже зникла) — тоді видно меблі й людей усередині.</summary>
     public bool IsOpen => shellAlpha < 0.6f;
+    /// <summary>Наскільки видно оболонку: 1 — повністю, 0 — схована (за цим зникає й насип реголіту).</summary>
+    public float ShellAlpha => shellAlpha;
     MaterialPropertyBlock block;
     float shellAlpha = 1f;   // 1 = оболонку видно, 0 = сховано
     float applied = -1f;     // яке значення вже намальоване (щоб не робити зайвої роботи щокадру)

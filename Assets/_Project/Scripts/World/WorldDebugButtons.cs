@@ -27,7 +27,9 @@ public class WorldDebugButtons : MonoBehaviour
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Світ: добудувати все")) foreach (var m in s.Modules) m.BuildHoursLeft = 0f;
-        if (GUILayout.Button("Світ: прибрати модулі")) s.Modules.Clear();
+        if (GUILayout.Button("Світ: прибрати модулі")) { s.Modules.Clear(); s.Tunnels.Clear(); }
+        if (GUILayout.Button("Світ: 2 кімнати + тунель")) InstantTunnel(s);   // роль 04: перевірка тунелів
+        if (GUILayout.Button("Світ: реголіт кімнатам ✓/✗")) ToggleRegolith(s);   // роль 04: насип росте/зникає за ~3 с
         GUILayout.EndHorizontal();
 
         // ----- Живі меблі: тип нового модуля, енергія кімнатам, аптечки -----
@@ -200,5 +202,54 @@ public class WorldDebugButtons : MonoBehaviour
     {
         var player = GameObject.FindGameObjectWithTag("Player");
         return player != null ? BaseGrid.FromWorld(player.transform.position) : -1;
+    }
+
+    /// <summary>
+    /// Перевірка тунелів (роль 04), без витрат: готовий тунель між першою парою сусідніх готових кімнат у ряду.
+    /// Якщо такої пари немає — ставить у вільні сусідні квадратики два готові житлові модулі й з'єднує їх.
+    /// </summary>
+    static void InstantTunnel(GameState s)
+    {
+        for (int slot = 0; slot < BaseGrid.Count; slot++)
+        {
+            if (BaseGrid.CanConnect(s, slot) != null) continue;
+            s.Tunnels.Add(new TunnelState { SlotA = slot, BuildHoursLeft = 0f });
+            GameEvents.RaiseStateChanged();
+            Debug.Log("Тунель: з'єднано слоти " + slot + " і " + (slot + 1));
+            return;
+        }
+        // пари кімнат немає — ставимо дві готові кімнати (спершу ряди ближче до середини бази)
+        foreach (int row in new[] { 1, 2, 0, 3, 4, 5 })
+            for (int col = 0; col < BaseGrid.Width - 1; col++)
+            {
+                int a = BaseGrid.ToSlot(col, row);
+                if (!FreeOrRoom(s, a) || !FreeOrRoom(s, a + 1) || s.FindTunnel(a) != null) continue;
+                foreach (int slot in new[] { a, a + 1 })
+                {
+                    var m = s.FindModule(slot);
+                    if (m == null) s.Modules.Add(new ModuleState { Type = ModuleType.Habitat, SlotId = slot, BuildHoursLeft = 0f });
+                    else m.BuildHoursLeft = 0f;
+                }
+                s.Tunnels.Add(new TunnelState { SlotA = a, BuildHoursLeft = 0f });
+                GameEvents.RaiseStateChanged();
+                Debug.Log("Тунель: поставлено кімнати в слотах " + a + " і " + (a + 1) + " та з'єднано тунелем");
+                return;
+            }
+        Debug.Log("Тунель: немає місця для двох кімнат поруч.");
+    }
+
+    static bool FreeOrRoom(GameState s, int slot)
+    {
+        var m = s.FindModule(slot);
+        return m == null || ModuleKinds.IsRoom(m.Type);
+    }
+
+    /// <summary>Перевірка насипу (роль 04): усім готовим кімнатам вмикає реголіт, а якщо всі вже засипані — вимикає.</summary>
+    static void ToggleRegolith(GameState s)
+    {
+        bool anyBare = false;
+        foreach (var m in s.Modules) if (m.IsBuilt && ModuleKinds.IsRoom(m.Type) && !m.RegolithShield) anyBare = true;
+        foreach (var m in s.Modules) if (m.IsBuilt && ModuleKinds.IsRoom(m.Type)) m.RegolithShield = anyBare;
+        GameEvents.RaiseStateChanged();
     }
 }

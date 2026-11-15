@@ -3,6 +3,7 @@
 // (світло / напівтінь / тінь) і темний контур по краях. Так 3D-будинки виглядають «намальованими»
 // і не вибиваються з 2D-спрайтів і пласкої землі.
 //  _BaseColor  — колір (ModuleParts фарбує кожну деталь через MaterialPropertyBlock)
+//  _BaseMap    — текстура (необов'язкова, біла за замовчуванням): підлога, стіни, сонячні панелі Юлі; колір множиться на неї
 //  _Indoor     — 0..1, «світло всередині» (ставить ModuleInterior, коли інженер у модулі)
 //  _LightRef   — звичайна яскравість сонця; коли OutdoorDarkening її зменшує, модулі темнішають
 // Прозорість (скло, зникаюча оболонка) вмикає матеріал через _SrcBlend/_DstBlend/_ZWrite (робить меню Moon).
@@ -11,6 +12,7 @@ Shader "Moon/Toon"
     Properties
     {
         _BaseColor ("Color", Color) = (1, 1, 1, 1)
+        _BaseMap ("Texture", 2D) = "white" {}
         _ShadowColor ("Shadow Tint", Color) = (0.62, 0.62, 0.78, 1)
         _LightRef ("Normal Sun Brightness", Float) = 1.2
         _OutlineColor ("Outline Color", Color) = (0.1, 0.09, 0.12, 1)
@@ -32,6 +34,7 @@ Shader "Moon/Toon"
 
         CBUFFER_START(UnityPerMaterial)
             half4 _BaseColor;
+            float4 _BaseMap_ST;
             half4 _ShadowColor;
             float _LightRef;
             half4 _OutlineColor;
@@ -39,6 +42,9 @@ Shader "Moon/Toon"
             half _Indoor;
             half4 _IndoorColor;
         CBUFFER_END
+
+        TEXTURE2D(_BaseMap);
+        SAMPLER(sampler_BaseMap);
 
         // Sun brightness vs normal (1 = normal, less = outdoor darkening)
         half SunBrightness()
@@ -66,12 +72,14 @@ Shader "Moon/Toon"
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
+                float2 uv : TEXCOORD0;
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
                 float3 normalWS : TEXCOORD0;
+                float2 uv : TEXCOORD1;
             };
 
             Varyings vert(Attributes v)
@@ -79,6 +87,7 @@ Shader "Moon/Toon"
                 Varyings o;
                 o.positionCS = TransformObjectToHClip(v.positionOS.xyz);
                 o.normalWS = TransformObjectToWorldNormal(v.normalOS);
+                o.uv = v.uv * _BaseMap_ST.xy + _BaseMap_ST.zw;
                 return o;
             }
 
@@ -92,9 +101,10 @@ Shader "Moon/Toon"
                 half band = ndl > 0.3h ? 1.0h : (ndl > -0.15h ? 0.5h : 0.0h);
                 band = max(band, step(0.7h, n.y));
 
-                half3 col = _BaseColor.rgb * lerp(_ShadowColor.rgb, half3(1, 1, 1), band);
+                half3 baseRgb = _BaseColor.rgb * SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv).rgb;
+                half3 col = baseRgb * lerp(_ShadowColor.rgb, half3(1, 1, 1), band);
                 col *= SunBrightness();
-                col = lerp(col, _BaseColor.rgb * _IndoorColor.rgb, _Indoor);
+                col = lerp(col, baseRgb * _IndoorColor.rgb, _Indoor);
                 return half4(col, _BaseColor.a);
             }
             ENDHLSL

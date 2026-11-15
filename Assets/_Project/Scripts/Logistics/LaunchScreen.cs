@@ -194,6 +194,7 @@ public class LaunchScreen : MonoBehaviour
                 sounds = new LaunchSounds(gameObject, countdownBeep, liftoffSound, engineRumble, padVolume);
             pad.Sounds = sounds;
         }
+        flight?.Dispose();
         flight = new FlightMapView(root);
         if (!flight.Ready) flight = null;
         root.Q("landing-view")?.RemoveFromHierarchy();   // OnEnable може викликатись кілька разів
@@ -274,7 +275,8 @@ public class LaunchScreen : MonoBehaviour
 
     void Start()
     {
-        if (openOnStart) Open();
+        // на старті гри — тільки перша місія; якщо гру продовжили зі збереження і екіпаж уже на Місяці, не відкриваємо
+        if (openOnStart && State != null && !State.Supply.FirstMissionDone) Open();
     }
 
     void Update()

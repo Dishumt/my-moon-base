@@ -5,6 +5,8 @@ Space Apps вимагає чесно позначати, де допомагав
 
 | Файл / папка | Що робив ШІ | Хто (роль) |
 |---|---|---|
+| `Assets/_Project/Resources/Art/Flight/`, `Assets/_Project/Art/Resources/ISRU/` | OpenAI image generation: 7 нових зображень за візуальними референсами з цього репозиторію; нарізання й експорт PNG, Unity `.meta`. Піксельний стиль уточнено користувачем; без тексту на спрайтах за його запитом | 02, за запитом користувача |
+| `Scripts/Logistics/{FlightArt,FlightMotion,FlightMapView,LandingView,LaunchScreen}.cs`, `Scripts/UI/StartMenu.cs`, `UI/{Game/GameUi,Launch/LaunchScreen}.uss`, `Resources/Data/Launch/texts_launch_*.json`, `Tests/EditMode/04FlightVisualTests.cs`, `docs/design/FLIGHT_ANIMATION_HANDOFF.md` | OpenAI Codex: підключення арту до меню/польоту/посадки, згладжування руху, обмежений пул пилу, статус двигуна EN/UK, тести й інструкція для Claude. Перевірка в Unity потрібна окремо | 02/04/UI, за запитом користувача |
 | `Assets/_Project/Scripts/Core/` | каркас ядра: GameState, GameClock, GameEvents, DataLoader, Loc, SaveSystem, GameBootstrap, DebugPanel (Claude) | 01 |
 | `Assets/_Project/Scripts/{Simulation,Logistics,Radiation}/*System.cs`, `*State.cs` | порожні заготовки систем (Claude) | 01 |
 | `Assets/_Project/Scripts/Editor/SceneSetupTool.cs` | інструмент, що створює сцени (Claude) | 01 |

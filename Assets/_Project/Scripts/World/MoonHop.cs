@@ -62,6 +62,7 @@ public class MoonHop : MonoBehaviour
     void Awake()
     {
         billboard = GetComponentInChildren<Billboard>();
+        breathSeed = UnityEngine.Random.Range(0f, 20f); // кожен дихає не в такт з іншими
         CreateShadow();
     }
 
@@ -174,8 +175,24 @@ public class MoonHop : MonoBehaviour
             case Phase.Push: crouch = Mathf.Sin(t * Mathf.PI); break;          // присів і випрямився
             case Phase.Flight: stretch = Mathf.Clamp01(1f - t / 0.3f); break;  // на злеті витягнутий
             case Phase.Landing: crouch = 1f - t; break;                        // гасить удар
+            case Phase.Idle: return Breath();                                  // стоїть — дихає
         }
         return new Vector2(1f + crouch * 0.07f - stretch * 0.03f, 1f - crouch * 0.14f + stretch * 0.06f);
+    }
+
+    float breathSeed;
+
+    /// <summary>
+    /// Поки стоїть: груди піднімаються й опускаються (вдих-видих раз на ~2,5 с),
+    /// а раз на кілька секунд персонаж потягується — так видно, що він живий, а не картинка.
+    /// </summary>
+    Vector2 Breath()
+    {
+        float time = Time.time + breathSeed;
+        float breath = Mathf.Sin(time * 2.5f);
+        float cycle = Mathf.Repeat(time, 9f);                                   // раз на 9 с —
+        float stretch = cycle < 0.8f ? Mathf.Sin(cycle / 0.8f * Mathf.PI) : 0f; // потягнутися вгору
+        return new Vector2(1f - breath * 0.012f - stretch * 0.03f, 1f + breath * 0.025f + stretch * 0.06f);
     }
 
     /// <summary>Пил з-під ноги (тільки надворі — у модулі пилу немає).</summary>

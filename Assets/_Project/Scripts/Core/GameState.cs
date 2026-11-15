@@ -23,16 +23,44 @@ public class GameState
     public List<ModuleState> Modules = new List<ModuleState>();
     public List<RobotState> Robots = new List<RobotState>();
     public List<PoiState> Pois = new List<PoiState>();
+    public List<TunnelState> Tunnels = new List<TunnelState>();  // тунелі між сусідніми кімнатами (роль 04, з дозволу техліда)
 
     public SupplyState Supply = new SupplyState();           // поля додає роль 04
     public CommsState Comms = new CommsState();              // поля додає роль 04
     public RadiationState Radiation = new RadiationState();  // поля додає роль 06
     public SimState Sim = new SimState();                    // поля додає роль 03 (що системи 03 пам'ятають між збереженнями)
+    public IcePlantState IcePlant = new IcePlantState();      // бур, переробник льоду і труби (01, IcePlantSystem)
 
     /// <summary>Модуль у слоті або null, якщо слот порожній.</summary>
     public ModuleState FindModule(int slotId)
     {
         return Modules.Find(m => m.SlotId == slotId);
+    }
+
+    /// <summary>Тунель, що починається в модулі slotA (і йде праворуч), або null.</summary>
+    public TunnelState FindTunnel(int slotA)
+    {
+        return Tunnels.Find(t => t.SlotA == slotA);
+    }
+
+    /// <summary>Тунель, що закінчується в модулі slotB (прийшов зліва), або null.</summary>
+    public TunnelState FindTunnelEndingAt(int slotB)
+    {
+        return Tunnels.Find(t => t.SlotB == slotB);
+    }
+
+    /// <summary>Тунель, під яким лежить порожній квадратик (між кімнатами), або null.</summary>
+    public TunnelState FindTunnelCovering(int slot)
+    {
+        return Tunnels.Find(t => t.Covers(slot));
+    }
+
+    /// <summary>Чи два модулі з'єднані ГОТОВИМ тунелем напряму (у будь-якому порядку).</summary>
+    public bool HasBuiltTunnel(int slot1, int slot2)
+    {
+        int a = Math.Min(slot1, slot2), b = Math.Max(slot1, slot2);
+        var t = FindTunnel(a);
+        return t != null && t.SlotB == b && t.IsBuilt && FindModule(a) != null && FindModule(b) != null;
     }
 
     /// <summary>Точка за id або null.</summary>

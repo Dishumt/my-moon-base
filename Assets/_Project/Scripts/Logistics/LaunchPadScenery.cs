@@ -72,6 +72,12 @@ public class LaunchPadScenery
     }
 
     float BgPx(float fx) => bgX + fx * bgW;
+
+    /// <summary>
+    /// Середина помаранчевої драбини-вежі, яку Юля намалювала на фоні (частка 0,5445 ширини картинки).
+    /// LaunchPadView ставить туди ліфт і місток, а свою (кодову) вежу ховає — інакше було дві драбини. Після Build.
+    /// </summary>
+    public float PaintedTowerCenterX => BgPx(0.5445f);
     float BgPy(float fy) => bgY + fy * bgH;
 
     /// <summary>

@@ -7,7 +7,10 @@ using UnityEngine.UIElements;
 /// closer to the camera). One square = one module, its number = BaseGrid.ToSlot(column, row).
 ///  - empty square  -> click -> pick a module type -> ConstructionSystem.Order(state, type, slot);
 ///  - building / built square -> click -> shows what is there;
-///  - built square without regolith -> "COVER WITH REGOLITH" -> ConstructionSystem.ShieldWithRegolith (less radiation inside).
+///  - built square without regolith -> "COVER WITH REGOLITH" -> ConstructionSystem.ShieldWithRegolith (less radiation inside);
+///  - built room -> "TUNNEL" to the nearest room in the same row (also across several empty squares) ->
+///    ConstructionSystem.OrderTunnel (role 04): the crew walks between them inside, without suits and without radiation.
+///    "=" on a square = tunnel (to the right of a room, or an empty square under a tunnel).
 /// Not a MonoBehaviour: TabletController creates it and gives it the "pane-build" element.
 /// </summary>
 public class BuildGridView
@@ -73,6 +76,10 @@ public class BuildGridView
             cell.EnableInClassList("grid-cell--built", m != null && m.IsBuilt);
             cell.EnableInClassList("grid-cell--sel", slot == selectedSlot);
             cell.text = m == null ? "+" : Loc.Get("mod." + m.Type);
+            var tunnel = state.FindTunnel(slot);   // тунель праворуч від цього квадратика
+            if (m != null && tunnel != null) cell.text += tunnel.IsBuilt ? " =" : " ~";
+            var under = m == null ? state.FindTunnelCovering(slot) : null;   // порожній квадратик під тунелем
+            if (under != null) cell.text = under.IsBuilt ? "=" : "~";
         }
         ShowSide(state);
     }
@@ -98,6 +105,13 @@ public class BuildGridView
 
         SetText(slotTitle, Loc.Get("map.slot", selectedSlot));
         var m = state.FindModule(selectedSlot);
+        var covering = m == null ? state.FindTunnelCovering(selectedSlot) : null;
+        if (covering != null)   // тут пролягає тунель — будувати не можна
+        {
+            SetText(slotState, Loc.Get(covering.IsBuilt ? "map.tunnel_here" : "map.tunnel_here_building"));
+            SetText(hint, Loc.Get("error.place_tunnel"));
+            return;
+        }
         if (m == null)
         {
             SetText(slotState, Loc.Get("map.empty"));
@@ -116,9 +130,21 @@ public class BuildGridView
         }
         else if (m.IsBuilt)
         {
-            SetText(slotState, Loc.Get("map.built") + "  ·  " + Loc.Get(m.RegolithShield ? "map.shield_yes" : "map.shield_no"));
-            SetText(hint, Loc.Get("mod." + m.Type) + " — " + Loc.Get("mod." + m.Type + ".desc"));
-            if (options == null || m.RegolithShield) return;
+            bool room = ModuleKinds.IsRoom(m.Type);   // засипати реголітом можна лише кімнати (роль 04)
+            var construction = UiKit.Sys<ConstructionSystem>();
+            bool shielding = construction != null && construction.IsShielding(selectedSlot);
+            string shieldText = m.RegolithShield ? Loc.Get("map.shield_yes")
+                : shielding ? Loc.Get("map.shield_progress", UnityEngine.Mathf.RoundToInt(construction.ShieldProgress(state, selectedSlot) * 100f))
+                : room ? Loc.Get("map.shield_no") : "";
+            SetText(slotState, Loc.Get("map.built") + (shieldText.Length > 0 ? "  ·  " + shieldText : ""));
+            SetText(hint, Loc.Get("mod." + m.Type) + " — " + Loc.Get("mod." + m.Type + ".desc") + TunnelInfo(state));
+            if (options == null) return;
+            if (ModuleKinds.IsRoom(m.Type))   // тунель — тільки від кімнати (у сонячну панель не зайдеш)
+            {
+                AddTunnelButton(state, +1, "map.tunnel_right");   // до найближчої кімнати праворуч у ряду
+                AddTunnelButton(state, -1, "map.tunnel_left");    // ...і ліворуч
+            }
+            if (m.RegolithShield || shielding || !room) return;   // уже засипаний, засипають зараз або це не кімната
             var shield = new Button(Shield);
             shield.AddToClassList("opt");
             shield.text = Loc.Get("map.shield_btn") + "\n<size=12>"
@@ -154,6 +180,54 @@ public class BuildGridView
 
         string err = construction.ShieldWithRegolith(GameBootstrap.Instance.State, selectedSlot);
         SetMessage(Loc.Get(err ?? "map.shield_ordered"), err != null);
+        GameEvents.RaiseStateChanged();
+    }
+
+    // ---------- Тунелі (роль 04) ----------
+
+    /// <summary>
+    /// Кнопка «тунель до найближчої кімнати» праворуч (dir = 1) чи ліворуч (-1) у тому ж ряду — можна крізь кілька
+    /// порожніх квадратиків, ціна росте з довжиною. Якщо поки не можна — кнопка сіра і пише чому.
+    /// Тунель уже є або далі край сітки — кнопки немає.
+    /// </summary>
+    void AddTunnelButton(GameState state, int dir, string key)
+    {
+        int other = BaseGrid.NextModuleInRow(state, selectedSlot, dir);
+        if (other < 0 && (dir > 0 ? BaseGrid.Column(selectedSlot) >= BaseGrid.Width - 1 : BaseGrid.Column(selectedSlot) == 0)) return;
+        int slotA = dir > 0 ? selectedSlot : other;
+        int length = other < 0 ? 1 : System.Math.Abs(other - selectedSlot);
+        string err = other < 0 ? "error.tunnel_no_neighbor" : BaseGrid.CanConnect(state, slotA, length);
+        if (err == "error.tunnel_place" || err == "error.tunnel_exists") return;
+
+        var button = new Button(() => OrderTunnel(slotA, length));
+        button.AddToClassList("opt");
+        string target = other >= 0 ? " " + Loc.Get("mod." + state.FindModule(other).Type) + " (" + Loc.Get("map.tunnel_cells", length) + ")" : "";
+        button.text = Loc.Get(key) + target + "  ·  "
+                    + Loc.Get("map.cost", UiKit.Num(costs.Tunnel.Materials * length), UiKit.Num(costs.Tunnel.BuildHours * length))
+                    + "\n<size=12>" + Loc.Get(err ?? "map.tunnel_desc") + "</size>";
+        button.SetEnabled(err == null);
+        options.Add(button);
+    }
+
+    /// <summary>Рядок про тунелі вибраного модуля: праворуч/ліворуч — готовий чи будується.</summary>
+    string TunnelInfo(GameState state)
+    {
+        string text = "";
+        foreach (var (t, side) in new[] { (state.FindTunnel(selectedSlot), "map.side_right"), (state.FindTunnelEndingAt(selectedSlot), "map.side_left") })
+        {
+            if (t == null) continue;
+            text += "\n" + (t.IsBuilt ? Loc.Get("map.tunnel_built", Loc.Get(side))
+                                      : Loc.Get("map.tunnel_building", Loc.Get(side), t.BuildHoursLeft.ToString("0")));
+        }
+        return text;
+    }
+
+    void OrderTunnel(int slotA, int length)
+    {
+        var construction = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ConstructionSystem>() : null;
+        if (construction == null) return;
+        string err = construction.OrderTunnel(GameBootstrap.Instance.State, slotA, length);
+        SetMessage(Loc.Get(err ?? "map.tunnel_ordered"), err != null);
         GameEvents.RaiseStateChanged();
     }
 
