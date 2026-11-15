@@ -190,6 +190,19 @@ public class EngineerController : MonoBehaviour
     void FollowGround(float dt)
     {
         Vector3 p = transform.position;
+        if (p.y - FootOffset - MoonTerrain.HeightAt(p) > 0.35f)
+        {
+            // Стоїмо вище за землю — на валуні чи батареї? Пробуємо трохи опуститися:
+            // уперлися — стоїмо на ньому; ні — зійшли з краю і падаємо (повільно, по-місячному)
+            var hit = controller.Move(new Vector3(0f, -0.05f, 0f));
+            if ((hit & CollisionFlags.Below) == 0)
+            {
+                airborne = true;
+                verticalSpeed = 0f;
+                hop.TakeOff(false); // без пилу: ми ж не відштовхувались
+            }
+            return;
+        }
         float want = MoonTerrain.HeightAt(p) + FootOffset;
         if (Mathf.Abs(p.y - want) > 0.0005f) controller.Move(new Vector3(0f, want - p.y, 0f));
         SlideIfTooSteep(dt);
