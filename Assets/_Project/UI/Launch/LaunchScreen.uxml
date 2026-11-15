@@ -35,6 +35,11 @@
                     <ui:ScrollView name="cargo-scroll" class="cargo-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
                         <ui:VisualElement name="cargo-list" />
                     </ui:ScrollView>
+                    <ui:VisualElement name="info-box" class="note info-box">
+                        <ui:Label name="info-title" text="WHAT IS IT FOR?" class="t-label mb-4" />
+                        <ui:Label name="info-text" text="" class="t-body" />
+                        <ui:Label name="info-gives" text="" class="t-body c-en" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
                 <ui:VisualElement name="ship-panel" class="panel panel--side ship-panel">
@@ -69,11 +74,6 @@
                         <ui:Label name="days-title" text="SUPPLIES WILL LAST" class="t-label mb-4" />
                         <ui:VisualElement name="days-list" />
                     </ui:VisualElement>
-                    <ui:VisualElement name="info-box" class="note info-box">
-                        <ui:Label name="info-title" text="WHAT IS IT FOR?" class="t-label mb-4" />
-                        <ui:Label name="info-text" text="" class="t-body" />
-                        <ui:Label name="info-gives" text="" class="t-body c-en" />
-                    </ui:VisualElement>
                 </ui:VisualElement>
 
             </ui:VisualElement>
@@ -99,7 +99,7 @@
 
                 <ui:VisualElement class="launch-box">
                     <ui:Label name="risk-label" text="Risk: 0%" class="t-big mb-4" />
-                    <ui:Label name="hint-label" text="" class="t-body mb-8" />
+                    <ui:Label name="hint-label" text="" class="t-body hint-small" />
                     <ui:Button name="launch-button" text="LAUNCH" class="btn btn--primary launch-btn" />
                 </ui:VisualElement>
             </ui:VisualElement>

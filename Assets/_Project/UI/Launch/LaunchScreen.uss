@@ -213,3 +213,27 @@
 .advisor-text { flex-grow: 1; flex-shrink: 1; font-size: 16px; }
 
 .cargo-row--locked { opacity: 0.45; }
+
+/* --- компактна розкладка, щоб усе влазило в планшет 1280×720 (роль 04) --- */
+.body { min-height: 0; overflow: hidden; }
+.rocket-panel, .cargo-panel, .ship-panel { padding-top: 10px; padding-bottom: 10px; }
+.cargo-scroll { flex-shrink: 1; min-height: 0; }
+.info-box { flex-grow: 0; flex-shrink: 0; height: 86px; margin-top: 6px; padding: 4px 10px; overflow: hidden; }
+.info-box > .t-body { font-size: 13px; }
+.info-box > .t-label { font-size: 12px; }
+.ship-area { height: 104px; }
+.legend { margin-top: 4px; }
+.days-box { margin-top: 6px; }
+.days-row { margin-bottom: 2px; }
+.advisor { min-height: 36px; margin-top: 6px; padding: 4px 14px; flex-shrink: 0; }
+.advisor-text { font-size: 15px; }
+.bottom-row { height: 104px; flex-shrink: 0; padding: 8px 16px; margin-top: 6px; }
+.fuel-box > .t-body { font-size: 15px; margin-bottom: 2px; }
+.fuel-box > .t-label { font-size: 12px; margin-bottom: 2px; }
+.fuel-box > .msg { margin-top: 2px; min-height: 16px; font-size: 13px; }
+.light { width: 44px; height: 44px; border-radius: 22px; margin: 3px; }
+.traffic-light { padding: 4px; margin-right: 16px; }
+.launch-box { width: 280px; }
+.launch-box > .t-big { font-size: 22px; margin-bottom: 4px; }
+.launch-btn { height: 52px; }
+.hint-small { display: none; }

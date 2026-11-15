@@ -64,7 +64,7 @@
     },
     {
       "key": "launch.mass",
-      "text": "Ship mass: {0} kg (cargo {1} kg). Heavier ship needs more fuel."
+      "text": "Ship mass: {0} kg (cargo {1} kg)"
     },
     {
       "key": "launch.risk",
