@@ -74,9 +74,26 @@ public class ChapterSystem : ISimSystem
     {
         s.Chapter = chapter;
         _chapter = _loader(chapter);
-        _startDay = s.Day;
         _finished = false;
         _doneGoals.Clear();
+
+        // «Продовжити» збережену гру: день початку розділу й зарахованих цілей беремо зі збереження,
+        // інакше «прожити N днів» починалось би спочатку. Новий розділ чи повтор — відлік з сьогодні.
+        var sim = s.Sim;
+        if (!applyStart && sim.ChapterStartChapter == chapter && sim.ChapterStartDay > 0)
+        {
+            _startDay = sim.ChapterStartDay;
+            int goalCount = _chapter != null && _chapter.goals != null ? _chapter.goals.Length : 0;
+            foreach (int g in sim.GoalsDone)
+                if (g >= 0 && g < goalCount) _doneGoals.Add(g);
+        }
+        else
+        {
+            _startDay = s.Day;
+            sim.ChapterStartChapter = chapter;
+            sim.ChapterStartDay = s.Day;
+            sim.GoalsDone.Clear();
+        }
         _unlockedModules.Clear();
         _unlockedSystems.Clear();
 
@@ -169,7 +186,11 @@ public class ChapterSystem : ISimSystem
             if (!_doneGoals.Contains(i))
             {
                 ChapterGoalData g = _chapter.goals[i];
-                if (CurrentValue(s, g) + Eps >= g.target) _doneGoals.Add(i);
+                if (CurrentValue(s, g) + Eps >= g.target)
+                {
+                    _doneGoals.Add(i);
+                    s.Sim.GoalsDone.Add(i); // запам'ятати для збереження
+                }
             }
             if (!_doneGoals.Contains(i)) allDone = false;
         }
