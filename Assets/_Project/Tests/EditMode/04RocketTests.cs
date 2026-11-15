@@ -265,3 +265,55 @@ public class SmallerRocketTests
         Assert.IsNull(MissionPlanner.SmallerRocketThatFits(s, sup, true));
     }
 }
+
+/// <summary>Тести кроків і часу поставки для вкладки планшета (роль 04).</summary>
+public class SupplyScheduleTests
+{
+    SupplySystem sup;
+    GameState s;
+
+    [SetUp]
+    public void Setup()
+    {
+        var data = new LaunchData { supplyEveryDays = 3, launchHour = 8, flightHours = 12, failedDelayDays = 3,
+                                    commsOpenHours = 30, commsClosedHours = 18 };
+        var cat = new CargoCatalog();
+        cat.items.Add(new CargoItemData { id = "water", massKg = 100f, water = 20f });
+        sup = new SupplySystem(data, cat) { Random01 = () => 0.5f };
+        s = new GameState { Day = 1, Hour = 0 };
+        s.Power.Comms = 1;
+        sup.LaunchFirstMission(s); // ставить розклад: старт на 3-й день о 8:00 = 80 год
+    }
+
+    [TearDown]
+    public void Clean() => GameEvents.ClearAll();
+
+    [Test]
+    public void Steps_FollowTheOrder()
+    {
+        Assert.AreEqual(0, sup.Step(s));              // порожньо — склади список
+        sup.ChangeCargo(s, "water", 1);
+        Assert.AreEqual(1, sup.Step(s));              // є вантаж — відправ
+        Assert.IsNull(sup.Send(s));
+        Assert.AreEqual(2, sup.Step(s));              // чекає старту
+        Assert.IsNull(sup.CancelSend(s));
+        Assert.AreEqual(1, sup.Step(s));              // скасували — знову можна міняти
+    }
+
+    [Test]
+    public void ArrivalTime_FromSchedule()
+    {
+        Assert.AreEqual(80, sup.ExpectedLaunchAt(s));
+        Assert.AreEqual(92, sup.ExpectedArrivalAt(s)); // 80 + 12 год польоту
+        Assert.IsFalse(sup.IsLate(s));
+    }
+
+    [Test]
+    public void NotSentInTime_IsLate_AndLaunchesWhenSent()
+    {
+        s.Day = 4; s.Hour = 10;                        // 82 год: розклад минув
+        Assert.IsTrue(sup.IsLate(s));
+        Assert.AreEqual(82, sup.ExpectedLaunchAt(s));  // корабель чекає: стартує, щойно відправиш
+        Assert.AreEqual(94, sup.ExpectedArrivalAt(s));
+    }
+}

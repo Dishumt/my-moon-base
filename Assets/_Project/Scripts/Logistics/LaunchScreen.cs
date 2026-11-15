@@ -52,8 +52,14 @@ public class LaunchScreen : MonoBehaviour
     [Tooltip("Показувати пусковий майданчик (екіпаж, відлік, злет) після ПІДТВЕРДИТИ")]
     [SerializeField] bool showLaunchPad = true;
 
+    [Tooltip("Заповнити порожню вкладку «ПОСТАВКИ» в планшеті (TabletController від 05): таймер, кроки, вміст замовлення і кнопка «Пакувати корабель».")]
+    [SerializeField] bool attachToTablet = true;
+
     [Tooltip("Скільки секунд летить ракета")]
     [SerializeField] float flightSeconds = 3f;
+
+    /// <summary>Екран запуску в сцені. Планшет і HUD відкривають замовлення так: LaunchScreen.Instance.OpenSupplyOrder().</summary>
+    public static LaunchScreen Instance { get; private set; }
 
     public bool IsOpen { get; private set; }
     public bool IsFirstMission { get; private set; }
@@ -70,6 +76,8 @@ public class LaunchScreen : MonoBehaviour
     Button reportNext;
     bool reportClosed;
     int failedTries;          // скільки разів у цій місії ракета поверталась (для зірочки)
+    SupplyTabView supplyTab;           // вміст вкладки «ПОСТАВКИ» в планшеті
+    TabletController checkedTablet;    // планшет, який уже перевірили (щоб не пробувати щокадру)
     SimBalanceData balance;   // правила витрат ролі 03 — для «на скільки днів вистачить»
 
     const float ShipBaseScale = 0.75f; // ракета на планшеті менша, ніж на майданчику
@@ -159,7 +167,15 @@ public class LaunchScreen : MonoBehaviour
         if (closeButton != null) closeButton.clicked += Close;
         Loc.LanguageChanged += Refresh;
         GameEvents.StateChanged += Refresh;
+        Loc.LanguageChanged += RefreshTab;
+        GameEvents.StateChanged += RefreshTab;
+        GameEvents.HourPassed += RefreshTab;
 
+        // екран запуску малюється поверх планшета (обидва на одній панелі UI Toolkit)
+        var doc = GetComponent<UIDocument>();
+        if (doc.sortingOrder < 10) doc.sortingOrder = 10;
+
+        Instance = this;
         SetVisible(false);
     }
 
@@ -171,13 +187,87 @@ public class LaunchScreen : MonoBehaviour
         if (closeButton != null) closeButton.clicked -= Close;
         Loc.LanguageChanged -= Refresh;
         GameEvents.StateChanged -= Refresh;
+        Loc.LanguageChanged -= RefreshTab;
+        GameEvents.StateChanged -= RefreshTab;
+        GameEvents.HourPassed -= RefreshTab;
         PopModal();
+        if (Instance == this) Instance = null;
     }
 
     void Start()
     {
         if (openOnStart) Open();
     }
+
+    void Update()
+    {
+        // планшет (05) може з'явитися пізніше за нас — тоді й заповнюємо його вкладку «ПОСТАВКИ»
+        var tabletUi = TabletController.Instance;
+        if (attachToTablet && ready && tabletUi != null && tabletUi != checkedTablet) AttachToTablet(tabletUi);
+    }
+
+    // ---------- Вкладка «ПОСТАВКИ» в планшеті ----------
+
+    /// <summary>Відкрити замовлення поставки (з планшета чи HUD). До першої місії відкриється перша місія.</summary>
+    public void OpenSupplyOrder() => Open();
+
+    /// <summary>
+    /// Вкладка «ПОСТАВКИ» у Вані поки заглушка (pane-supply-stub). Якщо заглушка ще там — ховаємо її і ставимо свій вміст.
+    /// Якщо роль 05 уже зробила свою вкладку (заглушки немає), нічого не чіпаємо.
+    /// </summary>
+    void AttachToTablet(TabletController tabletUi)
+    {
+        checkedTablet = tabletUi;
+        var tabletDoc = tabletUi.GetComponent<UIDocument>();
+        var pane = tabletDoc != null ? tabletDoc.rootVisualElement?.Q("pane-supply") : null;
+        var stub = pane?.Q<Label>("pane-supply-stub");
+        if (pane == null || stub == null) return;
+
+        stub.style.display = DisplayStyle.None;
+        supplyTab = new SupplyTabView(pane, this, CollectStyleSheets());
+        RefreshTab();
+    }
+
+    /// <summary>Стилі екрана запуску (Theme.uss + LaunchScreen.uss), щоб вкладка в планшеті виглядала так само.</summary>
+    List<StyleSheet> CollectStyleSheets()
+    {
+        var sheets = new List<StyleSheet>();
+        var root = GetComponent<UIDocument>().rootVisualElement;
+        void Take(VisualElement e)
+        {
+            for (int i = 0; i < e.styleSheets.count; i++)
+                if (!sheets.Contains(e.styleSheets[i])) sheets.Add(e.styleSheets[i]);
+        }
+        Take(root);
+        root.Query<VisualElement>().ForEach(Take);
+        return sheets;
+    }
+
+    void RefreshTab()
+    {
+        if (supplyTab == null || State == null || Supply == null) return;
+        supplyTab.Refresh(State, Supply, Comms, PlanFor(false, Supply.Evaluate(State, false)));
+    }
+
+    /// <summary>План місії (дні запасів, цілі, порада) — для екрана і для вкладки планшета.</summary>
+    public MissionPlan PlanFor(bool firstMission, LaunchResult r)
+    {
+        var chapters = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ChapterSystem>() : null;
+        return MissionPlanner.Build(State, Supply, firstMission, r, balance, chapters != null ? chapters.Current : null);
+    }
+
+    /// <summary>Картинка ракети з інспектора (null — немає).</summary>
+    public Texture2D RocketLook(RocketData rocket)
+    {
+        var tex = rocket != null ? FindLook(rocketLooks, rocket.id) : null;
+        return tex != null ? tex : rocketTexture;
+    }
+
+    /// <summary>Іконка вантажу з інспектора (null — немає).</summary>
+    public Texture2D CargoIcon(string id) => FindLook(cargoIcons, id);
+
+    /// <summary>«день 3, 08:00» для години від початку гри.</summary>
+    public static string DayTime(int absHour) => T("supply.day_time", absHour / 24 + 1, (absHour % 24).ToString("00") + ":00");
 
     // ---------- Відкрити / закрити ----------
 
@@ -218,6 +308,7 @@ public class LaunchScreen : MonoBehaviour
         IsOpen = false;
         SetVisible(false);
         PopModal();
+        GameEvents.RaiseStateChanged(); // планшет під нами оновить вкладку «ПОСТАВКИ»
     }
 
     void PopModal()
@@ -438,8 +529,6 @@ public class LaunchScreen : MonoBehaviour
         SetText(legendCrew, T("launch.legend_crew"));
         SetText(legendCargo, T("launch.legend_cargo"));
         SetText(fuelWhy, T("launch.fuel_why"));
-        launchButton.text = T(IsFirstMission ? "launch.go" : "launch.send");
-        launchButton.SetEnabled(editable);
         fuelSlider.SetEnabled(editable);
 
         // зв'язок (для поставки)
@@ -449,9 +538,35 @@ public class LaunchScreen : MonoBehaviour
             linkLed.EnableInClassList("led--ok", link);
             linkLed.EnableInClassList("led--bad", !link);
         }
-        SetText(statusLabel, IsFirstMission
-            ? T("launch.link_ok")
-            : T("launch.status." + s.Supply.Status) + " · " + T(link ? "launch.link_ok" : "launch.link_off"));
+
+        if (IsFirstMission)
+        {
+            launchButton.text = T("launch.go");
+            launchButton.SetEnabled(editable);
+            SetText(statusLabel, T("launch.link_ok"));
+        }
+        else
+        {
+            // поставка: ВІДПРАВИТИ (у вікно зв'язку) → СКАСУВАТИ ВІДПРАВКУ (поки не стартувала) → КОРАБЕЛЬ ЛЕТИТЬ
+            var status = s.Supply.Status;
+            if (status == SupplyStatus.Draft)
+            {
+                launchButton.text = link ? T("launch.send") : NoLinkText(s);
+                launchButton.SetEnabled(!animating && link);
+            }
+            else if (status == SupplyStatus.Sent)
+            {
+                launchButton.text = T("supply.cancel");
+                launchButton.SetEnabled(!animating);
+            }
+            else
+            {
+                launchButton.text = T("supply.flying_btn");
+                launchButton.SetEnabled(false);
+            }
+            SetText(statusLabel, T("launch.status." + status) + " · " + T(link ? "launch.link_ok" : "launch.link_off") + " · "
+                + T("launch.schedule", DayTime(Supply.ExpectedLaunchAt(s)), DayTime(Supply.ExpectedArrivalAt(s))));
+        }
 
         // ракети
         if (rocketList != null)
@@ -663,8 +778,7 @@ public class LaunchScreen : MonoBehaviour
 
     void RefreshMission(LaunchResult r)
     {
-        var chapters = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ChapterSystem>() : null;
-        var plan = MissionPlanner.Build(State, Supply, IsFirstMission, r, balance, chapters != null ? chapters.Current : null);
+        var plan = PlanFor(IsFirstMission, r);
 
         // цілі місії
         SetText(goalsTitle, T("mission.title"));
@@ -742,9 +856,18 @@ public class LaunchScreen : MonoBehaviour
         }
         else
         {
-            SetResult(Supply.Send(State) ?? "launch.order_sent");
+            if (State.Supply.Status == SupplyStatus.Sent) SetResult(Supply.CancelSend(State) ?? "supply.cancelled");
+            else SetResult(Supply.Send(State) ?? "launch.order_sent");
+            GameEvents.RaiseStateChanged();
             Refresh();
         }
+    }
+
+    /// <summary>Чому не можна відправити: антена без енергії або вікно зв'язку закрите (і коли відкриється).</summary>
+    string NoLinkText(GameState s)
+    {
+        if (s.Power.Comms <= 0) return T("supply.no_power_btn");
+        return T("supply.no_link_btn", Comms != null ? Comms.HoursUntilOpen(s) : 0);
     }
 
     // ---------- Пусковий майданчик ----------

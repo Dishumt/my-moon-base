@@ -128,7 +128,7 @@
     },
     {
       "key": "launch.order_sent",
-      "text": "Order sent to Earth. The ship starts on schedule."
+      "text": "Order sent to Earth! The ship starts on schedule. You can still cancel it before the start."
     },
     {
       "key": "launch.status.Draft",
@@ -645,6 +645,94 @@
     {
       "key": "report.next",
       "text": "CONTINUE"
+    },
+    {
+      "key": "supply.open",
+      "text": "PACK THE SHIP →"
+    },
+    {
+      "key": "supply.view",
+      "text": "VIEW THE ORDER →"
+    },
+    {
+      "key": "supply.lands",
+      "text": "Lands: {0}"
+    },
+    {
+      "key": "supply.lands_in",
+      "text": "lands in {0} h"
+    },
+    {
+      "key": "supply.waiting",
+      "text": "The ship is waiting! Send the order in a comms window."
+    },
+    {
+      "key": "supply.first_mission",
+      "text": "First, fly the crew to the Moon."
+    },
+    {
+      "key": "supply.link_in",
+      "text": "link in {0} h"
+    },
+    {
+      "key": "supply.link_none",
+      "text": "NO LINK · next window in {0} h"
+    },
+    {
+      "key": "supply.link_nopower",
+      "text": "NO LINK · the antenna has no power"
+    },
+    {
+      "key": "supply.day_time",
+      "text": "day {0}, {1}"
+    },
+    {
+      "key": "supply.done",
+      "text": "done"
+    },
+    {
+      "key": "supply.empty",
+      "text": "The order is empty. Press PACK THE SHIP and choose the cargo!"
+    },
+    {
+      "key": "supply.order_title",
+      "text": "THIS ORDER"
+    },
+    {
+      "key": "supply.returned",
+      "text": "Not enough fuel: the ship turned back and comes {0} days late."
+    },
+    {
+      "key": "supply.passengers",
+      "text": "Crew from Earth ×{0}"
+    },
+    {
+      "key": "supply.step_flight",
+      "text": "FLIGHT · {0} H"
+    },
+    {
+      "key": "supply.cancel",
+      "text": "CANCEL SENDING"
+    },
+    {
+      "key": "supply.cancelled",
+      "text": "Sending cancelled. Now you can change the order."
+    },
+    {
+      "key": "supply.flying_btn",
+      "text": "THE SHIP IS FLYING"
+    },
+    {
+      "key": "supply.no_link_btn",
+      "text": "NO LINK · WAIT {0} H"
+    },
+    {
+      "key": "supply.no_power_btn",
+      "text": "GIVE POWER TO THE ANTENNA"
+    },
+    {
+      "key": "launch.schedule",
+      "text": "start {0} · lands {1}"
     }
   ]
 }

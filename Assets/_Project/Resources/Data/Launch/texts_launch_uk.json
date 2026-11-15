@@ -128,7 +128,7 @@
     },
     {
       "key": "launch.order_sent",
-      "text": "Замовлення на Землі. Корабель стартує за розкладом."
+      "text": "Замовлення відправлено на Землю! Корабель стартує за розкладом. До старту його ще можна скасувати."
     },
     {
       "key": "launch.status.Draft",
@@ -645,6 +645,94 @@
     {
       "key": "report.next",
       "text": "ДАЛІ"
+    },
+    {
+      "key": "supply.open",
+      "text": "ПАКУВАТИ КОРАБЕЛЬ →"
+    },
+    {
+      "key": "supply.view",
+      "text": "ПЕРЕГЛЯНУТИ ЗАМОВЛЕННЯ →"
+    },
+    {
+      "key": "supply.lands",
+      "text": "Посадка: {0}"
+    },
+    {
+      "key": "supply.lands_in",
+      "text": "сяде через {0} год"
+    },
+    {
+      "key": "supply.waiting",
+      "text": "Корабель чекає! Відправ замовлення у вікно зв'язку."
+    },
+    {
+      "key": "supply.first_mission",
+      "text": "Спершу доправ екіпаж на Місяць."
+    },
+    {
+      "key": "supply.link_in",
+      "text": "зв'язок через {0} год"
+    },
+    {
+      "key": "supply.link_none",
+      "text": "НЕМАЄ ЗВ'ЯЗКУ · вікно через {0} год"
+    },
+    {
+      "key": "supply.link_nopower",
+      "text": "НЕМАЄ ЗВ'ЯЗКУ · антена без енергії"
+    },
+    {
+      "key": "supply.day_time",
+      "text": "день {0}, {1}"
+    },
+    {
+      "key": "supply.done",
+      "text": "готово"
+    },
+    {
+      "key": "supply.empty",
+      "text": "Замовлення порожнє. Натисни ПАКУВАТИ КОРАБЕЛЬ і вибери вантаж!"
+    },
+    {
+      "key": "supply.order_title",
+      "text": "ЦЕ ЗАМОВЛЕННЯ"
+    },
+    {
+      "key": "supply.returned",
+      "text": "Не вистачило палива: корабель повернувся і прилетить на {0} дн. пізніше."
+    },
+    {
+      "key": "supply.passengers",
+      "text": "Екіпаж із Землі ×{0}"
+    },
+    {
+      "key": "supply.step_flight",
+      "text": "ПОЛІТ · {0} ГОД"
+    },
+    {
+      "key": "supply.cancel",
+      "text": "СКАСУВАТИ ВІДПРАВКУ"
+    },
+    {
+      "key": "supply.cancelled",
+      "text": "Відправку скасовано. Тепер замовлення можна змінити."
+    },
+    {
+      "key": "supply.flying_btn",
+      "text": "КОРАБЕЛЬ ЛЕТИТЬ"
+    },
+    {
+      "key": "supply.no_link_btn",
+      "text": "НЕМАЄ ЗВ'ЯЗКУ · ЧЕКАЙ {0} ГОД"
+    },
+    {
+      "key": "supply.no_power_btn",
+      "text": "ДАЙ ЕНЕРГІЮ АНТЕНІ"
+    },
+    {
+      "key": "launch.schedule",
+      "text": "старт {0} · посадка {1}"
     }
   ]
 }

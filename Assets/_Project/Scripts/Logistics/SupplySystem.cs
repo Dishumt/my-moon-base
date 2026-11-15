@@ -146,6 +146,7 @@ public class SupplySystem : ISimSystem
         if (ok)
         {
             Deliver(s, null);
+            s.Supply.Cargo.Clear();          // усе вивантажили — наступне замовлення починається з порожнього списку
             s.Supply.FirstMissionDone = true;
             s.Supply.Deliveries = 0; // перша місія — це не поставка
             ScheduleFrom(s, Now(s));
@@ -177,6 +178,44 @@ public class SupplySystem : ISimSystem
 
     /// <summary>Година наступного старту за розкладом.</summary>
     public int NextLaunchAt(GameState s) => s.Supply.NextLaunchAt;
+
+    /// <summary>
+    /// Коли (година від початку гри) стартує поточне замовлення.
+    /// Якщо розклад уже настав, а замовлення не відправлене, корабель чекає: стартує, щойно відправиш.
+    /// </summary>
+    public int ExpectedLaunchAt(GameState s)
+    {
+        var sup = s.Supply;
+        if (sup.Status == SupplyStatus.Launched || sup.Status == SupplyStatus.Returned) return sup.ArrivalAt - FlightHours(s);
+        return Math.Max(Now(s), sup.NextLaunchAt);
+    }
+
+    /// <summary>Коли (година від початку гри) сяде поточне замовлення.</summary>
+    public int ExpectedArrivalAt(GameState s)
+    {
+        var sup = s.Supply;
+        if (sup.Status == SupplyStatus.Launched || sup.Status == SupplyStatus.Returned) return sup.ArrivalAt;
+        return ExpectedLaunchAt(s) + FlightHours(s);
+    }
+
+    /// <summary>Чи прострочене замовлення: розклад настав, а його ще не відправили (корабель чекає).</summary>
+    public bool IsLate(GameState s) => s.Supply.Status == SupplyStatus.Draft && s.Supply.Scheduled && Now(s) >= s.Supply.NextLaunchAt;
+
+    /// <summary>
+    /// На якому кроці поставка (для планшета): 0 склади список, 1 відправ у вікно зв'язку,
+    /// 2 чекає старту, 3 летить, 4 сідає. Після посадки знову 0 — нове замовлення.
+    /// </summary>
+    public int Step(GameState s)
+    {
+        var sup = s.Supply;
+        switch (sup.Status)
+        {
+            case SupplyStatus.Sent: return 2;
+            case SupplyStatus.Launched:
+            case SupplyStatus.Returned: return 3;
+            default: return sup.Cargo.Count == 0 && sup.Passengers.Count == 0 ? 0 : 1;
+        }
+    }
 
     void ScheduleFrom(GameState s, int fromHour)
     {
