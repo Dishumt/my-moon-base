@@ -39,6 +39,15 @@ public class GreenhouseSystem : ISimSystem
 
     public void Tick(GameState s, float hours, DayReport r)
     {
+        // Ріст і дні до врожаю живуть у GameState.Sim, щоб пережити збереження й завантаження гри.
+        Growth = s.Sim.GreenhouseGrowth;
+        DaysSinceHarvest = s.Sim.GreenhouseDaysSinceHarvest;
+        TickCore(s, hours, r);
+        s.Sim.GreenhouseGrowth = Growth;
+    }
+
+    private void TickCore(GameState s, float hours, DayReport r)
+    {
         if (hours <= 0f) return;
 
         float blocks = Math.Max(0, _power.Granted.Greenhouse);
@@ -69,6 +78,15 @@ public class GreenhouseSystem : ISimSystem
     }
 
     public void OnDayEnd(GameState s, DayReport r)
+    {
+        Growth = s.Sim.GreenhouseGrowth;
+        DaysSinceHarvest = s.Sim.GreenhouseDaysSinceHarvest;
+        DayEnd(s, r);
+        s.Sim.GreenhouseGrowth = Growth;
+        s.Sim.GreenhouseDaysSinceHarvest = DaysSinceHarvest;
+    }
+
+    private void DayEnd(GameState s, DayReport r)
     {
         DaysSinceHarvest++;
 
