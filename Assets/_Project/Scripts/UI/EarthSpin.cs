@@ -66,7 +66,7 @@ public class EarthSpin : MonoBehaviour
     void Rescan()
     {
         targets.Clear();
-        foreach (var doc in FindObjectsByType<UIDocument>(FindObjectsSortMode.None))
+        foreach (var doc in FindObjectsByType<UIDocument>(FindObjectsInactive.Exclude))
         {
             var root = doc != null ? doc.rootVisualElement : null;
             if (root == null) continue;
