@@ -73,6 +73,7 @@ public class PoiMarker : MonoBehaviour
                 return;
             }
             SetVisible(true);
+            if (poi.Type == PoiType.Ice && GetComponent<IceSparkle>() == null) gameObject.AddComponent<IceSparkle>(); // кристали мерехтять
         }
 
         if (showWhenDiscovered != null && showWhenDiscovered.activeSelf != poi.Discovered)

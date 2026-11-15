@@ -37,7 +37,9 @@
 .hud-link--ok { color: var(--color-ok); border-color: var(--color-ok); }
 .hud-tablet { height: 52px; padding: 0 18px; margin: 0; font-size: 17px; letter-spacing: 2px; -unity-font-style: bold;
               background-color: var(--color-accent); border-width: 2px; border-color: var(--color-accent); border-radius: 0; color: var(--color-panel); }
-.hud-tablet:hover { background-color: #8BE3FA; }
+.hud-tablet { transition-property: scale, background-color; transition-duration: 0.14s; transition-timing-function: ease-out; }
+.hud-tablet:hover { background-color: #A9EEFF; scale: 1.07 1.07; }
+.hud-tablet:active { background-color: #5FD4F4; scale: 0.95 0.95; }
 .hud-walk { position: absolute; left: 10px; bottom: 10px; padding: 6px 10px; font-size: 13px; letter-spacing: 1px;
             background-color: rgba(4, 16, 26, 0.75); color: var(--color-soft); }
 .hud-hint { position: absolute; left: 50%; bottom: 74px; translate: -50% 0; max-width: 620px; padding: 10px 16px;
