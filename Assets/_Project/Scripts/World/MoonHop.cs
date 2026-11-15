@@ -149,8 +149,8 @@ public class MoonHop : MonoBehaviour
         shadowRenderer.color = new Color(0f, 0f, 0f, 0.38f * (1f - 0.45f * k)); // і світліша
     }
 
-    /// <summary>М'яке темне коло, яке створюємо кодом (картинка не потрібна).</summary>
-    static Sprite BlobSprite()
+    /// <summary>М'яке темне коло діаметром 1 м, яке створюємо кодом (картинка не потрібна). Тіні під меблями теж беруть його.</summary>
+    public static Sprite BlobSprite()
     {
         if (blobSprite != null) return blobSprite;
         const int n = 64;

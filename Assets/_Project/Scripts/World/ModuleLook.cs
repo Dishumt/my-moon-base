@@ -70,6 +70,10 @@ public class ModuleLook : MonoBehaviour
     {
         public string name;   // назва файлу без .png, наприклад "bunk_bed"
         public Sprite sprite;
+        [Tooltip("Ширина самого предмета (без прозорих країв), метри. Рахує меню Moon → Налаштувати меблі. 0 = не пораховано.")]
+        public float width;
+        [Tooltip("На скільки середина предмета зсунута вбік від середини картинки, метри (для тіні).")]
+        public float centerX;
     }
 
     [Header("Меблі (заповнює меню Moon → Налаштувати меблі)")]
@@ -82,6 +86,13 @@ public class ModuleLook : MonoBehaviour
     public Sprite Furniture(string name)
     {
         foreach (var f in furniture) if (f.name == name) return f.sprite;
+        return null;
+    }
+
+    /// <summary>Усі дані про меблі за назвою файлу (картинка, ширина) або null.</summary>
+    public FurnitureSprite FurnitureInfo(string name)
+    {
+        foreach (var f in furniture) if (f.name == name) return f;
         return null;
     }
 

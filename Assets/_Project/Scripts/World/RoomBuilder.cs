@@ -208,18 +208,54 @@ public static class RoomBuilder
         bool any = false;
         foreach (var it in LayoutFor(type))
         {
-            var sprite = look.Furniture(it.name);
-            if (sprite == null) continue;
+            var info = look.FurnitureInfo(it.name);
+            if (info == null || info.sprite == null) continue;
             var go = new GameObject("Furniture " + it.name);
             go.transform.SetParent(root, false);
             go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.9f, w / 2 - 0.9f), 0.1f, it.row == 0 ? backZ : sideZ);
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = sprite;
+            sr.sprite = info.sprite;
             go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
             list.Add(sr);
+            AddDepth(root, go.transform, sr, info, list);
             any = true;
         }
         return any;
+    }
+
+    static readonly Color ThicknessColor = new Color(0.12f, 0.12f, 0.16f, 1f);
+
+    /// <summary>
+    /// Щоб меблі не виглядали наліпками:
+    ///  - ТОВЩИНА — та сама картинка, темна, трохи правіше, нижче й далі від камери. Видно тонкий темний край,
+    ///    як у фігурки з товстого картону (світло падає зліва згори). Низ краю ховається під підлогою — так і має бути;
+    ///  - ТІНЬ — м'яка пляма на підлозі під предметом (та сама, що під персонажами, MoonHop.BlobSprite).
+    /// Обидві теж у списку list, тож ховаються разом з меблями, поки гравець надворі.
+    /// </summary>
+    static void AddDepth(Transform root, Transform item, SpriteRenderer sr, ModuleLook.FurnitureSprite info, List<Renderer> list)
+    {
+        // Копія — дитина білборда, тож повертається разом з ним: x — вправо по екрану, y — вгору, z — від камери.
+        var back = new GameObject("Thickness");
+        back.transform.SetParent(item, false);
+        back.transform.localPosition = new Vector3(0.035f, -0.02f, 0.05f);
+        var bsr = back.AddComponent<SpriteRenderer>();
+        bsr.sprite = sr.sprite;
+        bsr.color = ThicknessColor;
+        bsr.sortingOrder = sr.sortingOrder - 1; // завжди позаду самого предмета
+        list.Add(bsr);
+
+        // Тінь лежить на підлозі (підлога на висоті 0,1 м). Ширина — як сам предмет, без прозорих країв картинки.
+        float width = info.width > 0f ? info.width : sr.sprite.bounds.size.x * 0.75f;
+        var shadow = new GameObject("Shadow");
+        shadow.transform.SetParent(root, false);
+        shadow.transform.localPosition = item.localPosition + new Vector3(info.centerX, 0.015f, 0.05f);
+        shadow.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        shadow.transform.localScale = new Vector3(width * 0.95f, 0.75f, 1f); // пляма 1 м → овал під предметом
+        var ssr = shadow.AddComponent<SpriteRenderer>();
+        ssr.sprite = MoonHop.BlobSprite();
+        ssr.color = new Color(0f, 0f, 0f, 0.4f);
+        ssr.sortingOrder = sr.sortingOrder - 2; // під товщиною і під тінями людей
+        list.Add(ssr);
     }
 
     // ---------- Меблі-коробки (запасний варіант, якщо картинок немає) ----------
