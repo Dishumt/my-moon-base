@@ -11,7 +11,8 @@ public class RocketData
     public string hintKey;       // ключ підказки «чим вона особлива»
     public float emptyMassKg;    // маса порожньої ракети
     public float maxFuelKg;      // найбільший бак
-    public int flightHours;      // скільки годин летить поставка
+    public float flightShare;    // скільки летить поставка: частка періоду поставок (0 — flightHours)
+    public int flightHours;      // старий спосіб: скільки годин летить поставка
     public float scale = 1f;     // розмір картинки на екрані
     public float maxCargoKg;         // скільки вантажу вміщує трюм (0 = без меж)
     public float heightInCrew = 8f; // у скільки разів ракета вища за астронавта (пусковий майданчик)

@@ -48,6 +48,22 @@ public static class LaunchText
         return dict;
     }
 
+    /// <summary>Тривалість для гравця: «16 год», «1 день», «2 дн.». Числа завжди з LogisticsTime, не з тексту.</summary>
+    public static string Duration(int hours)
+    {
+        if (hours == 24) return Get("time.day1");
+        if (hours > 0 && hours % 24 == 0) return Get("time.days", hours / 24);
+        return Get("time.hours", hours);
+    }
+
+    /// <summary>Назва плану поставок: «Раз на 16 год» (рахується з довжини розділу) або старий текст із nameKey.</summary>
+    public static string PlanName(SupplySystem sup, SupplyPlanData plan)
+    {
+        if (plan == null) return "";
+        if (plan.shipsPerChapter > 0f && sup != null) return Get("plan.every", Duration(sup.PeriodHours(plan)));
+        return Get(plan.nameKey);
+    }
+
     /// <summary>Скинути перед кожним Play (як Loc).</summary>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void Reset() { en = null; uk = null; }

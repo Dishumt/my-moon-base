@@ -5,33 +5,48 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Анімація польоту (роль 04): Дніпро → виток навколо Землі → політ до Місяця → орбіта Місяця → посадка на південному полюсі.
-/// Земля обертається, Місяць рухається своєю орбітою, а ракета летить пунктиром: попереду — пунктир, позаду — суцільна лінія.
+/// Анімація польоту (роль 04): Дніпро → виток навколо Землі → переліт до Місяця → орбіта Місяця → посадка на південному полюсі.
+///
+/// Усе рухається за СПРАВЖНІМ ГОДИННИКОМ МІСІЇ (на екрані — «Час місії»), лише прискореним по-різному в кожній фазі:
+/// - Місяць увесь час іде своєю орбітою зі справжньою швидкістю (≈ 0.55° за годину): за 3 дні перельоту — ≈ 40°;
+/// - переліт — це половинка еліпса навколо Землі (закони Кеплера): біля Землі корабель мчить, вдалині сповільнюється;
+///   цілимося туди, де Місяць БУДЕ через 3 дні;
+/// - на орбіті Місяця корабель кружляє навколо Місяця, що рухається, і сідає на південному полюсі (база рухається з Місяцем).
+/// Двигун горить лише під час маневрів (старт, розгін до Місяця, гальмування, посадка), решту часу корабель летить сам.
+/// Відстані не в масштабі (на екрані підписано): по-справжньому між Землею і Місяцем вмістилося б 30 Земель.
 /// Малюється кодом (Painter2D), картинка потрібна тільки для ракети. LaunchScreen запускає Play() після вдалого старту.
-/// Масштаб не справжній (на екрані підписано): по-справжньому між Землею і Місяцем вмістилося б 30 Земель.
 /// </summary>
 public class FlightMapView
 {
     // місто старту: Дніпро
     const float DniproLat = 48.45f, DniproLon = 35.05f;
-    static readonly float[] PhaseSeconds = { 1.6f, 2.2f, 4.2f, 2.2f, 1.8f };
+
+    // фази: скільки триває по-справжньому (години) і на екрані (секунди)
+    static readonly float[] PhaseHours = { 0.2f, 2.5f, 72f, 4f, 1f };     // старт, 1.5 витка, переліт ≈ 3 дні, 2 витки біля Місяця, посадка
+    static readonly float[] PhaseSeconds = { 2.0f, 2.4f, 5.0f, 2.6f, 2.2f };
+    const float MoonDegPerHour = 360f / (27.3f * 24f);   // Місяць облітає Землю за 27.3 доби
+    const float EarthDegPerHour = 15f;                   // Земля обертається за 24 години
+    const float ArrivalAngle = 10f;                      // де на екрані буде Місяць у мить прильоту (градуси)
 
     readonly VisualElement view;
     readonly Label title, caption, fact, scaleNote;
     readonly Button skipButton;
     readonly MapCanvas canvas;
     readonly VisualElement rocket;
-    readonly Label earthLabel, moonLabel, cityLabel, poleLabel;
+    readonly Label earthLabel, moonLabel, cityLabel, poleLabel, clockLabel;
     bool skip;
     float rocketW = 12f, rocketH = 34f;
 
     // геометрія (пікселі)
-    float W, H, R, r, D, earthSpin;
-    Vector2 E, moonNow, moonEnd;
-    readonly List<Vector2> path = new List<Vector2>();
-    readonly List<int> phaseStart = new List<int>();
-    float progressIndex;     // скільки точок шляху вже пройдено (дробове)
-    bool burning;            // чи горить двигун (вогник позаду ракети)
+    float W, H, R, r, D, ro, r1, ra;
+    Vector2 E;
+    float cityAngle, cityRadius, parkingEnd;
+    float missionHours, earthSpin;
+    int phase;
+    Vector2 ship, shipPrev;
+    float lastAngle, landTilt;
+    bool burning, landed;
+    readonly List<Vector2> flown = new List<Vector2>();     // пройдений шлях
     readonly List<Vector3> stars = new List<Vector3>();
     static readonly Vector2[] Continents =   // широта, довгота центрів «плям» континентів
     {
@@ -40,6 +55,7 @@ public class FlightMapView
     };
 
     static string T(string key) => LaunchText.Get(key);
+    static string T(string key, params object[] args) => LaunchText.Get(key, args);
 
     /// <summary>Полотно, на якому малюємо Землю, Місяць і шлях.</summary>
     class MapCanvas : VisualElement
@@ -71,6 +87,9 @@ public class FlightMapView
         moonLabel = MapLabel("flight-map-label");
         cityLabel = MapLabel("flight-city");
         poleLabel = MapLabel("flight-city");
+        clockLabel = new Label { pickingMode = PickingMode.Ignore };
+        clockLabel.AddToClassList("flight-clock");
+        view.Add(clockLabel);
         rocket = new VisualElement { pickingMode = PickingMode.Ignore };
         rocket.AddToClassList("flight-rocket");
         canvas.Add(rocket);
@@ -118,34 +137,46 @@ public class FlightMapView
         yield return null;
         Build();
 
-        for (int phase = 0; phase < PhaseSeconds.Length && !skip; phase++)
+        for (phase = 0; phase < PhaseSeconds.Length && !skip; phase++)
         {
             SetText(caption, T("flight.step" + (phase + 1)));
             SetText(fact, T("flight.fact" + (phase + 1)));
-            int from = phaseStart[phase], to = phaseStart[phase + 1] - 1;
+            float startHours = missionHours;
             float dur = PhaseSeconds[phase];
             for (float t = 0f; t < dur && !skip; t += Time.unscaledDeltaTime)
             {
-                float u = t / dur;
-                if (phase == 0 || phase == 4) u = u * u * (3f - 2f * u); // плавно рушає і плавно сідає
-                progressIndex = Mathf.Lerp(from, to, u);
-                burning = phase == 0 || phase == 4 || (phase == 2 && u < 0.12f) || (phase == 3 && u < 0.15f);
-                Animate(Time.unscaledDeltaTime, phase);
+                float u = Mathf.Clamp01(t / dur);
+                missionHours = startHours + PhaseHours[phase] * u;
+                Step(phase, u, Time.unscaledDeltaTime);
                 yield return null;
             }
+            missionHours = startHours + PhaseHours[phase];
         }
 
-        // сіли
-        progressIndex = path.Count - 1;
+        // сіли (або пропустили — одразу на базі)
+        phase = PhaseSeconds.Length - 1;
+        missionHours = TotalHours();
+        Step(phase, 1f, 0f);
+        landed = true;
         burning = false;
-        moonNow = moonEnd;
-        Animate(0f, PhaseSeconds.Length - 1);
         SetText(caption, T("flight.landed"));
-        for (float t = 0f; t < (skip ? 0.5f : 1.6f); t += Time.unscaledDeltaTime) yield return null;
+        for (float t = 0f; t < (skip ? 0.5f : 1.6f); t += Time.unscaledDeltaTime)
+        {
+            missionHours += Time.unscaledDeltaTime * 0.5f;   // годинник іде далі, Місяць і база теж рухаються
+            Step(phase, 1f, Time.unscaledDeltaTime);
+            yield return null;
+        }
         Show(false);
     }
 
-    // ---------- Шлях ----------
+    static float TotalHours()
+    {
+        float h = 0f;
+        foreach (var x in PhaseHours) h += x;
+        return h;
+    }
+
+    // ---------- Геометрія ----------
 
     void Build()
     {
@@ -154,92 +185,129 @@ public class FlightMapView
         if (float.IsNaN(W) || W < 10f) W = 1280f;
         if (float.IsNaN(H) || H < 10f) H = 720f;
 
-        E = new Vector2(W * 0.2f, H * 0.56f);
+        E = new Vector2(W * 0.2f, H * 0.58f);
         R = H * 0.17f;
-        r = R * 0.27f;                       // Місяць справді приблизно в 3,7 раза менший за Землю
-        D = W * 0.62f;
-        moonEnd = E + D * Dir(0f);
-        moonNow = E + D * Dir(-9f);
-        earthSpin = DniproLon + 25f;         // Дніпро трохи ліворуч від центру диска
+        r = R * 0.27f;                        // Місяць справді приблизно в 3.7 раза менший за Землю
+        D = Mathf.Min(W * 0.55f, H * 0.9f);   // радіус орбіти Місяця (не в масштабі; так Місяць увесь час на екрані)
+        ro = r * 2.4f;                        // орбіта корабля навколо Місяця
+        r1 = R * 1.35f;                       // орбіта корабля навколо Землі
+        ra = D - ro;                          // найдальша точка перельоту: з ближнього боку Місяця
 
         var rnd = new System.Random(3);
         stars.Clear();
         for (int i = 0; i < 90; i++)
             stars.Add(new Vector3((float)rnd.NextDouble() * W, (float)rnd.NextDouble() * H, 0.3f + 0.7f * (float)rnd.NextDouble()));
 
-        path.Clear();
-        phaseStart.Clear();
+        missionHours = 0f;
+        earthSpin = DniproLon + 25f;          // Дніпро трохи ліворуч від центру диска
         Vector2 city = Project(DniproLat, DniproLon, earthSpin);
-        float a0 = Mathf.Atan2(city.y - E.y, city.x - E.x);
-        float r1 = R * 1.35f;
+        cityAngle = Mathf.Atan2(city.y - E.y, city.x - E.x) * Mathf.Rad2Deg;
+        cityRadius = (city - E).magnitude;
+        // виток навколо Землі: від кінця старту до точки розгону (протилежно місцю зустрічі з Місяцем)
+        float burnAngle = ArrivalAngle + 180f;
+        parkingEnd = burnAngle;
+        while (parkingEnd < cityAngle + 40f + 450f) parkingEnd += 360f;   // ≈ 1.5 витка, як у місій «Аполлон»
 
-        // 0) старт із Дніпра: угору від поверхні і по спіралі на орбіту
-        phaseStart.Add(0);
-        for (int i = 0; i <= 40; i++)
-        {
-            float u = i / 40f;
-            if (u < 0.25f) { path.Add(Vector2.Lerp(city, E + R * 1.02f * Dir(a0 * Mathf.Rad2Deg), u / 0.25f)); continue; }
-            float k = (u - 0.25f) / 0.75f;
-            float ang = a0 + k * Mathf.PI * 0.5f;
-            path.Add(E + Mathf.Lerp(R * 1.02f, r1, Mathf.SmoothStep(0f, 1f, k)) * Dir(ang * Mathf.Rad2Deg));
-        }
-
-        // 1) виток навколо Землі — до верхньої точки, звідки летимо праворуч до Місяця
-        phaseStart.Add(path.Count);
-        float aStart = a0 + Mathf.PI * 0.5f;
-        float aDep = -Mathf.PI * 0.5f;
-        while (aDep < aStart + Mathf.PI * 1.2f) aDep += Mathf.PI * 2f;
-        for (int i = 1; i <= 120; i++) path.Add(E + r1 * Dir(Mathf.Lerp(aStart, aDep, i / 120f) * Mathf.Rad2Deg));
-
-        // 2) політ до Місяця — цілимося туди, де Місяць БУДЕ
-        phaseStart.Add(path.Count);
-        float ro = r * 2.4f;
-        Vector2 S = path[path.Count - 1];
-        Vector2 A = moonEnd + ro * Dir(200f);
-        Vector2 C1 = S + new Vector2(D * 0.45f, -D * 0.12f);
-        Vector2 C2 = A + new Vector2(-D * 0.3f, -D * 0.08f);
-        for (int i = 1; i <= 160; i++) path.Add(Bezier(S, C1, C2, A, i / 160f));
-
-        // 3) орбіта Місяця
-        phaseStart.Add(path.Count);
-        for (int i = 1; i <= 120; i++) path.Add(moonEnd + ro * Dir(Mathf.Lerp(200f, 420f, i / 120f)));
-
-        // 4) посадка на південному полюсі (низ диска Місяця)
-        phaseStart.Add(path.Count);
-        for (int i = 1; i <= 50; i++)
-        {
-            float u = i / 50f;
-            path.Add(moonEnd + Mathf.Lerp(ro, r, u) * Dir(Mathf.Lerp(420f, 450f, u)));
-        }
-        phaseStart.Add(path.Count);
-
-        progressIndex = 0f;
-        Animate(0f, 0);
+        flown.Clear();
+        landed = false;
+        landTilt = 0f;
+        lastAngle = 0f;
+        phase = 0;
+        ship = city;
+        shipPrev = city;
+        Step(0, 0f, 0f);
     }
 
-    void Animate(float dt, int phase)
+    /// <summary>Де Місяць зараз: справжня кутова швидкість, у мить прильоту він рівно в ArrivalAngle.</summary>
+    Vector2 MoonAt(float hours)
     {
-        earthSpin += 22f * dt;                                     // Земля обертається
-        float moonK = phase >= 3 ? 1f : Mathf.Clamp01(progressIndex / Mathf.Max(1f, phaseStart[3]));
-        moonNow = E + D * Dir(Mathf.Lerp(-9f, 0f, moonK));         // Місяць іде своєю орбітою
+        float arrival = PhaseHours[0] + PhaseHours[1] + PhaseHours[2];
+        return E + D * Dir(ArrivalAngle + MoonDegPerHour * (hours - arrival));
+    }
 
-        // ракета і підписи
-        int i = Mathf.Clamp(Mathf.FloorToInt(progressIndex), 0, path.Count - 1);
-        int j = Mathf.Min(i + 1, path.Count - 1);
-        Vector2 pos = Vector2.Lerp(path[i], path[j], progressIndex - i);
-        Vector2 dir = path[j] - path[Mathf.Max(0, i - 1)];
-        float ang = dir.sqrMagnitude > 0.001f ? Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + 90f : 0f;
+    /// <summary>Перелетний еліпс (фокус — Земля): true anomaly ν від 0 (біля Землі) до 180° (біля Місяця).</summary>
+    Vector2 TransferPoint(float nuDeg)
+    {
+        float a = (r1 + ra) * 0.5f, e = (ra - r1) / (ra + r1);
+        float nu = nuDeg * Mathf.Deg2Rad;
+        float rad = a * (1f - e * e) / (1f + e * Mathf.Cos(nu));
+        return E + rad * Dir(ArrivalAngle + 180f + nuDeg);
+    }
+
+    /// <summary>Рівняння Кеплера: за часом (частка 0..1 половини оберту) — true anomaly. Вдалині від Землі корабель повільніший.</summary>
+    float TransferAnomaly(float u)
+    {
+        float e = (ra - r1) / (ra + r1);
+        float M = Mathf.PI * u;                                   // середня аномалія росте рівномірно з часом
+        float Ecc = M;
+        for (int i = 0; i < 12; i++) Ecc -= (Ecc - e * Mathf.Sin(Ecc) - M) / (1f - e * Mathf.Cos(Ecc));
+        float nu = 2f * Mathf.Atan2(Mathf.Sqrt(1f + e) * Mathf.Sin(Ecc * 0.5f), Mathf.Sqrt(1f - e) * Mathf.Cos(Ecc * 0.5f));
+        return nu * Mathf.Rad2Deg;
+    }
+
+    /// <summary>Один кадр: де корабель, Місяць, Земля; чи горить двигун.</summary>
+    void Step(int ph, float u, float dt)
+    {
+        // Земля обертається 15° за годину. За 3 дні перельоту вона обернулась би тричі — на екрані сповільнюємо, щоб не мерехтіла
+        earthSpin = DniproLon + 25f + EarthDegPerHour * Mathf.Min(missionHours, 6f) + 25f * Mathf.Max(0f, missionHours - 6f) / 24f;
+        Vector2 moon = MoonAt(missionHours);
+
+        Vector2 pos;
+        switch (ph)
+        {
+            case 0: // старт: спершу вгору, потім нахиляємось і виходимо на коло орбіти (гравітаційний поворот)
+            {
+                float k = Mathf.SmoothStep(0f, 1f, u);
+                float rad = Mathf.Lerp(cityRadius, r1, Mathf.Sqrt(k));
+                pos = E + rad * Dir(cityAngle + 40f * k * k);
+                burning = true;
+                break;
+            }
+            case 1: // виток навколо Землі: двигун вимкнено, корабель летить сам
+                pos = E + r1 * Dir(Mathf.Lerp(cityAngle + 40f, parkingEnd, u));
+                burning = false;
+                break;
+            case 2: // переліт: короткий розгін, далі політ по еліпсу без двигуна
+                pos = TransferPoint(TransferAnomaly(u));
+                burning = u < 0.06f;
+                break;
+            case 3: // орбіта Місяця: кружляємо навколо Місяця, що рухається; на початку — гальмування
+                pos = moon + ro * Dir(Mathf.Lerp(ArrivalAngle + 180f, ArrivalAngle - 180f, u));   // з того місця, де закінчився переліт
+                burning = u < 0.1f;
+                break;
+            default: // посадка: знижуємось до південного полюса (низ диска)
+            {
+                float k = Mathf.SmoothStep(0f, 1f, u);
+                pos = moon + Mathf.Lerp(ro, r, k) * Dir(Mathf.Lerp(ArrivalAngle - 180f, -270f, u));   // -270° = низ диска
+                burning = !landed;
+                landTilt = k;
+                break;
+            }
+        }
+
+        shipPrev = ship;
+        ship = pos;
+        if (flown.Count == 0 || (flown[flown.Count - 1] - pos).sqrMagnitude > 4f) flown.Add(pos);
+
+        // ракета дивиться туди, куди летить
+        Vector2 dir = ship - shipPrev;
+        float ang = dir.sqrMagnitude > 0.0001f ? Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + 90f : lastAngle;
+        if (ph == PhaseSeconds.Length - 1) ang = Mathf.LerpAngle(ang, 180f, landed ? 1f : landTilt);   // сідаємо «ногами» до Місяця
+        lastAngle = ang;
         rocket.style.left = pos.x - rocketW * 0.5f;
         rocket.style.top = pos.y - rocketH * 0.5f;
         rocket.style.rotate = new Rotate(new Angle(ang));
 
         Place(earthLabel, E + new Vector2(-100f, R + 10f));
-        Place(moonLabel, moonNow + new Vector2(-100f, -r - 30f));
-        Place(poleLabel, moonEnd + new Vector2(-100f, r + 8f));
+        Place(moonLabel, moon + new Vector2(-100f, -r - 30f));
+        Place(poleLabel, moon + new Vector2(-100f, r + 8f));
         Vector2 city = Project(DniproLat, DniproLon, earthSpin);
-        bool cityVisible = Depth(DniproLat, DniproLon, earthSpin) > 0.1f;
+        bool cityVisible = ph == 0 && Depth(DniproLat, DniproLon, earthSpin) > 0.1f;
         cityLabel.style.display = cityVisible ? DisplayStyle.Flex : DisplayStyle.None;
         Place(cityLabel, city + new Vector2(-100f, -26f));
+
+        int days = (int)(missionHours / 24f), hours = (int)(missionHours % 24f);
+        SetText(clockLabel, T("flight.clock", days, hours.ToString("00"), Mathf.FloorToInt(missionHours * 60f % 60f).ToString("00")));
 
         canvas.MarkDirtyRepaint();
     }
@@ -254,9 +322,12 @@ public class FlightMapView
 
     void DrawMap(Painter2D p)
     {
-        if (path.Count == 0) return;
+        if (R <= 0f) return;
 
         foreach (var s in stars) Dot(p, new Vector2(s.x, s.y), 1.1f, new Color(1f, 1f, 1f, 0.35f * s.z));
+
+        // орбіта Місяця — тонке коло: видно, що Місяць увесь час рухається по ній
+        DashedCircle(p, E, D, new Color(0.7f, 0.75f, 0.85f, 0.25f), 6f);
 
         // Земля: океан, континенти, що обертаються, атмосфера
         Dot(p, E, R * 1.06f, new Color(0.45f, 0.7f, 1f, 0.15f));
@@ -274,37 +345,68 @@ public class FlightMapView
             Dot(p, city, 2.5f, new Color(0.1f, 0.1f, 0.12f));
         }
 
-        // Місяць і база на південному полюсі
-        Dot(p, moonNow, r, new Color(0.8f, 0.79f, 0.74f));
-        Dot(p, moonNow + new Vector2(-r * 0.3f, -r * 0.25f), r * 0.22f, new Color(0.68f, 0.67f, 0.62f));
-        Dot(p, moonNow + new Vector2(r * 0.35f, r * 0.15f), r * 0.15f, new Color(0.68f, 0.67f, 0.62f));
-        Dot(p, moonEnd + new Vector2(0f, r), 4f, new Color(0.37f, 0.83f, 0.96f));
+        // Місяць зараз і база на південному полюсі (рухається разом із Місяцем)
+        Vector2 moon = MoonAt(missionHours);
+        Dot(p, moon, r, new Color(0.8f, 0.79f, 0.74f));
+        Dot(p, moon + new Vector2(-r * 0.3f, -r * 0.25f), r * 0.22f, new Color(0.68f, 0.67f, 0.62f));
+        Dot(p, moon + new Vector2(r * 0.35f, r * 0.15f), r * 0.15f, new Color(0.68f, 0.67f, 0.62f));
+        Dot(p, moon + new Vector2(0f, r), 4f, new Color(0.37f, 0.83f, 0.96f));
 
-        // шлях: пройдене — суцільна помаранчева лінія, попереду — пунктир
-        int done = Mathf.Clamp(Mathf.FloorToInt(progressIndex), 0, path.Count - 1);
-        p.strokeColor = new Color(1f, 0.6f, 0.2f);
-        p.lineWidth = 2.5f;
-        p.lineCap = LineCap.Round;
-        p.BeginPath();
-        p.MoveTo(path[0]);
-        for (int i = 1; i <= done; i++) p.LineTo(path[i]);
-        p.Stroke();
-
-        float since = 0f;
-        for (int i = done + 1; i < path.Count; i++)
+        // план попереду — пунктир: до розгону — переліт до точки зустрічі; біля Місяця — орбіта навколо нього
+        var plan = new Color(0.6f, 0.85f, 1f, 0.8f);
+        if (phase <= 2)
         {
-            since += Vector2.Distance(path[i], path[i - 1]);
-            if (since < 9f) continue;
-            since = 0f;
-            Dot(p, path[i], 1.6f, new Color(0.6f, 0.85f, 1f, 0.8f));
+            float fromNu = phase == 2 ? TransferAnomaly(Mathf.Clamp01(CurrentU())) : 0f;
+            float since = 0f;
+            Vector2 prev = TransferPoint(fromNu);
+            for (float nu = fromNu; nu <= 180f; nu += 1f)
+            {
+                Vector2 q = TransferPoint(nu);
+                since += Vector2.Distance(q, prev);
+                prev = q;
+                if (since < 9f) continue;
+                since = 0f;
+                Dot(p, q, 1.6f, plan);
+            }
+            // куди прилетимо: Місяць там, де він БУДЕ
+            Vector2 meet = MoonAt(PhaseHours[0] + PhaseHours[1] + PhaseHours[2]);
+            DashedCircle(p, meet, r, new Color(0.8f, 0.79f, 0.74f, 0.35f), 4f);
+        }
+        else if (!landed) DashedCircle(p, moon, ro, plan, 5f);
+
+        // пройдене — суцільна помаранчева лінія
+        if (flown.Count > 1)
+        {
+            p.strokeColor = new Color(1f, 0.6f, 0.2f);
+            p.lineWidth = 2.5f;
+            p.lineCap = LineCap.Round;
+            p.lineJoin = LineJoin.Round;
+            p.BeginPath();
+            p.MoveTo(flown[0]);
+            for (int i = 1; i < flown.Count; i++) p.LineTo(flown[i]);
+            p.Stroke();
         }
 
         // вогник двигуна позаду ракети
         if (burning)
         {
-            int k = Mathf.Max(0, done - 3);
-            Dot(p, path[k], 4f + Random.Range(0f, 2f), new Color(1f, 0.75f, 0.3f, 0.9f));
+            Vector2 back = ship - shipPrev;
+            back = back.sqrMagnitude > 0.0001f ? -back.normalized : Vector2.down;
+            Dot(p, ship + back * (rocketH * 0.55f), 4f + Random.Range(0f, 2f), new Color(1f, 0.75f, 0.3f, 0.9f));
         }
+    }
+
+    float CurrentU()
+    {
+        float start = 0f;
+        for (int i = 0; i < 2; i++) start += PhaseHours[i];
+        return (missionHours - start) / PhaseHours[2];
+    }
+
+    static void DashedCircle(Painter2D p, Vector2 c, float radius, Color color, float gapPx)
+    {
+        int n = Mathf.Clamp(Mathf.RoundToInt(2f * Mathf.PI * radius / gapPx), 12, 400);
+        for (int i = 0; i < n; i++) Dot(p, c + radius * Dir(360f * i / n), 1.2f, color);
     }
 
     static void Dot(Painter2D p, Vector2 c, float radius, Color color)
@@ -315,8 +417,6 @@ public class FlightMapView
         p.ClosePath();
         p.Fill();
     }
-
-    // ---------- Геометрія ----------
 
     static Vector2 Dir(float degrees)
     {
@@ -333,12 +433,6 @@ public class FlightMapView
 
     /// <summary>Наскільки точка дивиться на нас: 1 — у центрі диска, 0 — на краю, менше 0 — з того боку.</summary>
     static float Depth(float lat, float lon, float spin) => Mathf.Cos(lat * Mathf.Deg2Rad) * Mathf.Cos((lon - spin) * Mathf.Deg2Rad);
-
-    static Vector2 Bezier(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float t)
-    {
-        float u = 1f - t;
-        return u * u * u * a + 3f * u * u * t * b + 3f * u * t * t * c + t * t * t * d;
-    }
 
     static void SetText(TextElement e, string text) { if (e != null) e.text = text; }
 }

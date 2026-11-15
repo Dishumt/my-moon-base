@@ -27,8 +27,24 @@ public class CommsSystem : ISimSystem
     /// <summary>Година від початку гри.</summary>
     public static int AbsHour(GameState s) => (s.Day - 1) * 24 + s.Hour;
 
-    int OpenHours(GameState s) => data.commsOpenHours + (s.Comms != null ? s.Comms.ExtraOpenHours : 0);
-    int Period(GameState s) => OpenHours(s) + data.commsClosedHours;
+    /// <summary>Скільки годин зв'язок є за один цикл (без бонусу ExtraOpenHours).</summary>
+    public int BaseOpenHours()
+    {
+        if (data.commsCyclesPerChapter <= 0f) return data.commsOpenHours;
+        float cycle = LogisticsTime.ChapterHours(data) / data.commsCyclesPerChapter;   // цикл тягнеться разом із розділом
+        return LogisticsTime.Hours(cycle * data.commsOpenShare);
+    }
+
+    /// <summary>Скільки годин зв'язку немає за один цикл.</summary>
+    public int ClosedHours()
+    {
+        if (data.commsCyclesPerChapter <= 0f) return data.commsClosedHours;
+        float cycle = LogisticsTime.ChapterHours(data) / data.commsCyclesPerChapter;
+        return LogisticsTime.Hours(cycle - BaseOpenHours(), 0);
+    }
+
+    int OpenHours(GameState s) => BaseOpenHours() + (s.Comms != null ? s.Comms.ExtraOpenHours : 0);
+    int Period(GameState s) => OpenHours(s) + ClosedHours();
 
     /// <summary>Чи година потрапляє у вікно за шаблоном (без урахування енергії).</summary>
     public bool InWindow(GameState s, int absHour)
