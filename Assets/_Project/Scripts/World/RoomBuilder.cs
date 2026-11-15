@@ -172,22 +172,25 @@ public static class RoomBuilder
 
     struct Item
     {
-        public string name; public float x; public int row;
-        public Item(string name, float x, int row) { this.name = name; this.x = x; this.row = row; }
+        public string name; public float x; public int row; public float scale;
+        public Item(string name, float x, int row, float scale = 1f) { this.name = name; this.x = x; this.row = row; this.scale = scale; }
     }
+
+    // Ліжко-капсула більше за інші меблі: у ньому лежить людина звичайного розміру (AstronautView).
+    const float BedScale = 1.6f;
 
     static Item[] LayoutFor(ModuleType type)
     {
         switch (type)
         {
             case ModuleType.Habitat: // генератор кисню тут: житловий модуль перший, і дитина одразу бачить, звідки кисень
-                return new[] { new Item("bunk_bed", -2.0f, 0), new Item("galley_kitchen", 0f, 0), new Item("oxygen_generator", 2.0f, 0),
+                return new[] { new Item("bunk_bed", -1.7f, 0, BedScale), new Item("galley_kitchen", 0.45f, 0), new Item("oxygen_generator", 2.1f, 0),
                                new Item("shower_toilet", -2.1f, 1), new Item("dining_table", 2.1f, 1) };
             case ModuleType.Greenhouse:
                 return new[] { new Item("hydroponic_rack", -2.0f, 0), new Item("hydroponic_rack", 0f, 0), new Item("hydroponic_rack", 2.0f, 0),
                                new Item("hydroponic_rack", -2.1f, 1), new Item("water_recycler", 2.1f, 1) };
             case ModuleType.Medbay:
-                return new[] { new Item("medical_cabinet", -2.0f, 0), new Item("bunk_bed", 0f, 0), new Item("wash_station", 2.0f, 0),
+                return new[] { new Item("medical_cabinet", -2.1f, 0), new Item("bunk_bed", 0f, 0, BedScale), new Item("wash_station", 2.1f, 0),
                                new Item("wardrobe_storage", -2.1f, 1) };
             case ModuleType.Lab:
                 return new[] { new Item("science_bench", -2.0f, 0), new Item("specimen_cabinet", 0f, 0), new Item("workstation_desk", 2.0f, 0),
@@ -215,15 +218,19 @@ public static class RoomBuilder
             var go = new GameObject("Furniture " + it.name);
             go.transform.SetParent(root, false);
             go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.9f, w / 2 - 0.9f), 0.1f, it.row == 0 ? backZ : sideZ);
+            go.transform.localScale = Vector3.one * it.scale; // до Billboard: він запам'ятовує масштаб в Awake
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = info.sprite;
             go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
             // Предмет разом з лампами й товщиною сортується як одне ціле: лампи поверх предмета, але не поверх людей перед ним
             go.AddComponent<UnityEngine.Rendering.SortingGroup>();
             list.Add(sr);
-            AddDepth(root, go.transform, sr, info, list);
+            // Ширина самого предмета (без прозорих країв) і зсув його середини — з урахуванням масштабу
+            float width = (info.width > 0f ? info.width : sr.sprite.bounds.size.x * 0.75f) * it.scale;
+            float centerX = info.centerX * it.scale;
+            AddDepth(root, go.transform, sr, width, centerX, it.scale, list);
             // лампи, екрани, рослини (показують стан гри); ще й записує предмет у ModuleView, щоб астронавти знали, куди йти
-            go.AddComponent<FurnitureLife>().Init(it.name, view, type, sr, info.width, info.centerX);
+            go.AddComponent<FurnitureLife>().Init(it.name, view, type, sr, width, centerX);
             any = true;
         }
         return any;
@@ -238,7 +245,7 @@ public static class RoomBuilder
     ///  - ТІНЬ — м'яка пляма на підлозі під предметом (та сама, що під персонажами, MoonHop.BlobSprite).
     /// Обидві теж у списку list, тож ховаються разом з меблями, поки гравець надворі.
     /// </summary>
-    static void AddDepth(Transform root, Transform item, SpriteRenderer sr, ModuleLook.FurnitureSprite info, List<Renderer> list)
+    static void AddDepth(Transform root, Transform item, SpriteRenderer sr, float width, float centerX, float scale, List<Renderer> list)
     {
         // Копія — дитина білборда, тож повертається разом з ним: x — вправо по екрану, y — вгору, z — від камери.
         var back = new GameObject("Thickness");
@@ -251,12 +258,11 @@ public static class RoomBuilder
         list.Add(bsr);
 
         // Тінь лежить на підлозі (підлога на висоті 0,1 м). Ширина — як сам предмет, без прозорих країв картинки.
-        float width = info.width > 0f ? info.width : sr.sprite.bounds.size.x * 0.75f;
         var shadow = new GameObject("Shadow");
         shadow.transform.SetParent(root, false);
-        shadow.transform.localPosition = item.localPosition + new Vector3(info.centerX, 0.015f, 0.05f);
+        shadow.transform.localPosition = item.localPosition + new Vector3(centerX, 0.015f, 0.05f);
         shadow.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-        shadow.transform.localScale = new Vector3(width * 0.95f, 0.75f, 1f); // пляма 1 м → овал під предметом
+        shadow.transform.localScale = new Vector3(width * 0.95f, 0.75f * scale, 1f); // пляма 1 м → овал під предметом
         var ssr = shadow.AddComponent<SpriteRenderer>();
         ssr.sprite = MoonHop.BlobSprite();
         ssr.color = new Color(0f, 0f, 0f, 0.4f);

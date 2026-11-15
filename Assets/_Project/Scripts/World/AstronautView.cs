@@ -40,6 +40,7 @@ public class AstronautView : MonoBehaviour
     FurnitureLife targetFurniture; // null — просто вільне місце в кімнаті
     bool targetLie;
     FurnitureLife bed;             // ліжко, на якому лежимо (або яке зайняли, поки йдемо)
+    Vector3? claimedSpot;          // місце в кімнаті, яке ми зайняли (інші туди не стають)
     bool lying;
     Vector3 lyingHead;             // де голова лежачого (для «Zzz» та іконки)
     MoonHop hop;
@@ -155,6 +156,7 @@ public class AstronautView : MonoBehaviour
         targetFurniture = null;
         targetLie = false;
         bed = null;
+        claimedSpot = null;
 
         ModuleView room = null;
         Vector3? outdoor = null;
@@ -358,17 +360,56 @@ public class AstronautView : MonoBehaviour
             lie = false;
             f = room.FindFurniture(room.Type == ModuleType.Medbay ? "medical_cabinet" : "dining_table", index);
         }
-        if (f == null) return room.RoomSpot(index);
+        Vector3 spot;
+        if (f != null && lie)
+        {
+            bed = f; // займаємо ліжко одразу, щоб інший не пішов туди ж
+            spot = room.ClampInRoom(f.FrontPoint);
+        }
+        else if (f == null || !FreeSpotNear(room, f, out spot))
+        {
+            f = null; // біля предмета все зайнято — стаємо на вільне місце в кімнаті
+            lie = false;
+            spot = room.RoomSpot(index);
+        }
 
         targetFurniture = f;
         targetLie = lie;
-        if (lie)
+        claimedSpot = spot;
+        return spot;
+    }
+
+    /// <summary>
+    /// Перше вільне місце біля предмета: спершу збоку (щоб не закривати предмет), потім спереду.
+    /// Місце не годиться, якщо воно за стіною (довелося б сильно підсунути) або там уже хтось стоїть чи йде туди.
+    /// </summary>
+    bool FreeSpotNear(ModuleView room, FurnitureLife f, out Vector3 spot)
+    {
+        int[] order = index % 2 == 0 ? new[] { 0, 1, 2, 3 } : new[] { 1, 0, 3, 2 }; // сусіди починають з різних боків
+        foreach (int k in order)
         {
-            bed = f; // займаємо ліжко одразу, щоб інший не пішов туди ж
-            return room.ClampInRoom(f.StandPoint(0));
+            Vector3 p = f.Spot(k);
+            Vector3 c = room.ClampInRoom(p);
+            if ((c - p).sqrMagnitude > 0.2f * 0.2f) continue; // за стіною
+            if (SpotTaken(c)) continue;
+            spot = c;
+            return true;
         }
-        int side = index % 3 == 2 ? 0 : (index % 2 == 0 ? -1 : 1); // двоє — з різних боків, третій — посередині
-        return room.ClampInRoom(f.StandPoint(side));
+        spot = default;
+        return false;
+    }
+
+    /// <summary>Чи хтось інший уже зайняв місце поруч (ближче 0,7 м — люди на картинках широкі).</summary>
+    bool SpotTaken(Vector3 p)
+    {
+        foreach (var a in All)
+        {
+            if (a == this || !a.claimedSpot.HasValue) continue;
+            Vector3 d = a.claimedSpot.Value - p;
+            d.y = 0f;
+            if (d.sqrMagnitude < 0.7f * 0.7f) return true;
+        }
+        return false;
     }
 
     bool BedTaken(FurnitureLife f)
@@ -402,9 +443,10 @@ public class AstronautView : MonoBehaviour
     }
 
     // Ліжко bunk_bed (пікселі картинки Юлі): ноги внизу ліворуч, подушка вгорі праворуч — людина лежить по діагоналі.
-    static readonly Vector2 BedFeet = new Vector2(92f, 152f);
-    static readonly Vector2 BedHead = new Vector2(186f, 101f);
-    const float LyingSize = 0.55f;    // менший, щоб уміститися в ліжко
+    // Ліжко збільшене (RoomBuilder.BedScale), тож людина лежить у звичайному розмірі.
+    static readonly Vector2 BedFeet = new Vector2(84f, 157f);
+    static readonly Vector2 BedHead = new Vector2(190f, 100f);
+    const float LyingSize = 1f;
     const float TowardCamera = 0.6f;  // трохи ближче до камери, щоб людину було видно поверх ліжка
 
     /// <summary>Тіло лежить на матраці: картинка паралельно екрану, повернута головою до подушки.</summary>

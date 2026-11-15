@@ -111,17 +111,29 @@ public class FurnitureLife : MonoBehaviour
     /// <summary>Середина предмета на підлозі (туди дивиться людина, що з ним працює).</summary>
     public Vector3 FloorCenter => new Vector3(transform.position.x + CenterX, 0f, transform.position.z);
 
+    /// <summary>Скільки є місць навколо предмета (див. Spot).</summary>
+    public const int SpotCount = 4;
+
     /// <summary>
-    /// Де стати людині, що працює з предметом (на підлозі, трохи перед ним).
-    /// side: -1 — біля лівого краю, +1 — біля правого (так людина не закриває предмет), 0 — посередині перед ним.
+    /// k-те місце на підлозі, де може стати людина, що працює з предметом:
+    /// 0 — збоку ліворуч, 1 — збоку праворуч (так людина не закриває предмет), 2 і 3 — спереду ліворуч і праворуч.
+    /// Яке з них вільне і чи воно всередині кімнати, вирішує AstronautView.
     /// </summary>
-    public Vector3 StandPoint(int side)
+    public Vector3 Spot(int k)
     {
         Vector3 c = FloorCenter;
-        float x = c.x + side * Mathf.Max(0.2f, Width * 0.5f - 0.15f);
-        float z = c.z - (side == 0 ? 0.75f : 0.45f);
-        return new Vector3(x, 0f, z);
+        float side = Width * 0.5f + 0.1f;
+        switch (k)
+        {
+            case 0: return new Vector3(c.x - side, 0f, c.z - 0.35f);
+            case 1: return new Vector3(c.x + side, 0f, c.z - 0.35f);
+            case 2: return new Vector3(c.x - 0.45f, 0f, c.z - 1f);
+            default: return new Vector3(c.x + 0.45f, 0f, c.z - 1f);
+        }
     }
+
+    /// <summary>Посередині перед предметом (тут стоїть «тіло» лежачого — саму картинку малюємо на ліжку).</summary>
+    public Vector3 FrontPoint => FloorCenter + new Vector3(0f, 0f, -0.6f);
 
     // =====================================================================
     // Генератор кисню: трубка-рівень зліва і лампа-маячок на кришці
