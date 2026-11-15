@@ -593,6 +593,58 @@
     {
       "key": "pad.fact.5",
       "text": "In real space, launch windows to the Moon open about once a month. In our game, time runs much faster!"
+    },
+    {
+      "key": "launch.hold",
+      "text": "CARGO HOLD"
+    },
+    {
+      "key": "launch.like_elephants",
+      "text": "With fuel it weighs like {0} elephants!"
+    },
+    {
+      "key": "launch.like_cars",
+      "text": "With fuel it weighs like {0} cars!"
+    },
+    {
+      "key": "report.title",
+      "text": "MISSION REPORT"
+    },
+    {
+      "key": "report.star_first",
+      "text": "Reached the Moon on the first try"
+    },
+    {
+      "key": "report.star_supplies",
+      "text": "Enough supplies until the next ship, with a reserve"
+    },
+    {
+      "key": "report.star_nowaste",
+      "text": "Nothing wasted: no extra oxygen, the rocket is not too big"
+    },
+    {
+      "key": "report.tip_supplies",
+      "text": "Tip: take more food, water or oxygen, so the crew can wait for the next ship."
+    },
+    {
+      "key": "report.tip_oxygen",
+      "text": "Tip: the oxygen tank holds only {0}. Extra oxygen is wasted."
+    },
+    {
+      "key": "report.tip_smaller",
+      "text": "Tip: the {0} rocket could carry this too, and it flies faster."
+    },
+    {
+      "key": "report.tip_first",
+      "text": "Tip: watch the traffic light. Green means a safe flight."
+    },
+    {
+      "key": "report.all",
+      "text": "Perfect mission! 3 out of 3 stars!"
+    },
+    {
+      "key": "report.next",
+      "text": "CONTINUE"
     }
   ]
 }

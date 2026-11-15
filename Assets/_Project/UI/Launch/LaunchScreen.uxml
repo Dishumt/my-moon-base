@@ -57,9 +57,14 @@
                             <ui:VisualElement class="ship-flame" />
                             <ui:VisualElement class="ship-flame-core" />
                         </ui:VisualElement>
+                        <ui:VisualElement class="hold-box">
+                            <ui:Label name="hold-title" text="HOLD" class="hold-title" />
+                            <ui:VisualElement name="hold" class="hold" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:Label name="seats-label" text="" class="t-body mb-4" />
-                    <ui:Label name="mass-label" text="Mass: 1600 kg" class="t-body c-acc mb-4" />
+                    <ui:Label name="mass-label" text="Mass: 1600 kg" class="t-body c-acc" />
+                    <ui:Label name="mass-like" text="" class="mass-like mb-4" />
                     <ui:VisualElement class="mass-bar">
                         <ui:VisualElement name="mass-crew" class="mass-crew" />
                         <ui:VisualElement name="mass-cargo" class="mass-cargo" />
@@ -126,6 +131,16 @@
             <ui:Label name="pad-count" text="" class="pad-count" />
             <ui:Label name="pad-fact" text="" class="note note--fact pad-fact" />
             <ui:Button name="pad-skip" text="SKIP" class="btn btn--small pad-skip" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="report" class="report report--hidden">
+            <ui:VisualElement class="panel report-card">
+                <ui:Label name="report-title" text="MISSION REPORT" class="t-title report-title" />
+                <ui:VisualElement name="report-stars" class="report-stars" />
+                <ui:VisualElement name="report-list" class="report-list" />
+                <ui:Label name="report-tip" text="" class="note note--fact report-tip" />
+                <ui:Button name="report-next" text="CONTINUE" class="btn btn--primary report-next" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

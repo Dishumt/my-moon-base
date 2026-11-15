@@ -241,3 +241,27 @@ public class MissionPlannerTests
         Assert.IsTrue(float.IsInfinity(Plan().Oxygen.Days));
     }
 }
+
+/// <summary>Тест для зірочки «ракета не завелика» (роль 04).</summary>
+public class SmallerRocketTests
+{
+    [Test]
+    public void LightCargo_SmallerRocketFits_HeavyCargo_DoesNot()
+    {
+        var cat = new CargoCatalog();
+        cat.items.Add(new CargoItemData { id = "materials", massKg = 200f, materials = 20f });
+        var rockets = new RocketCatalog { defaultId = "heavy" };
+        rockets.items.Add(new RocketData { id = "small", emptyMassKg = 600f, maxFuelKg = 3500f, flightHours = 8 });
+        rockets.items.Add(new RocketData { id = "heavy", emptyMassKg = 2000f, maxFuelKg = 10000f, flightHours = 24 });
+        var sup = new SupplySystem(new LaunchData(), cat, rockets);
+        var s = new GameState();
+
+        // 4 людини (600) + 200 вантажу: малій треба 1.5 × 1400 × 1.1 = 2310 ≤ 3500 → зелена
+        sup.ChangeCargo(s, "materials", 1);
+        Assert.AreEqual("small", MissionPlanner.SmallerRocketThatFits(s, sup, true).id);
+
+        // + 2000 кг: малій треба 1.5 × 3400 × 1.1 = 5610 > 3500 → не підходить
+        sup.ChangeCargo(s, "materials", 10);
+        Assert.IsNull(MissionPlanner.SmallerRocketThatFits(s, sup, true));
+    }
+}

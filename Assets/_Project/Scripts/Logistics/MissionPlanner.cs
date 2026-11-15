@@ -147,5 +147,25 @@ public static class MissionPlanner
         p.TipIsWarning = warning;
     }
 
+    /// <summary>
+    /// Найменша ракета, легша за вибрану, яка теж підняла б цей вантаж на зеленому світлі (з повним баком).
+    /// null — вибрана ракета вже найменша з можливих. Для зірочки «нічого зайвого».
+    /// </summary>
+    public static RocketData SmallerRocketThatFits(GameState s, SupplySystem sup, bool firstMission)
+    {
+        var current = sup.GetRocket(s);
+        if (current == null) return null;
+        float cargo = LaunchCalculator.CargoMass(s.Supply.Cargo, sup.Catalog);
+        int people = sup.People(s, firstMission);
+        RocketData best = null;
+        foreach (var r in sup.Rockets.items)
+        {
+            if (r == current || r.emptyMassKg >= current.emptyMassKg) continue;
+            var res = sup.Calculator.Evaluate(cargo, people, r.maxFuelKg, r);
+            if (res.Light == LaunchLight.Green && (best == null || r.emptyMassKg < best.emptyMassKg)) best = r;
+        }
+        return best;
+    }
+
     static string Whole(float days) => float.IsInfinity(days) ? "∞" : Math.Floor(days).ToString("0");
 }

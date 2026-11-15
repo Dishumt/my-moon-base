@@ -63,7 +63,13 @@ public class LaunchScreen : MonoBehaviour
     Label seatsLabel, massLabel, fuelLabel, fuelWhy, riskLabel, hintLabel, resultLabel;
     Label infoTitle, infoText, infoGives;
     Label goalsTitle, daysTitle, advisorName, advisorText;
-    VisualElement goalsList, daysList, advisor;
+    VisualElement goalsList, daysList, advisor, hold;
+    Label massLike, holdTitle;
+    VisualElement report, reportStars, reportList;
+    Label reportTitle, reportTip;
+    Button reportNext;
+    bool reportClosed;
+    int failedTries;          // скільки разів у цій місії ракета поверталась (для зірочки)
     SimBalanceData balance;   // правила витрат ролі 03 — для «на скільки днів вистачить»
 
     const float ShipBaseScale = 0.75f; // ракета на планшеті менша, ніж на майданчику
@@ -127,6 +133,16 @@ public class LaunchScreen : MonoBehaviour
         advisor = root.Q("advisor");
         advisorName = root.Q<Label>("advisor-name");
         advisorText = root.Q<Label>("advisor-text");
+        hold = root.Q("hold");
+        holdTitle = root.Q<Label>("hold-title");
+        massLike = root.Q<Label>("mass-like");
+        report = root.Q("report");
+        reportStars = root.Q("report-stars");
+        reportList = root.Q("report-list");
+        reportTitle = root.Q<Label>("report-title");
+        reportTip = root.Q<Label>("report-tip");
+        reportNext = root.Q<Button>("report-next");
+        if (reportNext != null) reportNext.clicked += () => reportClosed = true;
         if (balance == null) balance = DataLoader.Load<SimBalanceData>("Balance/balance");
         pad = new LaunchPadView(root);
         if (!pad.Ready) pad = null; // у UXML немає майданчика — буде тільки політ по дузі
@@ -181,6 +197,8 @@ public class LaunchScreen : MonoBehaviour
         SetResult(null);
         infoItem = null;
         infoRocket = null;
+        failedTries = 0;
+        report?.AddToClassList("report--hidden");
         BuildRocketCards();
         BuildCargoRows();
         BuildDaysRows();
@@ -319,7 +337,16 @@ public class LaunchScreen : MonoBehaviour
             var plus = new Button(() => ChangeCargo(id, +1)) { text = "+", name = "plus" };
             plus.AddToClassList("small-btn");
 
-            row.Add(icon); row.Add(nameLabel); row.Add(massText); row.Add(help); row.Add(minus); row.Add(count); row.Add(plus);
+            // плитка: іконка і «?» зверху, назва, маса, внизу − кількість +
+            var top = new VisualElement();
+            top.AddToClassList("tile-top");
+            var gap = new VisualElement();
+            gap.AddToClassList("tile-gap");
+            top.Add(icon); top.Add(gap); top.Add(help);
+            var bottom = new VisualElement();
+            bottom.AddToClassList("tile-bottom");
+            bottom.Add(minus); bottom.Add(count); bottom.Add(plus);
+            row.Add(top); row.Add(nameLabel); row.Add(massText); row.Add(bottom);
             row.RegisterCallback<PointerEnterEvent>(_ => ShowInfo(data, null));
             cargoList.Add(row);
         }
@@ -449,7 +476,9 @@ public class LaunchScreen : MonoBehaviour
             row.EnableInClassList("cargo-row--locked", locked);
             row.Q<Label>("name").text = T(item.nameKey);
             row.Q<Label>("mass").text = locked ? T("launch.locked") : T("launch.kg", item.massKg.ToString("0"));
-            row.Q<Label>("count").text = s.Supply.Count(item.id).ToString();
+            int packed = s.Supply.Count(item.id);
+            row.Q<Label>("count").text = packed.ToString();
+            row.EnableInClassList("cargo-row--has", packed > 0);
             row.Q<Button>("minus").SetEnabled(editable);
             row.Q<Button>("plus").SetEnabled(editable && !locked);
         }
@@ -471,6 +500,8 @@ public class LaunchScreen : MonoBehaviour
         massBar?.EnableInClassList("mass-bar--over", r.PeopleKg + r.CargoKg > scaleKg);
         SetText(seatsLabel, T("launch.seats", Supply.People(s, IsFirstMission), data.personMassKg.ToString("0")));
         SetText(massLabel, T("launch.mass", r.TotalMassKg.ToString("0"), r.CargoKg.ToString("0")));
+        SetText(massLike, LikeText(r.TotalMassKg + r.FuelKg));
+        RefreshHold(s);
 
         // світлофор
         lightRed?.EnableInClassList("light--red-on", r.Light == LaunchLight.Red);
@@ -487,6 +518,117 @@ public class LaunchScreen : MonoBehaviour
 
         RefreshMission(r);
         RefreshInfo();
+    }
+
+    // ---------- Трюм і «важить як…» ----------
+
+    const float ElephantKg = 5000f;   // дорослий африканський слон важить приблизно 5 тонн
+    const float CarKg = 1500f;        // легкова машина — приблизно 1,5 тонни
+    const int HoldSlots = 24;         // скільки ящиків видно в трюмі
+
+    /// <summary>Маса словами для дітей: «як 3 слони» або «як 2 машини».</summary>
+    static string LikeText(float kg)
+    {
+        if (kg >= ElephantKg * 2f) return T("launch.like_elephants", (kg / ElephantKg).ToString("0.#"));
+        return T("launch.like_cars", (kg / CarKg).ToString("0.#"));
+    }
+
+    /// <summary>Трюм: кожне місце вантажу — ящик зі своєю іконкою, знизу вгору.</summary>
+    void RefreshHold(GameState s)
+    {
+        if (hold == null) return;
+        SetText(holdTitle, T("launch.hold"));
+        hold.Clear();
+        int shown = 0, total = 0;
+        foreach (var line in s.Supply.Cargo) total += line.count;
+        foreach (var line in s.Supply.Cargo)
+        {
+            var item = Supply.Catalog.Find(line.itemId);
+            if (item == null || item.crewSeats > 0) continue;
+            var tex = FindLook(cargoIcons, item.id);
+            for (int i = 0; i < line.count; i++)
+            {
+                if (shown >= HoldSlots - 1 && total > HoldSlots) break;
+                var crate = new VisualElement();
+                crate.AddToClassList("crate");
+                if (item.IsKit) crate.AddToClassList("crate--kit");
+                if (tex != null) crate.style.backgroundImage = new StyleBackground(tex);
+                hold.Add(crate);
+                shown++;
+            }
+        }
+        if (total > shown)
+        {
+            var more = new Label("+" + (total - shown));
+            more.AddToClassList("crate");
+            more.AddToClassList("crate--more");
+            hold.Add(more);
+        }
+    }
+
+    // ---------- Звіт місії із зірочками ----------
+
+    /// <summary>Зірочки рахуємо ДО старту: що поклали, чи вистачить, чи не завелика ракета.</summary>
+    class MissionStars
+    {
+        public bool FirstTry, Supplies, NoWaste;
+        public string TipKey;
+        public object[] TipArgs = new object[0];
+        public int Count => (FirstTry ? 1 : 0) + (Supplies ? 1 : 0) + (NoWaste ? 1 : 0);
+    }
+
+    MissionStars RateMission()
+    {
+        var s = State;
+        var r = Supply.Evaluate(s, true);
+        var chapters = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ChapterSystem>() : null;
+        var plan = MissionPlanner.Build(s, Supply, true, r, balance, chapters != null ? chapters.Current : null);
+        var smaller = MissionPlanner.SmallerRocketThatFits(s, Supply, true);
+        bool oxygenWasted = plan.Oxygen.Total > plan.OxygenTankMax + 0.01f;
+
+        var stars = new MissionStars
+        {
+            FirstTry = failedTries == 0,
+            Supplies = plan.SurviveOk,
+            NoWaste = !oxygenWasted && smaller == null
+        };
+        if (!stars.Supplies) stars.TipKey = "report.tip_supplies";
+        else if (oxygenWasted) { stars.TipKey = "report.tip_oxygen"; stars.TipArgs = new object[] { plan.OxygenTankMax.ToString("0") }; }
+        else if (smaller != null) { stars.TipKey = "report.tip_smaller"; stars.TipArgs = new object[] { T(smaller.nameKey) }; }
+        else if (!stars.FirstTry) stars.TipKey = "report.tip_first";
+        else stars.TipKey = "report.all";
+        return stars;
+    }
+
+    IEnumerator ShowReport(MissionStars stars)
+    {
+        if (report == null) yield break;
+        SetText(reportTitle, T("report.title"));
+        reportStars.Clear();
+        for (int i = 0; i < 3; i++) reportStars.Add(new StarShape(i < stars.Count, false));
+        reportList.Clear();
+        AddReportRow(stars.FirstTry, "report.star_first");
+        AddReportRow(stars.Supplies, "report.star_supplies");
+        AddReportRow(stars.NoWaste, "report.star_nowaste");
+        SetText(reportTip, T(stars.TipKey, stars.TipArgs));
+        if (reportNext != null) reportNext.text = T("report.next");
+
+        reportClosed = false;
+        report.RemoveFromClassList("report--hidden");
+        while (!reportClosed) yield return null;
+        report.AddToClassList("report--hidden");
+    }
+
+    void AddReportRow(bool on, string key)
+    {
+        var row = new VisualElement();
+        row.AddToClassList("report-row");
+        row.Add(new StarShape(on, true));
+        var text = new Label(T(key));
+        text.AddToClassList("report-text");
+        text.EnableInClassList("report-text--off", !on);
+        row.Add(text);
+        reportList.Add(row);
     }
 
     // ---------- Цілі місії, дні запасів, «Центр керування» ----------
@@ -592,8 +734,10 @@ public class LaunchScreen : MonoBehaviour
         if (animating || State == null) return;
         if (IsFirstMission)
         {
+            var stars = RateMission();                  // до старту: вантаж ще в ракеті, запаси ще не додані
             bool ok = Supply.LaunchFirstMission(State); // розрахунок і «кубик» — у SupplySystem
-            if (pad != null && showLaunchPad) StartCoroutine(PadLaunch(ok));
+            if (!ok) failedTries++;
+            if (pad != null && showLaunchPad) StartCoroutine(PadLaunch(ok, stars));
             else StartCoroutine(Fly(ok));
         }
         else
@@ -606,7 +750,7 @@ public class LaunchScreen : MonoBehaviour
     // ---------- Пусковий майданчик ----------
 
     /// <summary>Майданчик: екіпаж заходить у ракету, відлік, злет. Успіх — екран закривається; невдача — ракета повертається.</summary>
-    IEnumerator PadLaunch(bool success)
+    IEnumerator PadLaunch(bool success, MissionStars stars)
     {
         animating = true;
         Refresh();
@@ -626,6 +770,7 @@ public class LaunchScreen : MonoBehaviour
 
         yield return pad.Play(crew, tex != null ? new StyleBackground(tex) : default, tex != null, aspect, rocket, success);
 
+        if (success) yield return ShowReport(stars);
         tablet?.RemoveFromClassList("launch-hidden");
         if (success)
         {
