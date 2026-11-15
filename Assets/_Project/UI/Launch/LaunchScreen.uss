@@ -331,3 +331,16 @@
 .sup-light--yellow { background-color: var(--color-energy); }
 .sup-light--red { background-color: var(--color-alarm); }
 .sup-order-right > .note { font-size: 14px; }
+
+/* --- політ Дніпро → південний полюс Місяця (FlightMapView, роль 04) --- */
+.flight-view { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: #050B18; overflow: hidden; }
+.flight-view--hidden { display: none; }
+.flight-title { position: absolute; left: 24px; top: 18px; color: #FFFFFF; }
+.flight-caption { position: absolute; left: 24px; top: 44px; right: 260px; color: #FFE27A; white-space: normal; }
+.flight-fact { position: absolute; left: 24px; bottom: 24px; width: 560px; }
+.flight-scale { position: absolute; right: 24px; bottom: 24px; font-size: 12px; color: var(--color-muted); }
+.flight-skip { position: absolute; right: 24px; top: 18px; }
+.flight-rocket { position: absolute; -unity-background-scale-mode: scale-to-fit; }
+.flight-rocket--box { background-color: #FF9A3D; }
+.flight-map-label { position: absolute; width: 120px; font-size: 14px; letter-spacing: 3px; color: var(--color-muted); -unity-text-align: middle-center; }
+.flight-city { position: absolute; width: 120px; font-size: 13px; color: #FFE27A; -unity-text-align: middle-center; -unity-font-style: bold; }

@@ -85,6 +85,7 @@ public class LaunchScreen : MonoBehaviour
     Button launchButton, closeButton;
     VisualElement tablet;
     LaunchPadView pad;
+    FlightMapView flight;     // політ Дніпро → південний полюс Місяця
     bool animating, modalPushed, ready;
 
     // що зараз показано в полі «Навіщо це?»: вантаж або ракета (null — загальна підказка)
@@ -157,6 +158,8 @@ public class LaunchScreen : MonoBehaviour
         if (balance == null) balance = DataLoader.Load<SimBalanceData>("Balance/balance");
         pad = new LaunchPadView(root);
         if (!pad.Ready) pad = null; // у UXML немає майданчика — буде тільки політ по дузі
+        flight = new FlightMapView(root);
+        if (!flight.Ready) flight = null;
 
         ready = stage != null && cargoList != null && ship != null && fuelSlider != null && launchButton != null;
         if (!ready)
@@ -904,6 +907,7 @@ public class LaunchScreen : MonoBehaviour
 
         yield return pad.Play(crew, tex != null ? new StyleBackground(tex) : default, tex != null, aspect, rocket, success);
 
+        if (success && flight != null) yield return flight.Play(tex, aspect); // Дніпро → південний полюс Місяця
         if (success) yield return ShowReport(stars);
         tablet?.RemoveFromClassList("launch-hidden");
         if (success)

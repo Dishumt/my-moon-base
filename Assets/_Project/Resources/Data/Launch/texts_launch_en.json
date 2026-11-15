@@ -753,6 +753,74 @@
     {
       "key": "pad.fact.8",
       "text": "At launch, water pours under the rocket. It makes the roar quieter and protects the pad."
+    },
+    {
+      "key": "flight.title",
+      "text": "FLIGHT TO THE MOON"
+    },
+    {
+      "key": "flight.earth",
+      "text": "EARTH"
+    },
+    {
+      "key": "flight.moon",
+      "text": "MOON"
+    },
+    {
+      "key": "flight.dnipro",
+      "text": "Dnipro"
+    },
+    {
+      "key": "flight.pole",
+      "text": "South pole · our base"
+    },
+    {
+      "key": "flight.not_to_scale",
+      "text": "Not to scale"
+    },
+    {
+      "key": "flight.step1",
+      "text": "Launch from Dnipro"
+    },
+    {
+      "key": "flight.step2",
+      "text": "One orbit around Earth: checking all systems"
+    },
+    {
+      "key": "flight.step3",
+      "text": "Flight to the Moon (in real space it takes about 3 days)"
+    },
+    {
+      "key": "flight.step4",
+      "text": "Orbit around the Moon: slowing down"
+    },
+    {
+      "key": "flight.step5",
+      "text": "Landing at the south pole!"
+    },
+    {
+      "key": "flight.landed",
+      "text": "Landed! Welcome to the Moon's south pole."
+    },
+    {
+      "key": "flight.fact1",
+      "text": "Rockets are really built in Dnipro! The Zenit and Cyclone rockets and the first stage of the Antares rocket were made here."
+    },
+    {
+      "key": "flight.fact2",
+      "text": "In orbit, the ship flies around the whole Earth in about 90 minutes!"
+    },
+    {
+      "key": "flight.fact3",
+      "text": "We aim not at the Moon, but at the place where the Moon will be: it moves too! You could line up 30 Earths between Earth and the Moon."
+    },
+    {
+      "key": "flight.fact4",
+      "text": "The Moon has no air, so parachutes don't work there. The ship slows down with its engines."
+    },
+    {
+      "key": "flight.fact5",
+      "text": "Dark craters at the Moon's south pole hide ice. That's water for our base!"
     }
   ]
 }

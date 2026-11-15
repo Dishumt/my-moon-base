@@ -133,6 +133,14 @@
             <ui:Button name="pad-skip" text="SKIP" class="btn btn--small pad-skip" />
         </ui:VisualElement>
 
+        <ui:VisualElement name="flight-view" class="flight-view flight-view--hidden">
+            <ui:Label name="flight-title" text="FLIGHT TO THE MOON" class="t-label flight-title" />
+            <ui:Label name="flight-caption" text="" class="t-big flight-caption" />
+            <ui:Label name="flight-fact" text="" class="note note--fact flight-fact" />
+            <ui:Label name="flight-scale" text="" class="flight-scale" />
+            <ui:Button name="flight-skip" text="SKIP" class="btn btn--small flight-skip" />
+        </ui:VisualElement>
+
         <ui:VisualElement name="report" class="report report--hidden">
             <ui:VisualElement class="panel report-card">
                 <ui:Label name="report-title" text="MISSION REPORT" class="t-title report-title" />
