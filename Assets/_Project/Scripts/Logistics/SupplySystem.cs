@@ -98,11 +98,54 @@ public class SupplySystem : ISimSystem
     /// <summary>Вибраний план поставок. null — планів у launch.json немає.</summary>
     public SupplyPlanData GetPlan(GameState s) => data.FindPlan(s.Supply.PlanId) ?? data.FindPlan(data.defaultPlanId);
 
-    /// <summary>Кожні скільки днів летить поставка (з плану, інакше supplyEveryDays).</summary>
+    /// <summary>Кожні скільки днів летить поставка (старий спосіб: з плану, інакше supplyEveryDays).</summary>
     public int EveryDays(GameState s)
     {
         var p = GetPlan(s);
         return p != null && p.everyDays > 0 ? p.everyDays : data.supplyEveryDays;
+    }
+
+    // ---------- Час (усе від довжини розділу, див. LogisticsTime) ----------
+
+    /// <summary>Чи план рахується від довжини розділу (shipsPerChapter), а не старими днями.</summary>
+    static bool Relative(SupplyPlanData p) => p != null && p.shipsPerChapter > 0f;
+
+    /// <summary>Період поставок у годинах для цього плану: довжина розділу / кораблів за розділ.</summary>
+    public int PeriodHours(SupplyPlanData p)
+    {
+        if (Relative(p)) return LogisticsTime.Hours(LogisticsTime.ChapterHours(data) / p.shipsPerChapter, 4);
+        return (p != null && p.everyDays > 0 ? p.everyDays : data.supplyEveryDays) * 24;
+    }
+
+    /// <summary>Період поставок вибраного плану, у годинах.</summary>
+    public int PeriodHours(GameState s) => PeriodHours(GetPlan(s));
+
+    /// <summary>Скільки годин летить ця ракета за вибраним планом (частка періоду або старі години).</summary>
+    public int FlightHoursOf(GameState s, RocketData r)
+    {
+        if (r == null) return data.flightHours;
+        if (r.flightShare > 0f) return LogisticsTime.Hours(PeriodHours(s) * r.flightShare);
+        return r.flightHours;
+    }
+
+    /// <summary>Невдалий політ: на скільки годин пізніше прилетить корабель.</summary>
+    public int FailedDelayHours(GameState s) =>
+        data.failedDelayShare > 0f ? LogisticsTime.Hours(PeriodHours(s) * data.failedDelayShare) : data.failedDelayDays * 24;
+
+    /// <summary>Гроза на Землі: на скільки годин відкладається старт поставки.</summary>
+    public int StormDelayHours(GameState s) =>
+        data.stormDelayShare > 0f ? LogisticsTime.Hours(PeriodHours(s) * data.stormDelayShare) : data.stormDelayHours;
+
+    /// <summary>
+    /// Коли наступний старт, якщо рахувати від години fromHour (посадка попереднього корабля).
+    /// Від розділу: рівно через період. Старий спосіб: через N днів о launchHour.
+    /// Цим користуються і розклад, і порадник (MissionPlanner) — тому вони завжди збігаються.
+    /// </summary>
+    public int NextLaunchFrom(GameState s, int fromHour)
+    {
+        var p = GetPlan(s);
+        if (Relative(p)) return fromHour + PeriodHours(p);
+        return (fromHour / 24 + EveryDays(s)) * 24 + data.launchHour;
     }
 
     /// <summary>Вибрати план. Тільки до першого старту: потім розклад уже складено.</summary>
@@ -147,11 +190,7 @@ public class SupplySystem : ISimSystem
     }
 
     /// <summary>Скільки годин летить вибрана ракета.</summary>
-    public int FlightHours(GameState s)
-    {
-        var r = GetRocket(s);
-        return r != null ? r.flightHours : data.flightHours;
-    }
+    public int FlightHours(GameState s) => FlightHoursOf(s, GetRocket(s));
 
     /// <summary>Вибрати ракету. Паливо, якщо не влазить у новий бак, зменшується до повного бака.</summary>
     public string SetRocket(GameState s, string rocketId)
@@ -344,8 +383,7 @@ public class SupplySystem : ISimSystem
 
     void ScheduleFrom(GameState s, int fromHour)
     {
-        int day = fromHour / 24 + EveryDays(s);
-        s.Supply.NextLaunchAt = day * 24 + data.launchHour;
+        s.Supply.NextLaunchAt = NextLaunchFrom(s, fromHour);
         s.Supply.Scheduled = true;
         s.Supply.MissedReported = false;
     }
@@ -387,8 +425,9 @@ public class SupplySystem : ISimSystem
         if (weather == LaunchWeather.Storm && !sup.StormDelayed)
         {
             sup.StormDelayed = true;
-            sup.NextLaunchAt = now + data.stormDelayHours;
-            r.Add("report.supply_storm", data.stormDelayHours, "", true);
+            int wait = StormDelayHours(s);
+            sup.NextLaunchAt = now + wait;
+            r.Add("report.supply_storm", wait, "", true);
             GameEvents.RaiseStateChanged();
             return;
         }
@@ -408,8 +447,9 @@ public class SupplySystem : ISimSystem
         else
         {
             sup.Status = SupplyStatus.Returned;
-            sup.ArrivalAt = now + FlightHours(s) + data.failedDelayDays * 24;
-            r.Add("report.supply_returned", data.failedDelayDays, "", true);
+            int delay = FailedDelayHours(s);
+            sup.ArrivalAt = now + FlightHours(s) + delay;
+            r.Add("report.supply_returned", delay, "", true);   // {0} — години
         }
         GameEvents.RaiseStateChanged();
     }

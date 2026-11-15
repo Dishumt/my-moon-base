@@ -547,11 +547,11 @@ public class LaunchScreen : MonoBehaviour
         {
             SetText(infoTitle, T(infoRocket.nameKey));
             SetText(infoText, T(infoRocket.hintKey) + " " + T("rocket.why"));
-            SetText(infoGives, T("rocket.stats", infoRocket.maxCargoKg.ToString("0"), infoRocket.flightHours));
+            SetText(infoGives, T("rocket.stats", infoRocket.maxCargoKg.ToString("0"), LaunchText.Duration(Supply.FlightHoursOf(State, infoRocket))));
         }
         else if (infoPlan != null)
         {
-            SetText(infoTitle, T(infoPlan.nameKey));
+            SetText(infoTitle, LaunchText.PlanName(Supply, infoPlan));
             SetText(infoText, T(infoPlan.hintKey) + (IsFirstMission ? "" : " " + T("plan.locked_hint")));
             SetText(infoGives, T("plan.rockets", RocketNames(infoPlan)));
         }
@@ -655,7 +655,7 @@ public class LaunchScreen : MonoBehaviour
                 card.Q<Label>("name").text = T(rd.nameKey);
                 bool allowed = Supply.RocketAllowed(s, rd.id);   // поставка: тільки ракети з плану
                 card.Q<Label>("stats").text = allowed
-                    ? T("rocket.stats", rd.maxCargoKg.ToString("0"), rd.flightHours)
+                    ? T("rocket.stats", rd.maxCargoKg.ToString("0"), LaunchText.Duration(Supply.FlightHoursOf(s, rd)))
                     : T("rocket.not_in_plan");
                 card.EnableInClassList("rocket-card--on", rocket == rd);
                 card.EnableInClassList("rocket-card--locked", !allowed);
@@ -770,7 +770,7 @@ public class LaunchScreen : MonoBehaviour
         foreach (var child in planList.Children())
         {
             if (!(child is Button b) || !(b.userData is SupplyPlanData p)) continue;
-            b.text = T(p.nameKey);
+            b.text = LaunchText.PlanName(Supply, p).ToUpperInvariant();   // «РАЗ НА 16 ГОД» — з довжини розділу
             b.EnableInClassList("plan-btn--on", p == current);
             b.SetEnabled(editable && IsFirstMission);   // план обирають перед першим стартом
         }
@@ -944,7 +944,8 @@ public class LaunchScreen : MonoBehaviour
         if (goalsList != null)
         {
             goalsList.Clear();
-            AddGoalRow(T("mission.next_ship", Mathf.CeilToInt(plan.DaysToNextShip - 0.01f), plan.ReserveDays), plan.SurviveOk);
+            AddGoalRow(T("mission.next_ship", LaunchText.Duration(Mathf.CeilToInt(plan.DaysToNextShip * 24f - 0.01f)),
+                         LaunchText.Duration(Mathf.RoundToInt(plan.ReserveDays * 24f))), plan.SurviveOk);
             foreach (var g in plan.Goals)
                 AddGoalRow(T("mission.build", T("launch.module." + g.Module), Mathf.Min(g.Have + g.Packed, g.Target), g.Target), g.Done);
         }

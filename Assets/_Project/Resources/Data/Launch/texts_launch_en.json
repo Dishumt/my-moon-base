@@ -196,7 +196,7 @@
     },
     {
       "key": "report.supply_returned",
-      "text": "Not enough fuel! The supply ship turned back. It comes {0} days later."
+      "text": "Not enough fuel! The supply ship turned back. It comes {0} hours later."
     },
     {
       "key": "report.supply_arrived",
@@ -256,7 +256,7 @@
     },
     {
       "key": "rocket.stats",
-      "text": "hold {0} kg · {1} h"
+      "text": "hold {0} kg · flight {1}"
     },
     {
       "key": "rocket.why",
@@ -584,11 +584,11 @@
     },
     {
       "key": "mission.next_ship",
-      "text": "Last until the next ship: {0} days + {1} days reserve"
+      "text": "Last until the next ship: {0} + {1} reserve"
     },
     {
       "key": "mission.reserve_why",
-      "text": "Why a reserve? If a ship has to turn back, it arrives a few days late."
+      "text": "Why a reserve? If a ship has to turn back, it arrives later."
     },
     {
       "key": "pad.fact.5",
@@ -700,7 +700,7 @@
     },
     {
       "key": "supply.returned",
-      "text": "Not enough fuel: the ship turned back and comes {0} days late."
+      "text": "Not enough fuel: the ship turned back and comes {0} late."
     },
     {
       "key": "supply.passengers",
@@ -856,11 +856,11 @@
     },
     {
       "key": "plan.normal.hint",
-      "text": "A ship every 3 days: the Bee or the Pelican."
+      "text": "A ship now and then: the Bee or the Pelican."
     },
     {
       "key": "plan.rare.hint",
-      "text": "A ship only every 4 days, but it can even be the heavy Whale. The wait is long, so take more supplies now!"
+      "text": "Ships come rarely, but it can even be the heavy Whale. The wait is long, so take more supplies now!"
     },
     {
       "key": "plan.rockets",
@@ -969,6 +969,22 @@
     {
       "key": "report.star_advice",
       "text": "Used \"Help me\" (max 2 stars)"
+    },
+    {
+      "key": "plan.every",
+      "text": "Every {0}"
+    },
+    {
+      "key": "time.hours",
+      "text": "{0} h"
+    },
+    {
+      "key": "time.day1",
+      "text": "1 day"
+    },
+    {
+      "key": "time.days",
+      "text": "{0} days"
     }
   ]
 }
