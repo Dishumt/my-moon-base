@@ -89,7 +89,7 @@ public class LaunchScreen : MonoBehaviour
 
     const float ShipBaseScale = 0.92f; // ракета на планшеті менша, ніж на майданчику
     Slider fuelSlider;
-    Button launchButton, closeButton;
+    Button launchButton, closeButton, weatherChip;
     VisualElement tablet;
     LaunchPadView pad;
     FlightMapView flight;     // політ Дніпро → південний полюс Місяця
@@ -144,6 +144,7 @@ public class LaunchScreen : MonoBehaviour
         infoGives = root.Q<Label>("info-gives");
         fuelSlider = root.Q<Slider>("fuel-slider");
         launchButton = root.Q<Button>("launch-button");
+        weatherChip = root.Q<Button>("weather-chip");
         closeButton = root.Q<Button>("close-button");
         tablet = root.Q("launch");
         goalsTitle = root.Q<Label>("goals-title");
@@ -185,6 +186,12 @@ public class LaunchScreen : MonoBehaviour
         fuelSlider.RegisterValueChangedCallback(OnFuelChanged);
         launchButton.clicked += OnLaunchClicked;
         if (closeButton != null) closeButton.clicked += Close;
+        if (weatherChip != null)
+        {
+            weatherChip.clicked += OnWeatherClicked;
+            // навели — пояснюємо, що ця погода означає для польоту
+            weatherChip.RegisterCallback<PointerEnterEvent>(_ => { if (State != null) SetResult("launch.weather_why." + State.Supply.Weather); });
+        }
         Loc.LanguageChanged += Refresh;
         GameEvents.StateChanged += Refresh;
         Loc.LanguageChanged += RefreshTab;
@@ -205,6 +212,7 @@ public class LaunchScreen : MonoBehaviour
         fuelSlider.UnregisterValueChangedCallback(OnFuelChanged);
         launchButton.clicked -= OnLaunchClicked;
         if (closeButton != null) closeButton.clicked -= Close;
+        if (weatherChip != null) weatherChip.clicked -= OnWeatherClicked;
         Loc.LanguageChanged -= Refresh;
         GameEvents.StateChanged -= Refresh;
         Loc.LanguageChanged -= RefreshTab;
@@ -301,6 +309,7 @@ public class LaunchScreen : MonoBehaviour
             return;
         }
         IsFirstMission = !State.Supply.FirstMissionDone;
+        if (IsFirstMission) Supply.ForecastFirstMission(State);   // погода на космодромі
         IsOpen = true;
         if (!modalPushed) { GameBootstrap.Instance.Clock.PushModal(); modalPushed = true; }
         SetVisible(true);
@@ -677,6 +686,7 @@ public class LaunchScreen : MonoBehaviour
             riskLabel.EnableInClassList("c-bad", r.Light == LaunchLight.Red);
         }
         SetText(hintLabel, T("launch.hint." + r.Light));
+        RefreshWeather(editable);
 
         RefreshPlan(editable);
         RefreshMission(r);
@@ -972,6 +982,36 @@ public class LaunchScreen : MonoBehaviour
             GameEvents.RaiseStateChanged();
             Refresh();
         }
+    }
+
+    // ---------- Погода ----------
+
+    /// <summary>Чип погоди біля ризику. Тільки для першої місії: погоду поставок вирішує старт за розкладом.</summary>
+    void RefreshWeather(bool editable)
+    {
+        if (weatherChip == null) return;
+        var w = State.Supply.Weather;
+        weatherChip.EnableInClassList("weather-chip--hidden", !IsFirstMission);
+        foreach (LaunchWeather v in Enum.GetValues(typeof(LaunchWeather)))
+            weatherChip.EnableInClassList("weather-chip--" + v, v == w);
+        bool storm = w == LaunchWeather.Storm;
+        weatherChip.text = storm
+            ? T("launch.weather_wait", Mathf.RoundToInt(Supply.Data.stormBoilOff * 100f))
+            : T("launch.weather." + w);
+        weatherChip.SetEnabled(editable);
+    }
+
+    /// <summary>Гроза: перечекати (частина палива випаровується). В іншу погоду — просто пояснення.</summary>
+    void OnWeatherClicked()
+    {
+        if (animating || State == null || !IsFirstMission) return;
+        if (State.Supply.Weather != LaunchWeather.Storm)
+        {
+            SetResult("launch.weather_why." + State.Supply.Weather);
+            return;
+        }
+        SetResult(Supply.WaitOutStorm(State) ?? "launch.weather_waited");
+        Refresh();
     }
 
     /// <summary>Чому не можна відправити: антена без енергії або вікно зв'язку закрите (і коли відкриється).</summary>

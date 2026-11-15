@@ -234,7 +234,7 @@
 .light { width: 44px; height: 44px; border-radius: 22px; margin: 3px; }
 .traffic-light { padding: 4px; margin-right: 16px; }
 .launch-box { width: 280px; }
-.launch-box > .t-big { font-size: 22px; margin-bottom: 4px; }
+.launch-box .t-big { font-size: 22px; margin-bottom: 4px; }
 .launch-btn { height: 52px; }
 .hint-small { display: none; }
 
@@ -397,3 +397,11 @@
 
 /* --- планшет екрана запуску підлаштовується під ширину вікна (не обрізається справа) --- */
 .launch-stage > .tablet { left: 16px; right: 16px; top: 12px; bottom: 12px; width: auto; height: auto; }
+
+/* --- погода в день запуску (роль 04) --- */
+.risk-row { flex-direction: row; align-items: center; justify-content: space-between; }
+.weather-chip { height: 26px; padding: 0 8px; margin: 0 0 4px 8px; font-size: 12px; letter-spacing: 0; white-space: normal; }
+.weather-chip--Clear { background-color: rgba(110, 200, 140, 0.25); }
+.weather-chip--Windy { background-color: rgba(240, 190, 70, 0.35); }
+.weather-chip--Storm { background-color: rgba(230, 80, 70, 0.55); border-width: 2px; border-color: #FF8A7A; }
+.weather-chip--hidden { display: none; }

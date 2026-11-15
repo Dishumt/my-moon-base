@@ -905,6 +905,50 @@
     {
       "key": "error.hold_too_small",
       "text": "This cargo won't fit into this rocket's hold. Take something out first."
+    },
+    {
+      "key": "launch.weather.Clear",
+      "text": "Clear sky"
+    },
+    {
+      "key": "launch.weather.Windy",
+      "text": "Strong wind"
+    },
+    {
+      "key": "launch.weather.Storm",
+      "text": "STORM"
+    },
+    {
+      "key": "launch.weather_wait",
+      "text": "STORM! Wait it out (-{0}% fuel)"
+    },
+    {
+      "key": "launch.weather_waited",
+      "text": "The storm is over! While you waited, some fuel boiled away. Check the traffic light again."
+    },
+    {
+      "key": "launch.weather_why.Clear",
+      "text": "Clear sky: perfect weather for a launch. Only the fuel matters."
+    },
+    {
+      "key": "launch.weather_why.Windy",
+      "text": "Strong wind pushes the rocket sideways. With extra fuel (green light) it's fine. On yellow, the risk gets bigger."
+    },
+    {
+      "key": "launch.weather_why.Storm",
+      "text": "Thunderstorm! Lightning can hit a rocket, so real rockets never launch in a storm. You can wait, but the super-cold fuel slowly boils away."
+    },
+    {
+      "key": "error.no_storm",
+      "text": "There is no storm right now."
+    },
+    {
+      "key": "report.supply_storm",
+      "text": "Thunderstorm at the launch site on Earth! The supply ship will start {0} hours later."
+    },
+    {
+      "key": "report.supply_weather_ok",
+      "text": "It was windy on Earth, but the supply ship took off."
     }
   ]
 }

@@ -32,6 +32,9 @@ public class SupplyState
     public int Deliveries;          // скільки поставок прибуло
     public int LastArrivalDay;      // день останнього прибуття
     public bool LastLaunchFailed;   // останній запуск був невдалий
+    public LaunchWeather Weather;   // погода на космодромі для найближчого старту
+    public bool WeatherKnown;       // прогноз уже зроблено (перша місія)
+    public bool StormDelayed;       // поставку вже раз відклали через грозу
 
     // Набори, які приїхали і чекають на будівництво (03 може їх використати)
     public int SolarPanelKits;

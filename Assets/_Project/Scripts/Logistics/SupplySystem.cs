@@ -190,7 +190,44 @@ public class SupplySystem : ISimSystem
     /// <summary>Розрахунок світлофора для поточного замовлення.</summary>
     public LaunchResult Evaluate(GameState s, bool firstMission)
     {
-        return calc.Evaluate(s.Supply.Cargo, catalog, People(s, firstMission), GetFuel(s), GetRocket(s));
+        var r = calc.Evaluate(s.Supply.Cargo, catalog, People(s, firstMission), GetFuel(s), GetRocket(s));
+        LaunchCalculator.ApplyWeather(r, s.Supply.Weather, data);   // вітер і гроза змінюють шанс
+        return r;
+    }
+
+    // ---------- Погода ----------
+
+    /// <summary>Новий прогноз погоди на космодромі. allowStorm = false — гроза вже минула.</summary>
+    public LaunchWeather RollWeather(GameState s, bool allowStorm = true)
+    {
+        float x = Random01();
+        float storm = allowStorm ? data.weatherStormChance : 0f;
+        var w = x < storm ? LaunchWeather.Storm
+              : x < storm + data.weatherWindyChance ? LaunchWeather.Windy
+              : LaunchWeather.Clear;
+        s.Supply.Weather = w;
+        s.Supply.WeatherKnown = true;
+        return w;
+    }
+
+    /// <summary>Перша місія: зробити прогноз, якщо його ще немає (кличе екран запуску під час відкриття).</summary>
+    public void ForecastFirstMission(GameState s)
+    {
+        if (!s.Supply.FirstMissionDone && !s.Supply.WeatherKnown) RollWeather(s);
+    }
+
+    /// <summary>
+    /// Перша місія: перечекати грозу. Після неї буде ясно або вітер.
+    /// Ціна: частина палива в баку випаровується (stormBoilOff) — треба знову глянути на світлофор.
+    /// </summary>
+    public string WaitOutStorm(GameState s)
+    {
+        if (s.Supply.FirstMissionDone) return "error.order_locked";
+        if (s.Supply.Weather != LaunchWeather.Storm) return "error.no_storm";
+        s.Supply.FuelKg = GetFuel(s) * (1f - data.stormBoilOff);
+        RollWeather(s, false);
+        GameEvents.RaiseStateChanged();
+        return null;
     }
 
     // ---------- Перша місія ----------
@@ -204,8 +241,11 @@ public class SupplySystem : ISimSystem
         if (s.Supply.FirstMissionDone) return true;
         bool ok = LaunchCalculator.Roll(Evaluate(s, true), Random01);
         s.Supply.LastLaunchFailed = !ok;
+        if (!ok) RollWeather(s);                 // поки перепаковують — новий прогноз
         if (ok)
         {
+            s.Supply.Weather = LaunchWeather.Clear;   // далі погоду для поставок вирішує старт за розкладом
+            s.Supply.WeatherKnown = false;
             Deliver(s, null);
             s.Supply.Cargo.Clear();          // усе вивантажили — наступне замовлення починається з порожнього списку
             s.Supply.FirstMissionDone = true;
@@ -317,7 +357,23 @@ public class SupplySystem : ISimSystem
     void Launch(GameState s, DayReport r, int now)
     {
         var sup = s.Supply;
+
+        // погода на Землі: у грозу ЦУП відкладає старт (лише раз, далі летимо хоч і у вітер)
+        var weather = RollWeather(s);
+        if (weather == LaunchWeather.Storm && !sup.StormDelayed)
+        {
+            sup.StormDelayed = true;
+            sup.NextLaunchAt = now + data.stormDelayHours;
+            r.Add("report.supply_storm", data.stormDelayHours, "", true);
+            GameEvents.RaiseStateChanged();
+            return;
+        }
+        if (weather == LaunchWeather.Storm) sup.Weather = LaunchWeather.Windy;
+        sup.StormDelayed = false;
+
         bool ok = LaunchCalculator.Roll(Evaluate(s, false), Random01);
+        sup.Weather = LaunchWeather.Clear;
+        if (ok && weather != LaunchWeather.Clear) r.Add("report.supply_weather_ok", 0f, "", false);
         sup.LastLaunchFailed = !ok;
         if (ok)
         {

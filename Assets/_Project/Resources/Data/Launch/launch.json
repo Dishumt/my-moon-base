@@ -23,6 +23,13 @@
   "commsClosedHours": 18,
   "commsOffsetHours": 0,
   "comms_note": "Вікно зв'язку: 30 годин є, 18 немає, і так по колу. Offset зсуває початок шаблону.",
+  "weatherWindyChance": 0.25,
+  "weatherStormChance": 0.15,
+  "windyPenalty": 0.15,
+  "stormMaxChance": 0.4,
+  "stormDelayHours": 6,
+  "stormBoilOff": 0.1,
+  "weather_note": "Погода на космодромі в день старту. Вітер: у жовтій зоні шанс успіху менший на windyPenalty (із запасом палива — не страшно). Гроза: шанс не вище stormMaxChance; можна почекати, але stormBoilOff частина палива випарується (справжнє ракетне паливо дуже холодне й випаровується в баку). Поставку в грозу ЦУП сам відкладає на stormDelayHours (лише раз — потім летить і у вітер).",
   "defaultPlanId": "normal",
   "supplyPlans_note": "Плани поставок, які гравець обирає перед першим стартом. everyDays — як часто летить поставка; rockets — які ракети (id з rockets.json) встигають підготувати за цей час. Ціна вибору: часто = тільки мала ракета; рідко = будь-яка, але база довше чекає.",
   "supplyPlans": [

@@ -26,6 +26,13 @@ public class LaunchData
     public int commsClosedHours = 18;
     public int commsOffsetHours = 0;
 
+    public float weatherWindyChance = 0.25f;  // шанс вітру в день запуску
+    public float weatherStormChance = 0.15f;  // шанс грози
+    public float windyPenalty = 0.15f;        // вітер: мінус до шансу в жовтій зоні
+    public float stormMaxChance = 0.4f;       // гроза: шанс не вище цього
+    public int stormDelayHours = 6;           // скільки годин чекати, поки гроза мине
+    public float stormBoilOff = 0.1f;         // перша місія: яка частка палива випаровується, поки чекаємо
+
     public string defaultPlanId = "normal";
     public List<SupplyPlanData> supplyPlans = new List<SupplyPlanData>();
 

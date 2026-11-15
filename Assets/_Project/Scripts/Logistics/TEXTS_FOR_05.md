@@ -149,3 +149,13 @@
 - `SupplySystem.ChangeCargo / SetFuel / Evaluate / Send`, стан у `state.Supply` (`Status`, `NextLaunchAt`, `ArrivalAt`).
 - `CommsSystem.IsOpen(state)`, `UpcomingWindows(state, 5)`, `HoursUntilOpen(state)`.
 - `LaunchScreen.Open()` — відкрити екран запуску.
+
+## Погода на Землі (нові ключі звіту дня від 04)
+Звіт дня читає тільки `Loc`, тому додай ці два ключі у свої `texts_en.json` / `texts_uk.json`
+(`{0}` — кількість годин, приходить у `Delta`):
+```
+{ "key": "report.supply_storm", "text": "Thunderstorm at the launch site on Earth! The supply ship will start {0} hours later." },
+{ "key": "report.supply_weather_ok", "text": "It was windy on Earth, but the supply ship took off." },
+{ "key": "report.supply_storm", "text": "Гроза на космодромі на Землі! Корабель поставки стартує на {0} год пізніше." },
+{ "key": "report.supply_weather_ok", "text": "На Землі був вітер, але корабель поставки злетів." },
+```

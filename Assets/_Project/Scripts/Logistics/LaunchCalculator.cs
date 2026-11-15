@@ -5,6 +5,9 @@ using System.Collections.Generic;
 /// <summary>Колір світлофора запуску.</summary>
 public enum LaunchLight { Green, Yellow, Red }
 
+/// <summary>Погода на космодромі в день запуску. Додавати значення тільки в кінець.</summary>
+public enum LaunchWeather { Clear, Windy, Storm }
+
 /// <summary>Результат розрахунку: усе, що показує екран запуску.</summary>
 public class LaunchResult
 {
@@ -101,13 +104,27 @@ public class LaunchCalculator
     }
 
     /// <summary>
+    /// Погода змінює шанс успіху (світлофор палива лишається тим самим):
+    /// вітер — у жовтій зоні шанс менший на windyPenalty (із запасом палива вітер не страшний);
+    /// гроза — шанс не вище stormMaxChance навіть на зеленому (блискавка може влучити в ракету).
+    /// </summary>
+    public static void ApplyWeather(LaunchResult r, LaunchWeather weather, LaunchData data)
+    {
+        if (r == null || data == null) return;
+        if (weather == LaunchWeather.Windy && r.Light == LaunchLight.Yellow)
+            r.SuccessChance = Math.Max(0f, r.SuccessChance - data.windyPenalty);
+        else if (weather == LaunchWeather.Storm && r.Light != LaunchLight.Red)
+            r.SuccessChance = Math.Min(r.SuccessChance, data.stormMaxChance);
+    }
+
+    /// <summary>
     /// Вирішити, чи політ вдалий. random01 — «кубик» від 0 до 1.
     /// У тестах підставляємо своє число, у грі — UnityEngine.Random.value.
     /// </summary>
     public static bool Roll(LaunchResult r, Func<float> random01)
     {
-        if (r.Light == LaunchLight.Green) return true;
-        if (r.Light == LaunchLight.Red) return false;
+        if (r.Light == LaunchLight.Red || r.SuccessChance <= 0f) return false;
+        if (r.SuccessChance >= 1f) return true;   // зелений і без грози — точно вдалий
         return random01() < r.SuccessChance;
     }
 
