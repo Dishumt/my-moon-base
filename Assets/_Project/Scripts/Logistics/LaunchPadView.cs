@@ -269,23 +269,52 @@ public class LaunchPadView
         return values[values.Length - 1];
     }
 
-    /// <summary>Темне небо над сценою: коли камера піднімається, згори відкривається космос.</summary>
+    // Колір самого верху неба на майданчику: картинка Юлі (виміряно на PNG) або небо, намальоване кодом
+    static readonly Color ArtSkyTop = new Color(20f / 255f, 43f / 255f, 99f / 255f);
+    static readonly Color DrawnSkyTop = new Color(14f / 255f, 35f / 255f, 71f / 255f);
+    static readonly Color SpaceColor = new Color(0.02f, 0.025f, 0.06f);
+
+    /// <summary>
+    /// Небо над сценою: коли камера піднімається, синє небо ПЛАВНО (градієнтом на 6 висот екрана) темнішає до чорного космосу,
+    /// а зорі проступають поступово. Градієнт складено з тонких смуг — у UI Toolkit немає готового градієнта.
+    /// </summary>
     void AddSpace()
     {
-        var space = Box(-W, -H * 40f, W * 4f, H * 40f, new Color(0.03f, 0.04f, 0.1f));
-        var band = Box(-W, -H * 1.5f, W * 4f, H * 1.5f, new Color(0.07f, 0.12f, 0.25f));   // перехід: синє → чорне
-        band.style.opacity = 0.9f;
-        var rnd = new System.Random(5);
-        for (int i = 0; i < 60; i++)
-        {
-            var star = Box((float)rnd.NextDouble() * W * 4f, H * 40f - (float)rnd.NextDouble() * H * 38f, 2f, 2f, Color.white);
-            star.style.opacity = 0.4f + 0.6f * (float)rnd.NextDouble();
-            space.Add(star);
-        }
+        Color top = scenery != null && scenery.HasArt ? ArtSkyTop : DrawnSkyTop;
+        float fade = H * 6f;                 // на якій висоті небо вже зовсім чорне
+        const int Strips = 60;
+        float left = -W, width = W * 4f;
+
+        // над градієнтом — космос (і під ним теж, щоб збоку від картинки не було дірки)
+        var space = Box(left, -H * 40f, width, H * 41f, SpaceColor);
         scene.Insert(0, space);
-        scene.Insert(1, band);
         extras.Add(space);
-        extras.Add(band);
+
+        var sky = Box(left, -fade, width, fade + H, top);   // нижче від 0 — колір верху неба
+        sky.style.backgroundColor = new StyleColor(StyleKeyword.None);
+        for (int i = 0; i < Strips; i++)
+        {
+            float k = (i + 0.5f) / Strips;                   // 0 — внизу (біля картинки), 1 — нагорі
+            var c = Color.Lerp(top, SpaceColor, Mathf.SmoothStep(0f, 1f, k));
+            float h = fade / Strips;
+            sky.Add(Box(0f, fade - (i + 1) * h, width, h + 1f, c));   // +1 px — без щілин між смугами
+        }
+        sky.Add(Box(0f, fade, width, H, top));                // під градієнтом — той самий колір, що верх картинки
+        scene.Insert(1, sky);
+        extras.Add(sky);
+
+        // зорі: що вище, то яскравіші
+        var rnd = new System.Random(5);
+        for (int i = 0; i < 120; i++)
+        {
+            float y = -(float)rnd.NextDouble() * H * 30f;      // від 0 до -30 висот екрана
+            float bright = Mathf.Clamp01(-y / fade);           // біля землі невидимі, у космосі — яскраві
+            if (bright <= 0.05f) continue;
+            var star = Box(left + (float)rnd.NextDouble() * width, y, 2f, 2f, Color.white);
+            star.style.opacity = bright * (0.4f + 0.6f * (float)rnd.NextDouble());
+            scene.Insert(2, star);
+            extras.Add(star);
+        }
     }
 
     /// <summary>Відпрацьований ступінь відпадає і падає вниз (в океан), крутячись.</summary>

@@ -158,8 +158,17 @@ public class LaunchPadScenery
         // небо світанку: смуги від темно-синього до теплого біля горизонту
         float horizon = H * 0.6f;
         string[] sky = { "#0E2347", "#16305C", "#244274", "#3D578C", "#6B6E9E", "#B48A9C", "#E2A88A" };
-        for (int i = 0; i < sky.Length; i++)
-            Box(0, horizon * i / sky.Length, W, horizon / sky.Length + 1f, sky[i], back);
+        // плавний градієнт: 60 тонких смуг, колір між сусідніми точками палітри змішується
+        var pal = new Color[sky.Length];
+        for (int i = 0; i < sky.Length; i++) ColorUtility.TryParseHtmlString(sky[i], out pal[i]);
+        const int Strips = 60;
+        for (int i = 0; i < Strips; i++)
+        {
+            float k = (float)i / (Strips - 1) * (pal.Length - 1);
+            int a = Mathf.Min((int)k, pal.Length - 2);
+            var strip = Box(0, horizon * i / Strips, W, horizon / Strips + 1f, null, back);
+            strip.style.backgroundColor = Color.Lerp(pal[a], pal[a + 1], k - a);
+        }
 
         // зорі (тьмяні — уже світає)
         for (int i = 0; i < 24; i++)
