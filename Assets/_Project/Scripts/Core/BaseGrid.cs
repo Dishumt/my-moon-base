@@ -48,6 +48,22 @@ public static class BaseGrid
     }
 
     /// <summary>
+    /// Чи можна прокласти тунель від кімнати slotA до сусідньої праворуч (slotA + 1) в тому ж ряду.
+    /// Тільки праворуч-ліворуч: спереду в модуля шлюз, тож спереду й ззаду тунель не приєднати.
+    /// null = можна, інакше ключ тексту з причиною.
+    /// </summary>
+    public static string CanConnect(GameState s, int slotA)
+    {
+        if (!IsValid(slotA) || Column(slotA) >= Width - 1) return "error.tunnel_place";
+        var a = s.FindModule(slotA);
+        var b = s.FindModule(slotA + 1);
+        if (a == null || b == null || !ModuleKinds.IsRoom(a.Type) || !ModuleKinds.IsRoom(b.Type)) return "error.tunnel_rooms";
+        if (!a.IsBuilt || !b.IsBuilt) return "error.tunnel_not_built";
+        if (s.FindTunnel(slotA) != null) return "error.tunnel_exists";
+        return null;
+    }
+
+    /// <summary>
     /// Чи можна будувати в цьому квадратику. null = можна,
     /// інакше ключ тексту з причиною (для Loc.Get).
     /// </summary>

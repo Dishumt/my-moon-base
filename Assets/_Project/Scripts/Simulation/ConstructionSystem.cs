@@ -7,6 +7,7 @@ using System.Collections.Generic;
 ///
 ///  Order(state, type, slotId)            — замовити модуль у слот.
 ///  ShieldWithRegolith(state, slotId)     — окреме замовлення: засипати збудований модуль реголітом.
+///  OrderTunnel(state, slotA)             — тунель між сусідніми кімнатами slotA і slotA + 1 (додано роллю 04).
 ///
 /// Обидва методи повертають null, якщо все гаразд, або КЛЮЧ ТЕКСТУ з причиною відмови
 /// (наприклад "error.no_materials"); інтерфейс (роль 05) показує його через Loc.Get.
@@ -101,6 +102,23 @@ public class ConstructionSystem : ISimSystem
         return null;
     }
 
+    /// <summary>
+    /// Прокласти тунель від кімнати slotA до сусідньої праворуч (slotA + 1). Ціна — modules.json → "tunnel".
+    /// null = прийнято; інакше ключ тексту з причиною (BaseGrid.CanConnect або нестача матеріалів/роботів).
+    /// </summary>
+    public string OrderTunnel(GameState s, int slotA)
+    {
+        string err = BaseGrid.CanConnect(s, slotA);
+        if (err != null) return err;
+        if (s.Robots.Count == 0) return "build.err.no_robots";
+        if (s.Res.Materials + Eps < _costs.Tunnel.Materials) return "error.no_materials";
+
+        s.Res.Materials -= _costs.Tunnel.Materials;
+        s.Tunnels.Add(new TunnelState { SlotA = slotA, BuildHoursLeft = _costs.Tunnel.BuildHours });
+        AssignWork(s);
+        return null;
+    }
+
     // ───────────────────────── ISimSystem ─────────────────────────
 
     public void Tick(GameState s, float hours, DayReport r)
@@ -118,13 +136,15 @@ public class ConstructionSystem : ISimSystem
 
         var touchedModules = new List<ModuleState>();
         var touchedShields = new List<int>();
+        var touchedTunnels = new List<TunnelState>();
         bool someoneWithoutPower = false;
 
         foreach (RobotState robot in s.Robots)
         {
             bool build = robot.Task == RobotTask.Build;
             bool shield = robot.Task == RobotTask.Shield;
-            if ((!build && !shield) || robot.TargetSlot < 0)
+            bool tunnel = robot.Task == RobotTask.Tunnel;
+            if ((!build && !shield && !tunnel) || robot.TargetSlot < 0)
             {
                 robot.Working = false;
                 continue;
@@ -140,7 +160,16 @@ public class ConstructionSystem : ISimSystem
             canWork--;
             robot.Working = true;
 
-            if (build)
+            if (tunnel)
+            {
+                TunnelState t = s.FindTunnel(robot.TargetSlot);
+                if (t != null)
+                {
+                    t.BuildHoursLeft = Math.Max(0f, t.BuildHoursLeft - hours);
+                    if (!touchedTunnels.Contains(t)) touchedTunnels.Add(t);
+                }
+            }
+            else if (build)
             {
                 ModuleState m = s.FindModule(robot.TargetSlot);
                 float speed = m.EngineerNearby ? _engineerMultiplier : 1f;
@@ -163,6 +192,13 @@ public class ConstructionSystem : ISimSystem
             if (!m.IsBuilt) continue;
             r.Add("report.module_built", 0f, m.Type.ToString());
             FreeRobots(s, RobotTask.Build, m.SlotId);
+        }
+
+        foreach (TunnelState t in touchedTunnels)
+        {
+            if (!t.IsBuilt) continue;
+            r.Add("report.tunnel_built");
+            FreeRobots(s, RobotTask.Tunnel, t.SlotA);
         }
 
         foreach (int slot in touchedShields)
@@ -197,6 +233,8 @@ public class ConstructionSystem : ISimSystem
             if (!m.IsBuilt) pending.Add(new KeyValuePair<RobotTask, int>(RobotTask.Build, m.SlotId));
         foreach (int slot in _shieldHoursLeft.Keys)
             pending.Add(new KeyValuePair<RobotTask, int>(RobotTask.Shield, slot));
+        foreach (TunnelState t in s.Tunnels)
+            if (!t.IsBuilt) pending.Add(new KeyValuePair<RobotTask, int>(RobotTask.Tunnel, t.SlotA));
 
         if (pending.Count == 0) return;
 
@@ -241,6 +279,13 @@ public class ConstructionSystem : ISimSystem
         foreach (RobotState robot in s.Robots)
         {
             if (robot.Task == RobotTask.Idle) continue;
+
+            if (robot.Task == RobotTask.Tunnel)
+            {
+                TunnelState t = s.FindTunnel(robot.TargetSlot);
+                if (t == null || t.IsBuilt) Release(robot);
+                continue;
+            }
 
             ModuleState m = s.FindModule(robot.TargetSlot);
             bool dead = m == null

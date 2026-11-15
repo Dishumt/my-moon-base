@@ -1021,6 +1021,58 @@
     {
       "key": "flight.clock",
       "text": "Mission time: {0} d {1} h {2} min (sped up)"
+    },
+    {
+      "key": "map.tunnel_right",
+      "text": "TUNNEL TO THE RIGHT →"
+    },
+    {
+      "key": "map.tunnel_left",
+      "text": "← TUNNEL TO THE LEFT"
+    },
+    {
+      "key": "map.tunnel_desc",
+      "text": "The crew walks between the rooms inside: no spacesuit, no airlock, no radiation outside."
+    },
+    {
+      "key": "map.side_right",
+      "text": "to the right"
+    },
+    {
+      "key": "map.side_left",
+      "text": "to the left"
+    },
+    {
+      "key": "map.tunnel_built",
+      "text": "Tunnel {0}: ready"
+    },
+    {
+      "key": "map.tunnel_building",
+      "text": "Tunnel {0}: building, {1} h left"
+    },
+    {
+      "key": "map.tunnel_ordered",
+      "text": "Tunnel ordered! Robots are on their way."
+    },
+    {
+      "key": "error.tunnel_place",
+      "text": "A tunnel can only go to the next square in the same row."
+    },
+    {
+      "key": "error.tunnel_rooms",
+      "text": "A tunnel joins only rooms: habitat, greenhouse, lab, medbay or shelter."
+    },
+    {
+      "key": "error.tunnel_not_built",
+      "text": "Finish building both modules first."
+    },
+    {
+      "key": "error.tunnel_exists",
+      "text": "There is already a tunnel here."
+    },
+    {
+      "key": "report.tunnel_built",
+      "text": "Robots finished a tunnel! Now the crew walks between the modules without spacesuits."
     }
   ]
 }

@@ -27,7 +27,8 @@ public class WorldDebugButtons : MonoBehaviour
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Світ: добудувати все")) foreach (var m in s.Modules) m.BuildHoursLeft = 0f;
-        if (GUILayout.Button("Світ: прибрати модулі")) s.Modules.Clear();
+        if (GUILayout.Button("Світ: прибрати модулі")) { s.Modules.Clear(); s.Tunnels.Clear(); }
+        if (GUILayout.Button("Світ: тунель (готовий)")) InstantTunnel(s);   // роль 04: між першими сусідніми кімнатами
         GUILayout.EndHorizontal();
 
         // ----- Живі меблі: тип нового модуля, енергія кімнатам, аптечки -----
@@ -200,5 +201,18 @@ public class WorldDebugButtons : MonoBehaviour
     {
         var player = GameObject.FindGameObjectWithTag("Player");
         return player != null ? BaseGrid.FromWorld(player.transform.position) : -1;
+    }
+
+    /// <summary>Перевірка тунелів (роль 04): готовий тунель між першою парою сусідніх готових кімнат у ряду, без витрат.</summary>
+    static void InstantTunnel(GameState s)
+    {
+        for (int slot = 0; slot < BaseGrid.Count; slot++)
+        {
+            if (BaseGrid.CanConnect(s, slot) != null) continue;
+            s.Tunnels.Add(new TunnelState { SlotA = slot, BuildHoursLeft = 0f });
+            GameEvents.RaiseStateChanged();
+            return;
+        }
+        Debug.Log("Тунель: немає двох сусідніх готових кімнат в одному ряду (наприклад, житловий модуль у слоті 0 і лабораторія в слоті 1).");
     }
 }

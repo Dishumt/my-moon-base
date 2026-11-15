@@ -23,6 +23,7 @@ public class GameState
     public List<ModuleState> Modules = new List<ModuleState>();
     public List<RobotState> Robots = new List<RobotState>();
     public List<PoiState> Pois = new List<PoiState>();
+    public List<TunnelState> Tunnels = new List<TunnelState>();  // тунелі між сусідніми кімнатами (роль 04, з дозволу техліда)
 
     public SupplyState Supply = new SupplyState();           // поля додає роль 04
     public CommsState Comms = new CommsState();              // поля додає роль 04
@@ -33,6 +34,21 @@ public class GameState
     public ModuleState FindModule(int slotId)
     {
         return Modules.Find(m => m.SlotId == slotId);
+    }
+
+    /// <summary>Тунель, що починається в модулі slotA (і йде праворуч, до slotA + 1), або null.</summary>
+    public TunnelState FindTunnel(int slotA)
+    {
+        return Tunnels.Find(t => t.SlotA == slotA);
+    }
+
+    /// <summary>Чи два сусідні модулі з'єднані ГОТОВИМ тунелем.</summary>
+    public bool HasBuiltTunnel(int slot1, int slot2)
+    {
+        int a = Math.Min(slot1, slot2);
+        if (Math.Abs(slot1 - slot2) != 1) return false;
+        var t = FindTunnel(a);
+        return t != null && t.IsBuilt && FindModule(a) != null && FindModule(a + 1) != null;
     }
 
     /// <summary>Точка за id або null.</summary>

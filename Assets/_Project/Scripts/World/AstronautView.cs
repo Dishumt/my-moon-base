@@ -212,7 +212,21 @@ public class AstronautView : MonoBehaviour
         float suitTime = look != null ? look.suitSeconds : 1f;
         float dustTime = look != null ? look.dustSeconds : 1.5f;
 
-        if (here != null && here != room) // виходимо: тамбур → одягнути скафандр → надвір
+        // Тунелі: кімната-ціль у тому ж ряду і всі тунелі між нами готові — ідемо всередині,
+        // без шлюзу, скафандра й радіації (роль 04)
+        var indoor = here != null && room != null && here != room ? IndoorRoute(here.SlotId, room.SlotId) : null;
+        Vector3 roomPos0 = Vector3.zero;
+        if (indoor != null)
+        {
+            int dir = room.SlotId > here.SlotId ? 1 : -1;
+            for (int i = 0; i + 1 < indoor.Count; i++)
+            {
+                Add(Kind.Direct, indoor[i].SideDoorPoint(dir));
+                Add(Kind.Direct, indoor[i + 1].SideDoorPoint(-dir));
+            }
+            Add(Kind.Direct, RoomTarget(room));
+        }
+        else if (here != null && here != room) // виходимо: тамбур → одягнути скафандр → надвір
         {
             var al = here.GetComponentInChildren<Airlock>();
             Add(Kind.Direct, here.InnerDoorPoint);
@@ -221,9 +235,10 @@ public class AstronautView : MonoBehaviour
             Add(Kind.Direct, here.OuterDoorPoint);
         }
 
-        Vector3 roomPos = room != null ? RoomTarget(room) : Vector3.zero; // біля «своїх» меблів
+        Vector3 roomPos = room != null && indoor == null ? RoomTarget(room) : roomPos0; // біля «своїх» меблів
 
-        if (room != null && here != room) // заходимо: тамбур → пил і зняти скафандр → кімната
+        if (indoor != null) { } // уже дійдемо тунелями
+        else if (room != null && here != room) // заходимо: тамбур → пил і зняти скафандр → кімната
         {
             var al = room.GetComponentInChildren<Airlock>();
             Add(Kind.Walk, room.OuterDoorPoint);
@@ -240,6 +255,26 @@ public class AstronautView : MonoBehaviour
             steps.Clear();
             lying = true;
             Data.AtTaskSite = goingToTask;
+        }
+    }
+
+    /// <summary>
+    /// Кімнати від from до to, якщо всі вони в одному ряду, усі — готові кімнати і між кожною парою є готовий тунель.
+    /// Інакше null (тоді йдемо надвір через шлюзи, як раніше).
+    /// </summary>
+    static List<ModuleView> IndoorRoute(int from, int to)
+    {
+        var state = GameBootstrap.Instance != null ? GameBootstrap.Instance.State : null;
+        if (state == null || BaseGrid.Row(from) != BaseGrid.Row(to)) return null;
+        int dir = to > from ? 1 : -1;
+        var route = new List<ModuleView>();
+        for (int slot = from; ; slot += dir)
+        {
+            var mv = BaseView.Find(slot);
+            if (mv == null || !mv.IsEnterableRoom) return null;
+            route.Add(mv);
+            if (slot == to) return route;
+            if (!state.HasBuiltTunnel(slot, slot + dir)) return null;
         }
     }
 

@@ -198,6 +198,19 @@ public class ModuleView : MonoBehaviour
         return transform.TransformPoint(p);
     }
 
+    // ---------- Тунелі до сусідів (TunnelView) ----------
+
+    /// <summary>Розмір модуля в метрах (x — ширина, y — глибина).</summary>
+    public Vector2 Size => size;
+    /// <summary>Середина кімнати по глибині (локальна z) — тут у бічній стіні люк до тунелю.</summary>
+    public float RoomMidZ => float.IsNaN(roomFront) ? 0f : (roomFront + roomBack) / 2f;
+    /// <summary>Глибина кімнати (без шлюзу), м.</summary>
+    public float RoomDepth => float.IsNaN(roomFront) ? size.y : roomBack - roomFront;
+    /// <summary>Точка в кімнаті біля люка в бічній стіні: side = +1 праворуч, -1 ліворуч.</summary>
+    public Vector3 SideDoorPoint(int side) => Local(side * (size.x / 2f - 0.6f), RoomMidZ);
+    /// <summary>Об'єкт, у якому зараз намальовано модуль (змінюється після перебудови).</summary>
+    public GameObject Visual => visual;
+
     /// <summary>Перед модулем надворі (обладнання, ремонт, будова).</summary>
     public Vector3 FrontPoint(int i) => Local((i - 1.5f) * 1.2f, -size.y / 2f - 0.8f);
     /// <summary>Місце для робота біля будови (по кутах квадратика).</summary>
