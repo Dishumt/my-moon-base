@@ -55,7 +55,8 @@ public static class RoomBuilder
         interior.Add(R(ModuleParts.Box(root, "Curb Right", solid, new Vector3(w / 2 - t / 2, curbH / 2, roomMid), new Vector3(t, curbH, roomDepth), false, curb)));
 
         // ----- Невидимі стіни (щоб не пройти крізь оболонку) -----
-        const float wallH = 2f;
+        // Вищі за саму кімнату: інакше місячним стрибком (2 м) можна заскочити всередину повз шлюз
+        const float wallH = 4.5f;
         Wall(root, "Block Back", new Vector3(0f, wallH / 2, L.roomBack - t / 2), new Vector3(w, wallH, t));
         Wall(root, "Block Left", new Vector3(-w / 2 + t / 2, wallH / 2, roomMid), new Vector3(t, wallH, roomDepth));
         Wall(root, "Block Right", new Vector3(w / 2 - t / 2, wallH / 2, roomMid), new Vector3(t, wallH, roomDepth));
@@ -88,6 +89,15 @@ public static class RoomBuilder
         ModuleParts.Box(root, "Airlock Inner R", solid, new Vector3(aw / 2 - jamb / 2, ah / 2, L.roomFront + t / 2), new Vector3(jamb, ah, t), tint: airColor);
         AddShell(shell, shellColors, ModuleParts.Box(root, "Airlock Roof", solid, new Vector3(0f, ah + 0.075f, airMid),
                                                      new Vector3(aw + 0.15f, 0.15f, airLen), collider: false, tint: airColor), airColor);
+
+        // Невидимі високі стінки навколо тамбура — щоб не перестрибнути збоку
+        Wall(root, "Block Airlock L", new Vector3(-aw / 2 + t / 2, wallH / 2, airMid), new Vector3(t, wallH, airLen));
+        Wall(root, "Block Airlock R", new Vector3(aw / 2 - t / 2, wallH / 2, airMid), new Vector3(t, wallH, airLen));
+        Wall(root, "Block Airlock Front L", new Vector3(-aw / 2 + jamb / 2, wallH / 2, L.airlockFront + t / 2), new Vector3(jamb, wallH, t));
+        Wall(root, "Block Airlock Front R", new Vector3(aw / 2 - jamb / 2, wallH / 2, L.airlockFront + t / 2), new Vector3(jamb, wallH, t));
+        // ...і над обома дверима (сам прохід на рівні підлоги лишається відкритим)
+        Wall(root, "Block Above Outer Door", new Vector3(0f, (ah + wallH) / 2, L.airlockFront + t / 2), new Vector3(aw, wallH - ah, t));
+        Wall(root, "Block Above Inner Door", new Vector3(0f, (ah + wallH) / 2, L.roomFront + t / 2), new Vector3(aw, wallH - ah, t));
 
         Color doorColor = new Color(0.35f, 0.38f, 0.44f);
         var outerDoor = DoubleDoor(root, "Door Outer", solid, new Vector3(0f, ah / 2, L.airlockFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);

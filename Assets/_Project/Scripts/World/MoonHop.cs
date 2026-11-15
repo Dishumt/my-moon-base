@@ -31,9 +31,16 @@ public class MoonHop : MonoBehaviour
     /// <summary>Висота над землею зараз (метрів).</summary>
     public float Height { get; private set; }
     /// <summary>Чи персонаж зараз у русі стрибками (а не стоїть).</summary>
-    public bool IsHopping => phase != Phase.Idle;
+    public bool IsHopping => phase != Phase.Idle || airborne;
     /// <summary>Чи нога зараз на землі (поштовх або приземлення), а не в польоті.</summary>
-    public bool OnGround => phase != Phase.Flight;
+    public bool OnGround => phase != Phase.Flight && !airborne;
+
+    /// <summary>
+    /// Великий стрибок на пробіл (EngineerController): на скільки метрів ноги над землею.
+    /// Сам об'єкт летить угору, а тінь лишається на землі й меншає — так видно висоту.
+    /// </summary>
+    public float JumpHeight { get; set; }
+    bool airborne;
     /// <summary>Яка нога зараз працює: 0 або 1. Кожен стрибок — інша нога.</summary>
     public int Leg { get; private set; }
 
@@ -61,6 +68,14 @@ public class MoonHop : MonoBehaviour
     /// <summary>Викликати щокадру: чи персонаж хоче йти, у скафандрі він чи ні.</summary>
     public void Step(bool wantMove, bool suit, float dt)
     {
+        if (airborne) // великий стрибок: ноги разом, тіло трохи витягнуте; висоту дає сам політ об'єкта
+        {
+            Height = 0f;
+            if (billboard != null) billboard.ExtraScale = new Vector2(0.97f, 1.05f);
+            UpdateShadow();
+            return;
+        }
+
         // Зняв або одягнув скафандр (у шлюзі) — починаємо з місця
         if (suit != lastSuit) { lastSuit = suit; phase = Phase.Idle; t = 0f; }
 
@@ -104,6 +119,25 @@ public class MoonHop : MonoBehaviour
         UpdateShadow();
     }
 
+    /// <summary>Злетіли у великий стрибок: пил з-під ніг.</summary>
+    public void TakeOff(bool suit)
+    {
+        airborne = true;
+        phase = Phase.Flight;
+        Kick(suit, 10);
+    }
+
+    /// <summary>Приземлились після великого стрибка: присідаємо (гасимо удар) і здіймаємо хмарку пилу.</summary>
+    public void Land(bool suit)
+    {
+        airborne = false;
+        JumpHeight = 0f;
+        Leg = 1 - Leg;
+        phase = Phase.Landing;
+        t = 0f;
+        Kick(suit, 22);
+    }
+
     /// <summary>Стиснення/витягування тіла: присідає на нозі перед поштовхом, витягується на злеті.</summary>
     Vector2 Pose()
     {
@@ -144,7 +178,8 @@ public class MoonHop : MonoBehaviour
         var p = transform.position;
         shadow.position = new Vector3(p.x, MoonTerrain.HeightAt(p) + 0.12f, p.z); // трохи вище підлоги модулів (0.1 м)
         shadow.rotation = MoonTerrain.FlatOnGround(p);                            // на схилі лежить уздовж схилу
-        float k = maxHeight > 0f ? Height / maxHeight : 0f;      // 0 на землі, 1 на вершині
+        float k = maxHeight > 0f ? Height / maxHeight : 0f;
+        k = Mathf.Max(k, Mathf.Clamp01(JumpHeight / 2f) * 1.4f); // великий стрибок: тінь ще менша й світліша      // 0 на землі, 1 на вершині
         float s = shadowSize * (1f - 0.3f * k);                  // у повітрі тінь менша
         shadow.localScale = new Vector3(s, s, 1f);
         shadowRenderer.color = new Color(0f, 0f, 0f, 0.38f * (1f - 0.45f * k)); // і світліша
