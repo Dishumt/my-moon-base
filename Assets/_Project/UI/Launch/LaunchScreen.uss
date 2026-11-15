@@ -1,7 +1,7 @@
 /* AI-assisted: written with Claude. See docs/AI_USE.md */
 /* Власні класи екрана запуску. Усе спільне (.tablet, .panel, .btn, .t-label...) береться з Theme.uss */
 
-.body { flex-direction: row; flex-grow: 1; margin-top: 14px; }
+.body { flex-direction: row; flex-grow: 1; flex-shrink: 1; margin-top: 10px; }
 .pad { padding: 16px 20px; }
 .cargo-panel { width: 500px; }
 .rocket-panel { width: 270px; }
@@ -53,7 +53,7 @@
 .small-btn:active { scale: 0.95 0.95; }
 
 /* --- ракета з прямокутників --- */
-.ship-area { height: 170px; align-items: center; justify-content: center; }
+.ship-area { height: 120px; align-items: center; justify-content: center; }
 .ship { width: 120px; height: 210px; }
 .ship-nose-tip { position: absolute; left: 50px; top: 0px; width: 20px; height: 14px; background-color: var(--color-accent); }
 .ship-nose-mid { position: absolute; left: 40px; top: 14px; width: 40px; height: 18px; background-color: var(--color-accent); }
@@ -88,7 +88,7 @@
 .legend-cargo { background-color: var(--color-energy); }
 
 /* --- низ: паливо, світлофор, запуск --- */
-.bottom-row { flex-direction: row; align-items: center; margin-top: 14px; }
+.bottom-row { flex-direction: row; align-items: center; margin-top: 8px; padding: 10px 20px; }
 .fuel-box { flex-grow: 1; margin-right: 24px; }
 
 .unity-base-slider__tracker { background-color: var(--color-line); border-radius: 0; }
@@ -122,16 +122,16 @@
 .rocket-card {
     flex-direction: row;
     align-items: center;
-    min-height: 84px;
-    margin-bottom: 8px;
-    padding: 6px 8px;
+    min-height: 62px;
+    margin-bottom: 6px;
+    padding: 4px 8px;
     background-color: var(--color-card);
     border-width: 2px;
     border-color: var(--color-line);
 }
 .rocket-card:hover { border-color: var(--color-accent); }
 .rocket-card--on { border-color: var(--color-energy); background-color: var(--color-card-selected); }
-.rocket-pic { width: 64px; height: 64px; margin-right: 8px; -unity-background-scale-mode: scale-to-fit; background-color: var(--color-void); }
+.rocket-pic { width: 52px; height: 52px; margin-right: 8px; -unity-background-scale-mode: scale-to-fit; background-color: var(--color-void); }
 .rocket-texts { flex-grow: 1; flex-shrink: 1; }
 .rocket-name { font-size: 15px; -unity-font-style: bold; color: var(--color-text); white-space: normal; }
 .rocket-stats { font-size: 13px; color: var(--color-muted); white-space: normal; }
@@ -156,7 +156,7 @@
 }
 .help-btn:hover { background-color: rgba(255, 200, 61, 0.15); }
 
-.info-box { margin-top: 10px; flex-grow: 1; }
+.info-box { margin-top: 8px; flex-grow: 1; padding: 6px 10px; }
 .info-box > .t-body { font-size: 15px; }
 
 /* --- пусковий майданчик (роль 04): позиції ставить код LaunchPadView --- */
@@ -184,3 +184,32 @@
 .pad-count { position: absolute; left: 0; right: 0; top: 90px; font-size: 110px; -unity-font-style: bold; color: #FFE27A; -unity-text-align: middle-center; }
 .pad-fact { position: absolute; left: 24px; bottom: 24px; width: 520px; }
 .pad-skip { position: absolute; right: 24px; top: 18px; }
+
+/* --- цілі місії, дні запасів, «Центр керування» (роль 04) --- */
+.goals-box { margin-top: 8px; padding-top: 8px; border-top-width: 1px; border-color: var(--color-line); }
+.goal-row { flex-direction: row; align-items: center; margin-bottom: 6px; }
+.goal-box { width: 16px; height: 16px; margin-right: 8px; border-width: 2px; border-color: var(--color-muted); }
+.goal-box--done { background-color: var(--color-ok); border-color: var(--color-ok); }
+.goal-text { font-size: 14px; color: var(--color-soft); white-space: normal; flex-shrink: 1; }
+.goal-text--done { color: var(--color-ok); }
+
+.days-box { margin-top: 8px; }
+.days-row { flex-direction: row; align-items: center; margin-bottom: 4px; }
+.days-name { width: 70px; font-size: 13px; color: var(--color-soft); }
+.days-bar { flex-grow: 1; height: 14px; flex-direction: row; background-color: var(--color-card); border-width: 1px; border-color: var(--color-line); overflow: hidden; }
+.days-have { background-color: var(--color-line-hi); }
+.days-bring { background-color: var(--color-energy); }
+.days-mark { position: absolute; left: 50%; top: -2px; width: 2px; height: 16px; background-color: #FFFFFF; }
+.days-value { width: 104px; font-size: 13px; -unity-text-align: middle-right; color: var(--color-soft); }
+.days-row--bad .days-value { color: var(--color-alarm); }
+.days-row--warn .days-value { color: var(--color-warn); }
+.days-row--ok .days-value { color: var(--color-ok); }
+.days-row--bad .days-have { background-color: var(--color-alarm); }
+
+.advisor { flex-direction: row; align-items: center; margin-top: 8px; min-height: 40px; padding: 6px 14px; }
+.advisor--good { border-color: var(--color-ok); background-color: rgba(80, 200, 120, 0.08); }
+.advisor--warn { border-color: var(--color-warn); background-color: rgba(255, 154, 92, 0.08); }
+.advisor-name { margin-right: 12px; color: var(--color-accent); }
+.advisor-text { flex-grow: 1; flex-shrink: 1; font-size: 16px; }
+
+.cargo-row--locked { opacity: 0.45; }

@@ -452,7 +452,7 @@
     },
     {
       "key": "pad.skip",
-      "text": "SKIP ▶▶"
+      "text": "SKIP >>"
     },
     {
       "key": "pad.boarding",
@@ -493,6 +493,94 @@
     {
       "key": "pad.fact.4",
       "text": "The Moon is about 384,000 km away. Real astronauts flew there in about 3 days."
+    },
+    {
+      "key": "mission.title",
+      "text": "MISSION GOALS"
+    },
+    {
+      "key": "mission.survive",
+      "text": "Survive {0} days"
+    },
+    {
+      "key": "mission.build",
+      "text": "Build: {0} ({1}/{2})"
+    },
+    {
+      "key": "days.title",
+      "text": "SUPPLIES WILL LAST"
+    },
+    {
+      "key": "days.food",
+      "text": "Food"
+    },
+    {
+      "key": "days.water",
+      "text": "Water"
+    },
+    {
+      "key": "days.oxygen",
+      "text": "Oxygen"
+    },
+    {
+      "key": "days.value",
+      "text": "{0} days"
+    },
+    {
+      "key": "days.value_bring",
+      "text": "{0} days (+{1})"
+    },
+    {
+      "key": "days.enough",
+      "text": "enough"
+    },
+    {
+      "key": "advisor.name",
+      "text": "MISSION CONTROL:"
+    },
+    {
+      "key": "tip.too_heavy",
+      "text": "Too heavy! Add fuel, pick a bigger rocket or leave something behind."
+    },
+    {
+      "key": "tip.oxygen_low",
+      "text": "Oxygen for only {0} days, but the crew must hold on for {1}. Take oxygen tanks!"
+    },
+    {
+      "key": "tip.water_low",
+      "text": "Water for only {0} days out of {1}. The base makes oxygen from water, so take water tanks!"
+    },
+    {
+      "key": "tip.food_low",
+      "text": "Food for only {0} days out of {1}. Hungry astronauts work slowly. Take food boxes!"
+    },
+    {
+      "key": "tip.goal",
+      "text": "Mission goal: build a {0}. Pack {1} more kit(s), or bring building materials."
+    },
+    {
+      "key": "tip.oxygen_full",
+      "text": "The oxygen tank holds only {0}. Extra oxygen will be wasted. Take something else!"
+    },
+    {
+      "key": "tip.risky",
+      "text": "Risky: {0}% chance to fail. Add a bit more fuel to be safe."
+    },
+    {
+      "key": "tip.all_good",
+      "text": "Great packing! The crew has everything for the mission. Press CONFIRM!"
+    },
+    {
+      "key": "launch.locked",
+      "text": "LOCKED"
+    },
+    {
+      "key": "launch.locked_hint",
+      "text": "This module opens in a later chapter."
+    },
+    {
+      "key": "error.kit_locked",
+      "text": "This module is not available yet. It opens in a later chapter."
     }
   ]
 }

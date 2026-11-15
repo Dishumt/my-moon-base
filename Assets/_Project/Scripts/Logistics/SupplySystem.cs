@@ -23,6 +23,12 @@ public class SupplySystem : ISimSystem
     /// </summary>
     public ConstructionSystem Construction;
 
+    /// <summary>
+    /// Чи відкритий модуль у цьому розділі (ChapterSystem від 03). Закриті набори не можна покласти в ракету.
+    /// null — у грі береться з GameBootstrap, а без нього (тести) відкрито все.
+    /// </summary>
+    public Func<ModuleType, bool> IsModuleUnlocked;
+
     public SupplySystem() : this(LaunchData.Load(), CargoCatalog.Load(), RocketCatalog.Load()) { }
 
     public SupplySystem(LaunchData data, CargoCatalog catalog) : this(data, catalog, null) { }
@@ -55,7 +61,9 @@ public class SupplySystem : ISimSystem
     public string ChangeCargo(GameState s, string itemId, int delta)
     {
         if (s.Supply.FirstMissionDone && s.Supply.Status != SupplyStatus.Draft) return "error.order_locked";
-        if (catalog.Find(itemId) == null) return "error.unknown_cargo";
+        var item = catalog.Find(itemId);
+        if (item == null) return "error.unknown_cargo";
+        if (delta > 0 && item.TryGetModule(out var type) && !KitUnlocked(type)) return "error.kit_locked";
         var line = s.Supply.Cargo.Find(l => l.itemId == itemId);
         if (line == null)
         {
@@ -292,6 +300,14 @@ public class SupplySystem : ISimSystem
     }
 
     // ---------- Набори модулів ----------
+
+    /// <summary>Чи можна вже брати набір цього модуля (модуль відкритий у поточному розділі).</summary>
+    public bool KitUnlocked(ModuleType type)
+    {
+        if (IsModuleUnlocked != null) return IsModuleUnlocked(type);
+        var chapters = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ChapterSystem>() : null;
+        return chapters == null || chapters.Current == null || chapters.IsModuleUnlocked(type);
+    }
 
     /// <summary>
     /// Замовити будівництво модуля з набору у вільному квадратику біля бази.

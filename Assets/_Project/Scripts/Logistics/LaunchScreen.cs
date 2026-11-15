@@ -62,6 +62,11 @@ public class LaunchScreen : MonoBehaviour
     Label titleLabel, statusLabel, rocketTitle, rocketWhy, cargoTitle, shipTitle, legendCrew, legendCargo;
     Label seatsLabel, massLabel, fuelLabel, fuelWhy, riskLabel, hintLabel, resultLabel;
     Label infoTitle, infoText, infoGives;
+    Label goalsTitle, daysTitle, advisorName, advisorText;
+    VisualElement goalsList, daysList, advisor;
+    SimBalanceData balance;   // правила витрат ролі 03 — для «на скільки днів вистачить»
+
+    const float ShipBaseScale = 0.55f; // ракета на планшеті менша, ніж на майданчику
     Slider fuelSlider;
     Button launchButton, closeButton;
     VisualElement tablet;
@@ -115,6 +120,14 @@ public class LaunchScreen : MonoBehaviour
         launchButton = root.Q<Button>("launch-button");
         closeButton = root.Q<Button>("close-button");
         tablet = root.Q("launch");
+        goalsTitle = root.Q<Label>("goals-title");
+        goalsList = root.Q("goals-list");
+        daysTitle = root.Q<Label>("days-title");
+        daysList = root.Q("days-list");
+        advisor = root.Q("advisor");
+        advisorName = root.Q<Label>("advisor-name");
+        advisorText = root.Q<Label>("advisor-text");
+        if (balance == null) balance = DataLoader.Load<SimBalanceData>("Balance/balance");
         pad = new LaunchPadView(root);
         if (!pad.Ready) pad = null; // у UXML немає майданчика — буде тільки політ по дузі
 
@@ -170,6 +183,7 @@ public class LaunchScreen : MonoBehaviour
         infoRocket = null;
         BuildRocketCards();
         BuildCargoRows();
+        BuildDaysRows();
         Refresh();
         PlaceShip(0f, false);
     }
@@ -257,6 +271,7 @@ public class LaunchScreen : MonoBehaviour
         ship.EnableInClassList("ship--image", hasImage);
         ship.style.backgroundImage = hasImage ? new StyleBackground(tex) : new StyleBackground(StyleKeyword.None);
         float k = rocket != null && rocket.scale > 0f ? rocket.scale : 1f;
+        k *= ShipBaseScale;
         ship.style.scale = new Scale(new Vector3(k, k, 1f));
     }
 
@@ -342,12 +357,13 @@ public class LaunchScreen : MonoBehaviour
         {
             string text = T(infoItem.nameKey) + ". " + T(infoItem.hintKey);
             if (infoItem.IsKit) text += " " + T("launch.kit_note");
+            if (infoItem.TryGetModule(out var kit) && !Supply.KitUnlocked(kit)) text += " " + T("launch.locked_hint");
             SetText(infoText, text);
             SetText(infoGives, T("launch.gives", GivesText(infoItem)));
         }
         else if (infoRocket != null)
         {
-            SetText(infoText, T(infoRocket.nameKey) + ". " + T(infoRocket.hintKey));
+            SetText(infoText, T(infoRocket.nameKey) + ". " + T(infoRocket.hintKey) + " " + T("rocket.why"));
             SetText(infoGives, T("rocket.stats", infoRocket.maxFuelKg.ToString("0"), infoRocket.flightHours));
         }
         else
@@ -429,11 +445,13 @@ public class LaunchScreen : MonoBehaviour
         {
             if (row.userData is string groupKey && row is Label header) { header.text = T(groupKey); continue; }
             if (!(row.userData is CargoItemData item)) continue;
+            bool locked = item.TryGetModule(out var kitType) && !Supply.KitUnlocked(kitType);
+            row.EnableInClassList("cargo-row--locked", locked);
             row.Q<Label>("name").text = T(item.nameKey);
-            row.Q<Label>("mass").text = T("launch.kg", item.massKg.ToString("0"));
+            row.Q<Label>("mass").text = locked ? T("launch.locked") : T("launch.kg", item.massKg.ToString("0"));
             row.Q<Label>("count").text = s.Supply.Count(item.id).ToString();
             row.Q<Button>("minus").SetEnabled(editable);
-            row.Q<Button>("plus").SetEnabled(editable);
+            row.Q<Button>("plus").SetEnabled(editable && !locked);
         }
 
         // паливо: повзунок до бака вибраної ракети
@@ -467,7 +485,104 @@ public class LaunchScreen : MonoBehaviour
         }
         SetText(hintLabel, T("launch.hint." + r.Light));
 
+        RefreshMission(r);
         RefreshInfo();
+    }
+
+    // ---------- Цілі місії, дні запасів, «Центр керування» ----------
+
+    static readonly string[] DayKinds = { "food", "water", "oxygen" };
+
+    void BuildDaysRows()
+    {
+        if (daysList == null) return;
+        daysList.Clear();
+        foreach (var kind in DayKinds)
+        {
+            var row = new VisualElement { name = "days-" + kind, userData = kind };
+            row.AddToClassList("days-row");
+            var nameLabel = new Label { name = "name" };
+            nameLabel.AddToClassList("days-name");
+            var bar = new VisualElement();
+            bar.AddToClassList("days-bar");
+            var have = new VisualElement { name = "have" };
+            have.AddToClassList("days-have");
+            var bring = new VisualElement { name = "bring" };
+            bring.AddToClassList("days-bring");
+            var mark = new VisualElement();
+            mark.AddToClassList("days-mark");
+            bar.Add(have); bar.Add(bring); bar.Add(mark);
+            var value = new Label { name = "value" };
+            value.AddToClassList("days-value");
+            row.Add(nameLabel); row.Add(bar); row.Add(value);
+            daysList.Add(row);
+        }
+    }
+
+    void RefreshMission(LaunchResult r)
+    {
+        var chapters = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ChapterSystem>() : null;
+        var plan = MissionPlanner.Build(State, Supply, IsFirstMission, r, balance, chapters != null ? chapters.Current : null);
+
+        // цілі місії
+        SetText(goalsTitle, T("mission.title"));
+        if (goalsList != null)
+        {
+            goalsList.Clear();
+            AddGoalRow(T("mission.survive", plan.MissionDays), plan.SurviveOk);
+            foreach (var g in plan.Goals)
+                AddGoalRow(T("mission.build", T("launch.module." + g.Module), Mathf.Min(g.Have + g.Packed, g.Target), g.Target), g.Done);
+        }
+
+        // на скільки днів вистачить
+        SetText(daysTitle, T("days.title"));
+        if (daysList != null)
+        {
+            foreach (var row in daysList.Children())
+            {
+                string kind = row.userData as string;
+                var d = kind == "food" ? plan.Food : kind == "water" ? plan.Water : plan.Oxygen;
+                row.Q<Label>("name").text = T("days." + kind);
+
+                float full = Mathf.Max(1f, plan.MissionDays * 2f); // уся смужка = двічі по стільки, скільки треба; біла риска = треба
+                bool endless = float.IsInfinity(d.Days);
+                float havePct = endless ? 100f : Mathf.Clamp01(d.Have / d.PerDay / full) * 100f;
+                float bringPct = endless ? 0f : Mathf.Clamp(d.BringDays / full * 100f, 0f, 100f - havePct);
+                row.Q("have").style.width = Length.Percent(havePct);
+                row.Q("bring").style.width = Length.Percent(bringPct);
+
+                string days = endless ? T("days.enough")
+                    : d.Bring > 0f ? T("days.value", Mathf.FloorToInt(d.Days)) + " (+" + d.BringDays.ToString("0.#") + ")"
+                    : T("days.value", Mathf.FloorToInt(d.Days));
+                row.Q<Label>("value").text = days;
+
+                bool ok = d.Days >= plan.MissionDays;
+                bool warn = !ok && d.Days >= plan.MissionDays * 0.6f;
+                row.EnableInClassList("days-row--ok", ok);
+                row.EnableInClassList("days-row--warn", warn);
+                row.EnableInClassList("days-row--bad", !ok && !warn);
+            }
+        }
+
+        // порада
+        SetText(advisorName, T("advisor.name"));
+        SetText(advisorText, T(plan.TipKey, plan.TipArgs));
+        advisor?.EnableInClassList("advisor--good", !plan.TipIsWarning);
+        advisor?.EnableInClassList("advisor--warn", plan.TipIsWarning);
+    }
+
+    void AddGoalRow(string text, bool done)
+    {
+        var row = new VisualElement();
+        row.AddToClassList("goal-row");
+        var box = new VisualElement();
+        box.AddToClassList("goal-box");
+        box.EnableInClassList("goal-box--done", done);
+        var label = new Label(text);
+        label.AddToClassList("goal-text");
+        label.EnableInClassList("goal-text--done", done);
+        row.Add(box); row.Add(label);
+        goalsList.Add(row);
     }
 
     // ---------- Кнопка ЗАПУСК ----------

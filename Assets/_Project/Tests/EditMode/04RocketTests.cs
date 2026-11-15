@@ -135,3 +135,106 @@ public class RocketTests
         Assert.AreEqual(0, SupplySystem.PickSlot(s));
     }
 }
+
+/// <summary>Тести планувальника місії: дні запасів, цілі, порада (роль 04).</summary>
+public class MissionPlannerTests
+{
+    SupplySystem sup;
+    GameState s;
+    SimBalanceData bal;
+    ChapterData chapter;
+
+    [SetUp]
+    public void Setup()
+    {
+        var cat = new CargoCatalog();
+        cat.items.Add(new CargoItemData { id = "food", massKg = 50f, food = 10f });
+        cat.items.Add(new CargoItemData { id = "oxygen", massKg = 80f, oxygen = 20f });
+        cat.items.Add(new CargoItemData { id = "water", massKg = 100f, water = 20f });
+        cat.items.Add(new CargoItemData { id = "kit_habitat", massKg = 260f, materials = 20f, module = "Habitat" });
+        sup = new SupplySystem(new LaunchData(), cat) { IsModuleUnlocked = t => t == ModuleType.Habitat };
+
+        s = new GameState { Day = 1, Hour = 0 };
+        s.Res.Food = 40f; s.Res.Water = 60f; s.Res.Oxygen = 70f;
+        s.Power.LifeSupport = 2;
+
+        bal = new SimBalanceData
+        {
+            food = new FoodBalance { portionsPerAstronautPerDay = 1f },
+            lifeSupport = new LifeSupportBalance { oxygenUsePerAstronautPerDay = 4f, oxygenMadePerBlockPerDay = 4f, waterUsePerBlockPerDay = 2f, oxygenTankMax = 100f },
+            greenhouse = new GreenhouseBalance { waterUsePerBlockPerDay = 1f }
+        };
+        chapter = new ChapterData
+        {
+            goals = new[]
+            {
+                new ChapterGoalData { type = "SurviveDays", target = 5 },
+                new ChapterGoalData { type = "BuildModule", target = 1, module = "Habitat" }
+            }
+        };
+    }
+
+    MissionPlan Plan() => MissionPlanner.Build(s, sup, true, sup.Evaluate(s, true), bal, chapter);
+
+    [Test]
+    public void Days_FromBalance()
+    {
+        var p = Plan();
+        Assert.AreEqual(4, p.Crew);
+        Assert.AreEqual(5, p.MissionDays);
+        Assert.AreEqual(10f, p.Food.Days, 0.01f);      // 40 їжі / (4 людини × 1)
+        Assert.AreEqual(8.75f, p.Oxygen.Days, 0.01f);  // 70 / (16 дихають − 8 робить машина)
+        Assert.AreEqual(15f, p.Water.Days, 0.01f);     // 60 / (2 блоки × 2)
+    }
+
+    [Test]
+    public void Cargo_AddsDays()
+    {
+        sup.ChangeCargo(s, "food", 2);
+        var p = Plan();
+        Assert.AreEqual(20f, p.Food.Bring, 0.01f);
+        Assert.AreEqual(5f, p.Food.BringDays, 0.01f);
+    }
+
+    [Test]
+    public void LowFood_IsTheTip()
+    {
+        s.Res.Food = 4f;
+        Assert.AreEqual("tip.food_low", Plan().TipKey);
+    }
+
+    [Test]
+    public void MissingGoal_IsTheTip_UntilKitPacked()
+    {
+        sup.SetFuel(s, 6000f); // зелене світло, щоб порада була про ціль, а не про паливо
+        Assert.AreEqual("tip.goal", Plan().TipKey);
+        sup.ChangeCargo(s, "kit_habitat", 1);
+        var p = Plan();
+        Assert.IsTrue(p.Goals[0].Done);
+        Assert.AreEqual("tip.all_good", p.TipKey);
+    }
+
+    [Test]
+    public void OxygenOverTank_IsTheTip()
+    {
+        sup.ChangeCargo(s, "kit_habitat", 1);
+        sup.ChangeCargo(s, "oxygen", 3); // 70 + 60 > 100
+        sup.SetFuel(s, 6000f);
+        Assert.AreEqual("tip.oxygen_full", Plan().TipKey);
+    }
+
+    [Test]
+    public void LockedKit_CannotBePacked()
+    {
+        sup.Catalog.items.Add(new CargoItemData { id = "kit_lab", massKg = 130f, module = "Lab" });
+        Assert.AreEqual("error.kit_locked", sup.ChangeCargo(s, "kit_lab", 1));
+        Assert.IsNull(sup.ChangeCargo(s, "kit_habitat", 1));
+    }
+
+    [Test]
+    public void LifeSupportMakesEnough_IsEndless()
+    {
+        s.Power.LifeSupport = 4; // 16 робить = 16 дихають
+        Assert.IsTrue(float.IsInfinity(Plan().Oxygen.Days));
+    }
+}

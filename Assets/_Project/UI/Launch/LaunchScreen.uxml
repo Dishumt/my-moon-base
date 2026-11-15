@@ -24,7 +24,10 @@
                 <ui:VisualElement name="rocket-panel" class="panel pad rocket-panel mr-16">
                     <ui:Label name="rocket-title" text="1. CHOOSE A ROCKET" class="t-label mb-8" />
                     <ui:VisualElement name="rocket-list" />
-                    <ui:Label name="rocket-why" text="" class="t-body why-text" />
+                    <ui:VisualElement name="goals-box" class="goals-box">
+                        <ui:Label name="goals-title" text="MISSION GOALS" class="t-label mb-4" />
+                        <ui:VisualElement name="goals-list" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
                 <ui:VisualElement name="cargo-panel" class="panel pad cargo-panel mr-16">
@@ -62,6 +65,10 @@
                         <ui:VisualElement class="legend-dot legend-cargo" />
                         <ui:Label name="legend-cargo" text="CARGO" class="t-label" />
                     </ui:VisualElement>
+                    <ui:VisualElement name="days-box" class="days-box">
+                        <ui:Label name="days-title" text="SUPPLIES WILL LAST" class="t-label mb-4" />
+                        <ui:VisualElement name="days-list" />
+                    </ui:VisualElement>
                     <ui:VisualElement name="info-box" class="note info-box">
                         <ui:Label name="info-title" text="WHAT IS IT FOR?" class="t-label mb-4" />
                         <ui:Label name="info-text" text="" class="t-body" />
@@ -69,6 +76,11 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
 
+            </ui:VisualElement>
+
+            <ui:VisualElement name="advisor" class="note advisor">
+                <ui:Label name="advisor-name" text="MISSION CONTROL:" class="t-label advisor-name" />
+                <ui:Label name="advisor-text" text="" class="t-body advisor-text" />
             </ui:VisualElement>
 
             <ui:VisualElement name="bottom" class="panel pad bottom-row">
