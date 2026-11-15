@@ -357,7 +357,8 @@ public class SupplyPlanTests
     {
         sup.SetPlan(s, "often");
         sup.SetRocket(s, "heavy");                 // перша місія — будь-яка ракета
-        sup.LaunchFirstMission(s);
+        sup.SetFuel(s, 10000f);                    // повний бак — зелене світло
+        Assert.IsTrue(sup.LaunchFirstMission(s));
         Assert.AreEqual("small", sup.GetRocket(s).id);  // для поставок — найбільша з плану
         Assert.AreEqual("error.rocket_not_in_plan", sup.SetRocket(s, "medium"));
     }
