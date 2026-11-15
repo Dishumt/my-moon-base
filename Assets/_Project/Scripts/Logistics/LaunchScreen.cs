@@ -270,7 +270,8 @@ public class LaunchScreen : MonoBehaviour
 
     void Start()
     {
-        if (openOnStart) Open();
+        // на старті гри — тільки перша місія; якщо гру продовжили зі збереження і екіпаж уже на Місяці, не відкриваємо
+        if (openOnStart && State != null && !State.Supply.FirstMissionDone) Open();
     }
 
     void Update()
