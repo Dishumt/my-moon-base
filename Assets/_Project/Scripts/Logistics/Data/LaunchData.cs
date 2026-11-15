@@ -23,6 +23,7 @@ public class LaunchData
     public float stormDelayShare = 0f;        // гроза на Землі: затримка = частка періоду поставок
     public float commsCyclesPerChapter = 0f;  // скільки разів за розділ зв'язок зникає й повертається
     public float commsOpenShare = 0.6f;       // яку частку циклу зв'язок є
+    public float crewTripScale = 0f;          // перша місія: політ з людьми = час польоту ракети × це число; екіпаж у дорозі їсть і дихає. 0 — вимкнено
 
     // ----- Старі поля в годинах і днях: працюють, якщо частки вище = 0 (так налаштовані старі тести) -----
     public int supplyEveryDays = 4;

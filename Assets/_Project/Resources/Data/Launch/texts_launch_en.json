@@ -985,6 +985,18 @@
     {
       "key": "time.days",
       "text": "{0} days"
+    },
+    {
+      "key": "days.trip",
+      "text": "On the way ({0}) the crew will eat {1} food and breathe {2} oxygen."
+    },
+    {
+      "key": "rocket.trip",
+      "text": "With the crew: {0} on the way. They will eat {1} food and breathe {2} oxygen. Water is cleaned and reused on board."
+    },
+    {
+      "key": "report.trip",
+      "text": "On the way the crew ate {0} food and breathed {1} oxygen."
     }
   ]
 }

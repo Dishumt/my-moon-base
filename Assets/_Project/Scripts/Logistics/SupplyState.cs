@@ -35,6 +35,8 @@ public class SupplyState
     public LaunchWeather Weather;   // погода на космодромі для найближчого старту
     public bool WeatherKnown;       // прогноз уже зроблено (перша місія)
     public bool StormDelayed;       // поставку вже раз відклали через грозу
+    public float TripFood;          // перша місія: скільки їжі екіпаж з'їв у дорозі (для звіту)
+    public float TripOxygen;        // перша місія: скільки кисню вдихнув у дорозі
 
     // Набори, які приїхали і чекають на будівництво (03 може їх використати)
     public int SolarPanelKits;

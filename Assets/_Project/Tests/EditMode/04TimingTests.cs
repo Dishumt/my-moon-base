@@ -96,6 +96,65 @@ public class TimingTests
         Assert.AreEqual(4 * 24 + 8, oldSup.NextLaunchFrom(s, 6));
     }
 
+    // ---------- Екіпаж у дорозі (перша місія) ----------
+
+    void EnableTrip()
+    {
+        data.crewTripScale = 2f;
+        data.firstMissionSeats = 4;
+        sup.Balance = new SimBalanceData
+        {
+            food = new FoodBalance { portionsPerAstronautPerDay = 1f },
+            lifeSupport = new LifeSupportBalance { oxygenUsePerAstronautPerDay = 4f }
+        };
+    }
+
+    [Test]
+    public void CrewTrip_SlowerRocketUsesMore()
+    {
+        EnableTrip();
+        sup.SetPlan(s, "rare");                           // період 32 год, дозволені всі ракети
+        var small = sup.Rockets.Find("small");
+        var heavy = sup.Rockets.Find("heavy");
+        Assert.AreEqual(12, sup.CrewTripHours(s, small)); // 32 × 0.2 = 6 год × 2
+        Assert.AreEqual(28, sup.CrewTripHours(s, heavy)); // 32 × 0.45 = 14 год × 2
+        sup.CrewTripUse(s, small, out float smallFood, out float smallOxygen);
+        sup.CrewTripUse(s, heavy, out float heavyFood, out float heavyOxygen);
+        Assert.AreEqual(2f, smallFood, 0.01f);            // 4 людини × 1 порція × 0.5 дня
+        Assert.AreEqual(8f, smallOxygen, 0.01f);          // 4 × 4 × 0.5
+        Assert.Greater(heavyFood, smallFood);
+        Assert.Greater(heavyOxygen, smallOxygen);
+    }
+
+    [Test]
+    public void CrewTrip_FirstMissionLandsWithLess_AndPlannerKnows()
+    {
+        EnableTrip();
+        var cat = new CargoCatalog();
+        cat.items.Add(new CargoItemData { id = "food", massKg = 50f, food = 5f });
+        var rockets = sup.Rockets;
+        sup = new SupplySystem(data, cat, rockets) { Random01 = () => 0.5f, Balance = sup.Balance };
+        sup.ChangeCargo(s, "food", 2);                    // 10 порцій
+        sup.SetFuel(s, 6000f);
+        s.Res.Food = 4f; s.Res.Oxygen = 25f;
+
+        var plan = MissionPlanner.Build(s, sup, true, sup.Evaluate(s, true), sup.Balance, null);
+        Assert.AreEqual(14, plan.TripHours);              // Пелікан: 24 × 0.3 = 7 год × 2
+        float eaten = plan.Food.Travel;
+        Assert.AreEqual(14f - eaten, plan.Food.Have + plan.Food.Bring, 0.01f);
+
+        Assert.IsTrue(sup.LaunchFirstMission(s));
+        Assert.AreEqual(14f - eaten, s.Res.Food, 0.01f);  // долетіло стільки, скільки обіцяв порадник
+        Assert.AreEqual(eaten, s.Supply.TripFood, 0.01f);
+        Assert.Less(s.Res.Oxygen, 25f);
+    }
+
+    [Test]
+    public void CrewTrip_Off_WhenScaleZero()
+    {
+        Assert.AreEqual(0, sup.CrewTripHours(s, sup.Rockets.Find("heavy")));
+    }
+
     /// <summary>Справжні дані: за будь-якої довжини розділу перший корабель після висадки встигає сісти до кінця розділу.</summary>
     [Test]
     public void RealData_FirstShipLandsWithinChapter_AnyPace()

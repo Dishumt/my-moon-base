@@ -128,6 +128,33 @@ public class SupplySystem : ISimSystem
         return r.flightHours;
     }
 
+    // ---------- Екіпаж у дорозі (перша місія) ----------
+
+    /// <summary>Правила витрат ролі 03 (balance.json). null — завантажиться само; у тестах можна підставити.</summary>
+    public SimBalanceData Balance;
+
+    SimBalanceData GetBalance() => Balance ?? (Balance = DataLoader.Load<SimBalanceData>("Balance/balance"));
+
+    /// <summary>Скільки годин летить екіпаж цією ракетою: час польоту × crewTripScale (0 — у дорозі нічого не витрачають).</summary>
+    public int CrewTripHours(GameState s, RocketData r) =>
+        data.crewTripScale > 0f ? LogisticsTime.Hours(FlightHoursOf(s, r) * data.crewTripScale) : 0;
+
+    /// <summary>
+    /// Скільки їжі й кисню екіпаж (4 людини) витратить у дорозі цією ракетою. Швидкість витрат — з balance.json (03),
+    /// тривалість — з LogisticsTime. Повільніша ракета → у дорозі витратять більше. Воду на кораблі очищують і п'ють знову.
+    /// </summary>
+    public void CrewTripUse(GameState s, RocketData r, out float food, out float oxygen)
+    {
+        food = 0f; oxygen = 0f;
+        int hours = CrewTripHours(s, r);
+        if (hours <= 0) return;
+        var b = GetBalance();
+        float days = hours / 24f;
+        int crew = data.firstMissionSeats;
+        food = crew * (b != null && b.food != null ? b.food.portionsPerAstronautPerDay : 1f) * days;
+        oxygen = crew * (b != null && b.lifeSupport != null ? b.lifeSupport.oxygenUsePerAstronautPerDay : 4f) * days;
+    }
+
     /// <summary>Невдалий політ: на скільки годин пізніше прилетить корабель.</summary>
     public int FailedDelayHours(GameState s) =>
         data.failedDelayShare > 0f ? LogisticsTime.Hours(PeriodHours(s) * data.failedDelayShare) : data.failedDelayDays * 24;
@@ -309,7 +336,13 @@ public class SupplySystem : ISimSystem
         {
             s.Supply.Weather = LaunchWeather.Clear;   // далі погоду для поставок вирішує старт за розкладом
             s.Supply.WeatherKnown = false;
+            CrewTripUse(s, GetRocket(s), out float tripFood, out float tripOxygen);
             Deliver(s, null);
+            // у дорозі екіпаж їв і дихав: прилетіло менше, ніж поклали (а не вистачило — беруть зі складу бази)
+            s.Supply.TripFood = Math.Min(tripFood, s.Res.Food);
+            s.Supply.TripOxygen = Math.Min(tripOxygen, s.Res.Oxygen);
+            s.Res.Food -= s.Supply.TripFood;
+            s.Res.Oxygen -= s.Supply.TripOxygen;
             s.Supply.Cargo.Clear();          // усе вивантажили — наступне замовлення починається з порожнього списку
             s.Supply.FirstMissionDone = true;
             s.Supply.Deliveries = 0; // перша місія — це не поставка

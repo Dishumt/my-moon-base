@@ -547,7 +547,15 @@ public class LaunchScreen : MonoBehaviour
         {
             SetText(infoTitle, T(infoRocket.nameKey));
             SetText(infoText, T(infoRocket.hintKey) + " " + T("rocket.why"));
-            SetText(infoGives, T("rocket.stats", infoRocket.maxCargoKg.ToString("0"), LaunchText.Duration(Supply.FlightHoursOf(State, infoRocket))));
+            string gives = T("rocket.stats", infoRocket.maxCargoKg.ToString("0"), LaunchText.Duration(Supply.FlightHoursOf(State, infoRocket)));
+            int tripHours = IsFirstMission ? Supply.CrewTripHours(State, infoRocket) : 0;
+            if (tripHours > 0)
+            {
+                // повільніша ракета — екіпаж довше в дорозі і більше з'їсть: це ціна великого трюму
+                Supply.CrewTripUse(State, infoRocket, out float tripFood, out float tripOxygen);
+                gives += "\n" + T("rocket.trip", LaunchText.Duration(tripHours), tripFood.ToString("0.#"), tripOxygen.ToString("0.#"));
+            }
+            SetText(infoGives, gives);
         }
         else if (infoPlan != null)
         {
@@ -881,6 +889,13 @@ public class LaunchScreen : MonoBehaviour
         AddReportRow(stars.Supplies, "report.star_supplies");
         AddReportRow(stars.NoWaste, "report.star_nowaste");
         if (stars.UsedAdvice) AddReportRow(false, "report.star_advice");   // пояснюємо, куди поділась зірка
+        if (State != null && (State.Supply.TripFood > 0f || State.Supply.TripOxygen > 0f))
+        {
+            var trip = new Label(T("report.trip", State.Supply.TripFood.ToString("0.#"), State.Supply.TripOxygen.ToString("0.#")));
+            trip.AddToClassList("report-text");
+            trip.AddToClassList("report-trip");
+            reportList.Add(trip);
+        }
         SetText(reportTip, T(stars.TipKey, stars.TipArgs));
         if (reportNext != null) reportNext.text = T("report.next");
 
@@ -930,6 +945,10 @@ public class LaunchScreen : MonoBehaviour
             row.Add(nameLabel); row.Add(bar); row.Add(value);
             daysList.Add(row);
         }
+        // рядок «у дорозі екіпаж з'їсть…» (тільки перша місія)
+        var trip = new Label { name = "days-trip", userData = "trip" };
+        trip.AddToClassList("days-trip");
+        daysList.Add(trip);
     }
 
     void RefreshMission(LaunchResult r)
@@ -957,6 +976,14 @@ public class LaunchScreen : MonoBehaviour
             foreach (var row in daysList.Children())
             {
                 string kind = row.userData as string;
+                if (kind == "trip")
+                {
+                    bool show = plan.TripHours > 0;
+                    row.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+                    if (show) ((Label)row).text = T("days.trip", LaunchText.Duration(plan.TripHours),
+                                                      plan.Food.Travel.ToString("0.#"), plan.Oxygen.Travel.ToString("0.#"));
+                    continue;
+                }
                 var d = kind == "food" ? plan.Food : kind == "water" ? plan.Water : plan.Oxygen;
                 row.Q<Label>("name").text = T("days." + kind);
 
