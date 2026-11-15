@@ -9,7 +9,8 @@
 #>
 param(
     [string]$Root = (Join-Path (Split-Path -Parent $PSScriptRoot) 'Builds\Web'),
-    [int]$Port = 8085
+    [int]$Port = 8085,
+    [switch]$Lan   # відкрити гру і з інших комп'ютерів у тій самій Wi-Fi мережі (потрібен PowerShell від імені адміністратора)
 )
 
 if (-not (Test-Path (Join-Path $Root 'index.html'))) {
@@ -18,9 +19,10 @@ if (-not (Test-Path (Join-Path $Root 'index.html'))) {
 }
 
 $listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add("http://localhost:$Port/")
+if ($Lan) { $listener.Prefixes.Add("http://+:$Port/") } else { $listener.Prefixes.Add("http://localhost:$Port/") }
 $listener.Start()
 Write-Host "Гра: http://localhost:$Port/   (папка $Root, Ctrl+C — зупинити)"
+if ($Lan) { Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notmatch "^(127|169)" } | ForEach-Object { Write-Host "З іншого комп'ютера в цій мережі: http://$($_.IPAddress):$Port/" } }
 
 $types = @{ '.html' = 'text/html'; '.js' = 'application/javascript'; '.wasm' = 'application/wasm'; '.data' = 'application/octet-stream';
             '.css' = 'text/css'; '.json' = 'application/json'; '.png' = 'image/png'; '.ico' = 'image/x-icon'; '.svg' = 'image/svg+xml' }
