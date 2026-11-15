@@ -93,7 +93,9 @@ public static class RoomBuilder
         var outerDoor = DoubleDoor(root, "Door Outer", solid, new Vector3(0f, ah / 2, L.airlockFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
         var innerDoor = DoubleDoor(root, "Door Inner", solid, new Vector3(0f, ah / 2, L.roomFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
 
-        root.gameObject.AddComponent<ModuleInterior>().Setup(view, shell.ToArray(), shellColors.ToArray(), interior.ToArray(), furniture.ToArray());
+        var interiorView = root.gameObject.AddComponent<ModuleInterior>();
+        interiorView.Setup(view, shell.ToArray(), shellColors.ToArray(), interior.ToArray(), furniture.ToArray());
+        BuildAlarm(root, interiorView, roomMid, roomDepth, w, L.roomBack);
         // front = зовнішній край шлюзу, inner = середина внутрішніх дверей
         root.gameObject.AddComponent<Airlock>().Setup(outerDoor.transform, innerDoor.transform, door, aw,
                                                       L.airlockFront, L.roomFront + t / 2, ah);
@@ -178,8 +180,8 @@ public static class RoomBuilder
     {
         switch (type)
         {
-            case ModuleType.Habitat:
-                return new[] { new Item("bunk_bed", -2.0f, 0), new Item("galley_kitchen", 0f, 0), new Item("wardrobe_storage", 2.0f, 0),
+            case ModuleType.Habitat: // генератор кисню тут: житловий модуль перший, і дитина одразу бачить, звідки кисень
+                return new[] { new Item("bunk_bed", -2.0f, 0), new Item("galley_kitchen", 0f, 0), new Item("oxygen_generator", 2.0f, 0),
                                new Item("shower_toilet", -2.1f, 1), new Item("dining_table", 2.1f, 1) };
             case ModuleType.Greenhouse:
                 return new[] { new Item("hydroponic_rack", -2.0f, 0), new Item("hydroponic_rack", 0f, 0), new Item("hydroponic_rack", 2.0f, 0),
@@ -259,6 +261,44 @@ public static class RoomBuilder
         ssr.color = new Color(0f, 0f, 0f, 0.4f);
         ssr.sortingOrder = sr.sortingOrder - 2; // під товщиною і під тінями людей
         list.Add(ssr);
+    }
+
+    // ---------- Аварійна лампа (коли енергії забракло) ----------
+
+    /// <summary>
+    /// Червона лампа під «стелею» над задньою стіною (саму стелю всередині не видно), сяйво навколо неї
+    /// і червоні відблиски на підлозі. Спочатку вимкнені — вмикає ModuleInterior під час аварії.
+    /// </summary>
+    static void BuildAlarm(Transform root, ModuleInterior interiorView, float mid, float depth, float w, float back)
+    {
+        var lamp = AlarmSprite(root, "Alarm Lamp", WorldSprites.Disc, new Vector3(0f, 2.7f, back - 0.4f), 0.3f, 6);
+        var glow = AlarmSprite(root, "Alarm Glow", WorldSprites.Blob, new Vector3(0f, 2.7f, back - 0.42f), 1.8f, 5);
+
+        var floorGo = new GameObject("Alarm Floor Light");
+        floorGo.transform.SetParent(root, false);
+        floorGo.transform.localPosition = new Vector3(0f, 0.13f, mid);
+        floorGo.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); // лежить на підлозі
+        floorGo.transform.localScale = new Vector3(w * 0.95f, depth * 0.95f, 1f);
+        var floor = floorGo.AddComponent<SpriteRenderer>();
+        floor.sprite = WorldSprites.Blob;
+        floor.sortingOrder = -3; // під тінями меблів і людей
+        floor.enabled = false;
+
+        interiorView.SetupAlarm(lamp, glow, floor);
+    }
+
+    static SpriteRenderer AlarmSprite(Transform root, string name, Sprite sprite, Vector3 pos, float size, int order)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(root, false);
+        go.transform.localPosition = pos;
+        go.transform.localScale = new Vector3(size, size, 1f); // до Billboard: він запам'ятовує масштаб в Awake
+        var r = go.AddComponent<SpriteRenderer>();
+        r.sprite = sprite;
+        r.sortingOrder = order;
+        r.enabled = false;
+        go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
+        return r;
     }
 
     // ---------- Меблі-коробки (запасний варіант, якщо картинок немає) ----------

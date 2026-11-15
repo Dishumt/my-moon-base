@@ -37,6 +37,10 @@ public class WorldDebugButtons : MonoBehaviour
         if (GUILayout.Button("Енергія кімнатам +1")) AddRoomPower(game);
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
+        if (GUILayout.Button(ModulePower.DebugOutage ? "Аварія: прибрати" : "Аварія: немає енергії")) ModulePower.DebugOutage = !ModulePower.DebugOutage;
+        GUILayout.EndHorizontal();
+        GUILayout.Label("Світ бачить енергію (отримано/план): " + RoomPowerText());
+        GUILayout.BeginHorizontal();
         if (GUILayout.Button("Аптечки -1")) s.Res.MedKits = Mathf.Max(0, s.Res.MedKits - 1);
         if (GUILayout.Button("Аптечки +1")) s.Res.MedKits++;
         GUILayout.Label("аптечок: " + s.Res.MedKits + ", кисню: " + Mathf.RoundToInt(s.Res.Oxygen), GUILayout.Width(170));
@@ -108,6 +112,24 @@ public class WorldDebugButtons : MonoBehaviour
             p.Shelter++;
         }
         GameEvents.RaiseStateChanged();
+    }
+
+    static readonly ModuleType[] RoomsForText = { ModuleType.Habitat, ModuleType.Greenhouse, ModuleType.Medbay, ModuleType.Lab, ModuleType.Shelter };
+    static readonly string[] RoomShort = { "Жит", "Тепл", "Мед", "Лаб", "Укр" };
+
+    /// <summary>Рядок для перевірки: що бачать меблі й світло в кожній кімнаті.</summary>
+    static string RoomPowerText()
+    {
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < RoomsForText.Length; i++)
+        {
+            var t = RoomsForText[i];
+            var st = ModulePower.StateOf(t);
+            string mark = st == RoomPower.On ? "" : (st == RoomPower.Standby ? " сон" : " АВАРІЯ");
+            sb.Append(RoomShort[i]).Append(' ').Append(ModulePower.Blocks(t)).Append('/').Append(ModulePower.Planned(t)).Append(mark);
+            if (i < RoomsForText.Length - 1) sb.Append(" · ");
+        }
+        return sb.ToString();
     }
 
     static void CopyRooms(PowerPlan from, PowerPlan to)

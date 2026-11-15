@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// «Живі» меблі: предмет показує стан гри, і дитина бачить, що відбувається на базі, без цифр.
-///  - oxygen_generator: лампа на кришці зелена (є енергія) або блимає червоним; трубка зліва — скільки кисню в баку;
+///  - oxygen_generator: лампа на кришці зелена (життєзабезпечення отримує енергію) або блимає червоним; трубка зліва — скільки кисню в баку;
 ///  - hydroponic_rack: рослини ростуть разом з урожаєм теплиці (GreenhouseSystem.Growth), лампи «дихають».
 ///    Без енергії лампи гаснуть, а без енергії чи води рослини жовтіють (не ростуть);
 ///  - water_recycler: у баках біжать бульбашки, коли є енергія й вода; без енергії блимає червона лампочка;
@@ -11,6 +11,8 @@ using UnityEngine;
 ///  - power_control_panel: зелені вогники = скільки блоків енергії отримала ця кімната (до 3); 0 — блимає червоний;
 ///  - workstation_desk, science_bench: екран мерехтить, коли є енергія, і гасне без неї;
 ///  - galley_kitchen: з чайника йде пара, лампи світять, коли є енергія.
+/// Червоні тривоги — тільки при АВАРІЇ (енергію дали, але її забракло, див. ModulePower.StateOf).
+/// Якщо гравець сам не дав кімнаті енергії, предмети просто вимкнені, без червоного.
 /// Додає RoomBuilder сам. Читає GameState щокадру (це дешево) і нічого в нього не пише.
 /// Позиції деталей — у пікселях картинки Юлі (256×256, відлік зліва згори), як у графічному редакторі.
 /// Деталі — дочірні спрайти з більшим sortingOrder; предмет має SortingGroup, тож вони малюються поверх нього,
@@ -36,6 +38,8 @@ public class FurnitureLife : MonoBehaviour
     float ppu, heightPx;
     Vector2 pivotPx;
     bool open;   // чи видно, що всередині модуля (гравець у ньому)
+    bool alarm;  // аварія: енергію дали, але її забракло — червоні лампи блимають
+    float roomLight = 1f; // яскравість світла в кімнаті (ModuleInterior.Light): рослини й аптечки темнішають разом з нею
     float seed;  // щоб однакові предмети мерехтіли не в такт
 
     /// <summary>Викликає RoomBuilder одразу після створення предмета (після товщини й тіні).</summary>
@@ -73,10 +77,12 @@ public class FurnitureLife : MonoBehaviour
         open = view == null || view.InteriorOpen;
         int blocks = ModulePower.Blocks(room);
         bool powered = blocks > 0;
+        alarm = ModulePower.StateOf(room) == RoomPower.Outage;
+        roomLight = view != null && view.Interior != null ? view.Interior.Light : 1f;
 
         switch (Kind)
         {
-            case "oxygen_generator": UpdateOxygen(s, powered); break;
+            case "oxygen_generator": UpdateOxygen(s, ModulePower.LifeSupportBlocks() > 0); break;
             case "hydroponic_rack": UpdateRack(s, powered); break;
             case "water_recycler": UpdateRecycler(s, powered); break;
             case "medical_cabinet": UpdateMedical(s); break;
@@ -110,7 +116,7 @@ public class FurnitureLife : MonoBehaviour
         Place(o2Empty, TubeX0, TubeTop, TubeX1, TubeTop + empty);
         Show(o2Empty, empty > 0.5f);
 
-        // Лампа: зелена — кисень робиться; червона блимає — немає енергії
+        // Лампа: зелена — кисень робиться; червона блимає — життєзабезпечення без енергії (це завжди тривога: кисень не робиться)
         bool lit = powered || Blink();
         o2Lamp.color = powered ? Green : (lit ? Red : DarkRed);
         o2Glow.color = A(powered ? Green : Red, powered ? 0.3f + 0.1f * Mathf.Sin(Time.time * 2f) : 0.6f);
@@ -138,6 +144,7 @@ public class FurnitureLife : MonoBehaviour
 
     SpriteRenderer[] plants, lampsOff, lampsGlow;
     float shownGrowth = -1f;
+    Color plantTint = Color.white;
 
     void SetupRack()
     {
@@ -179,10 +186,11 @@ public class FurnitureLife : MonoBehaviour
             shownGrowth = shownGrowth < 0f ? g : Mathf.MoveTowards(shownGrowth, g, Time.deltaTime * 0.8f);
             var scale = new Vector3(Mathf.Lerp(0.55f, 1f, shownGrowth), Mathf.Lerp(0.15f, 1f, shownGrowth), 1f);
             Color tint = growing ? Color.white : new Color(0.8f, 0.76f, 0.5f); // не ростуть — жовтіють
+            plantTint = Color.Lerp(plantTint, tint, Time.deltaTime * 2f);
             foreach (var p in plants)
             {
                 p.transform.localScale = scale;
-                p.color = Color.Lerp(p.color, tint, Time.deltaTime * 2f);
+                p.color = Dim(plantTint);
                 Show(p, true);
             }
         }
@@ -262,13 +270,13 @@ public class FurnitureLife : MonoBehaviour
                     basePx[row + x] = y < c.tray ? new Color32(0, 0, 0, 0) : soil;
                 }
             }
-            var ptex = NewTexture(cw, ch);
+            var ptex = WorldSprites.NewTexture(cw, ch);
             ptex.SetPixels32(plant);
             ptex.Apply();
             rows[i] = Sprite.Create(ptex, new Rect(0, 0, cw, ch), new Vector2(0.5f, 0f), src.pixelsPerUnit, 0, SpriteMeshType.FullRect);
         }
 
-        var btex = NewTexture(W, H);
+        var btex = WorldSprites.NewTexture(W, H);
         btex.SetPixels32(basePx);
         btex.Apply();
         var pivot = new Vector2(src.pivot.x / src.rect.width, src.pivot.y / src.rect.height);
@@ -315,9 +323,9 @@ public class FurnitureLife : MonoBehaviour
         }
         Show(recGreenOff, !powered);
         Show(recGreen, powered);
-        bool alarm = !powered && Blink();
-        Show(recRed, alarm);
-        Show(recRedGlow, alarm);
+        bool red = alarm && Blink();
+        Show(recRed, red);
+        Show(recRedGlow, red);
     }
 
     // =====================================================================
@@ -343,10 +351,14 @@ public class FurnitureLife : MonoBehaviour
     void UpdateMedical(GameState s)
     {
         int n = Mathf.Clamp(s.Res.MedKits, 0, kits.Length);
-        for (int i = 0; i < kits.Length; i++) Show(kits[i], i < n);
-        bool alarm = s.Res.MedKits <= 0 && Blink(0.9f);
-        Show(crossV, alarm);
-        Show(crossH, alarm);
+        for (int i = 0; i < kits.Length; i++)
+        {
+            kits[i].color = Dim(Color.white);
+            Show(kits[i], i < n);
+        }
+        bool empty = s.Res.MedKits <= 0 && Blink(0.9f); // ліків немає — це тривога незалежно від енергії
+        Show(crossV, empty);
+        Show(crossH, empty);
     }
 
     // =====================================================================
@@ -375,7 +387,7 @@ public class FurnitureLife : MonoBehaviour
     void UpdatePanel(int blocks)
     {
         int n = Mathf.Clamp(blocks, 0, PanelLedX.Length);
-        bool alarm = blocks <= 0, blink = Blink();
+        bool blink = Blink();
         for (int i = 0; i < PanelLedX.Length; i++)
         {
             bool on = i < n;
@@ -385,9 +397,9 @@ public class FurnitureLife : MonoBehaviour
             Show(ledGlow[i], on);
         }
         Show(ledRed, alarm && blink);
-        Show(panelScreenOff, alarm);
+        Show(panelScreenOff, blocks <= 0);
         panelScreenGlow.color = new Color(1f, 0.85f, 0.3f, 0.12f + 0.08f * Mathf.Sin(Time.time * 2f));
-        Show(panelScreenGlow, !alarm);
+        Show(panelScreenGlow, blocks > 0);
     }
 
     // =====================================================================
@@ -473,7 +485,7 @@ public class FurnitureLife : MonoBehaviour
     /// <summary>Прямокутник поверх картинки: x0, y0 — лівий верхній кут, x1, y1 — правий нижній (пікселі).</summary>
     SpriteRenderer Box(string name, float x0, float y0, float x1, float y1, Color c, int order)
     {
-        var r = Part(name, Square, order);
+        var r = Part(name, WorldSprites.Square, order);
         r.color = c;
         Place(r, x0, y0, x1, y1);
         return r;
@@ -488,7 +500,7 @@ public class FurnitureLife : MonoBehaviour
     /// <summary>М'яке сяйво (розмита пляма) з центром cx, cy і розміром w×h пікселів.</summary>
     SpriteRenderer Glow(string name, float cx, float cy, float w, float h, Color c, int order)
     {
-        var r = Part(name, MoonHop.BlobSprite(), order);
+        var r = Part(name, WorldSprites.Blob, order);
         r.color = c;
         r.transform.localPosition = Px(cx, cy, order);
         r.transform.localScale = new Vector3(w / ppu, h / ppu, 1f);
@@ -498,7 +510,7 @@ public class FurnitureLife : MonoBehaviour
     /// <summary>Кружечок (лампочка, бульбашка) діаметром d пікселів.</summary>
     SpriteRenderer Dot(string name, float cx, float cy, float d, Color c, int order)
     {
-        var r = Part(name, Disc, order);
+        var r = Part(name, WorldSprites.Disc, order);
         r.color = c;
         r.transform.localPosition = Px(cx, cy, order);
         r.transform.localScale = new Vector3(d / ppu, d / ppu, 1f);
@@ -512,6 +524,9 @@ public class FurnitureLife : MonoBehaviour
     }
 
     static Color A(Color c, float a) { c.a = a; return c; }
+
+    /// <summary>Колір, притемнений разом зі світлом у кімнаті (лампи й сяйво НЕ темнішають — вони самі світять).</summary>
+    Color Dim(Color c) => new Color(c.r * roomLight, c.g * roomLight, c.b * roomLight, c.a);
     static bool Blink(float period = 0.7f) => Mathf.Repeat(Time.time, period) < period * 0.5f;
     float Flicker(float speed) => Mathf.PerlinNoise(Time.time * speed, seed * 10f);
 
@@ -528,16 +543,9 @@ public class FurnitureLife : MonoBehaviour
         }
     }
 
-    // ---------- Маленькі картинки, які створюємо кодом ----------
+    // ---------- Аптечка (піксельна картинка, яку створюємо кодом) ----------
 
-    static Sprite square, disc, kit;
-
-    /// <summary>Білий квадрат 1×1 м (для прямокутників).</summary>
-    static Sprite Square => square != null ? square : (square = MakeSprite(1, 1, 1f, (x, y) => Color.white));
-
-    /// <summary>Білий круг діаметром 1 м (піксельний).</summary>
-    static Sprite Disc => disc != null ? disc : (disc = MakeSprite(16, 16, 16f, (x, y) =>
-        new Vector2(x - 7.5f, y - 7.5f).sqrMagnitude <= 7.6f * 7.6f ? Color.white : Color.clear));
+    static Sprite kit;
 
     // Аптечка 9×7 пікселів: червона коробка з білим хрестом. Рядки згори вниз.
     static readonly string[] KitRows =
@@ -552,7 +560,7 @@ public class FurnitureLife : MonoBehaviour
     };
 
     /// <summary>Аптечка: 1 піксель = 1 одиниця (масштаб 1/PPU ставимо самі).</summary>
-    static Sprite KitSprite => kit != null ? kit : (kit = MakeSprite(9, 7, 1f, (x, y) =>
+    static Sprite KitSprite => kit != null ? kit : (kit = WorldSprites.Make(9, 7, 1f, (x, y) =>
     {
         char ch = KitRows[KitRows.Length - 1 - y][x]; // у текстурі y=0 — нижній рядок
         if (ch == '#') return new Color(0.3f, 0.08f, 0.1f);
@@ -560,19 +568,4 @@ public class FurnitureLife : MonoBehaviour
         if (ch == 'W') return Color.white;
         return Color.clear;
     }));
-
-    static Sprite MakeSprite(int w, int h, float pixelsPerUnit, System.Func<int, int, Color> colorAt)
-    {
-        var tex = NewTexture(w, h);
-        var px = new Color[w * h];
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-                px[y * w + x] = colorAt(x, y);
-        tex.SetPixels(px);
-        tex.Apply();
-        return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), pixelsPerUnit, 0, SpriteMeshType.FullRect);
-    }
-
-    static Texture2D NewTexture(int w, int h) =>
-        new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
 }
