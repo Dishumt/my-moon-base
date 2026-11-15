@@ -195,6 +195,30 @@ public class SupplySystem : ISimSystem
         return r;
     }
 
+    // ---------- «Порадь мені» ----------
+
+    /// <summary>Скільки палива треба, щоб світлофор став зеленим (із запасом greenMargin), округлено вгору до 10 кг.</summary>
+    public float GreenFuel(GameState s, bool firstMission)
+    {
+        var r = Evaluate(s, firstMission);
+        return (float)Math.Ceiling(r.FuelNeededKg * data.greenMargin / 10f) * 10f;
+    }
+
+    /// <summary>
+    /// Центр керування заливає паливо рівно до зеленого: не менше (небезпечно) і не більше (зайва вага).
+    /// Повертає null або ключ тексту: «навіть повний бак не підніме» (тоді заливає повний бак).
+    /// Ціну (максимум 2 зірки у звіті) рахує екран запуску.
+    /// </summary>
+    public string AdviseFuel(GameState s, bool firstMission)
+    {
+        if (!CanEdit(s, firstMission)) return "error.order_locked";
+        float need = GreenFuel(s, firstMission);
+        float max = MaxFuel(s);
+        SetFuel(s, Math.Min(need, max));
+        GameEvents.RaiseStateChanged();
+        return need > max ? "advise.too_heavy" : null;
+    }
+
     // ---------- Погода ----------
 
     /// <summary>Новий прогноз погоди на космодромі. allowStorm = false — гроза вже минула.</summary>

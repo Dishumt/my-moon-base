@@ -94,7 +94,10 @@
 
             <ui:VisualElement name="bottom" class="panel pad bottom-row">
                 <ui:VisualElement class="fuel-box">
-                    <ui:Label name="fuel-label" text="Fuel: 3000 kg" class="t-body mb-4" />
+                    <ui:VisualElement class="fuel-row">
+                        <ui:Label name="fuel-label" text="Fuel: 3000 kg" class="t-body mb-4" />
+                        <ui:Button name="advise-button" text="HELP ME" class="btn btn--small advise-btn" />
+                    </ui:VisualElement>
                     <ui:Label name="fuel-why" text="" class="t-label mb-4" />
                     <ui:Slider name="fuel-slider" low-value="0" high-value="6000" value="3000" />
                     <ui:Label name="result-label" text="" class="msg mt-8" />

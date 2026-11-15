@@ -89,7 +89,8 @@ public class LaunchScreen : MonoBehaviour
 
     const float ShipBaseScale = 0.92f; // ракета на планшеті менша, ніж на майданчику
     Slider fuelSlider;
-    Button launchButton, closeButton, weatherChip;
+    Button launchButton, closeButton, weatherChip, adviseButton;
+    bool usedAdvice;          // гравець натискав «Порадь мені» — у звіті максимум 2 зірки
     VisualElement tablet;
     LaunchPadView pad;
     FlightMapView flight;     // політ Дніпро → південний полюс Місяця
@@ -145,6 +146,7 @@ public class LaunchScreen : MonoBehaviour
         fuelSlider = root.Q<Slider>("fuel-slider");
         launchButton = root.Q<Button>("launch-button");
         weatherChip = root.Q<Button>("weather-chip");
+        adviseButton = root.Q<Button>("advise-button");
         closeButton = root.Q<Button>("close-button");
         tablet = root.Q("launch");
         goalsTitle = root.Q<Label>("goals-title");
@@ -186,6 +188,11 @@ public class LaunchScreen : MonoBehaviour
         fuelSlider.RegisterValueChangedCallback(OnFuelChanged);
         launchButton.clicked += OnLaunchClicked;
         if (closeButton != null) closeButton.clicked += Close;
+        if (adviseButton != null)
+        {
+            adviseButton.clicked += OnAdviseClicked;
+            adviseButton.RegisterCallback<PointerEnterEvent>(_ => SetResult("advise.why"));
+        }
         if (weatherChip != null)
         {
             weatherChip.clicked += OnWeatherClicked;
@@ -213,6 +220,7 @@ public class LaunchScreen : MonoBehaviour
         launchButton.clicked -= OnLaunchClicked;
         if (closeButton != null) closeButton.clicked -= Close;
         if (weatherChip != null) weatherChip.clicked -= OnWeatherClicked;
+        if (adviseButton != null) adviseButton.clicked -= OnAdviseClicked;
         Loc.LanguageChanged -= Refresh;
         GameEvents.StateChanged -= Refresh;
         Loc.LanguageChanged -= RefreshTab;
@@ -319,6 +327,7 @@ public class LaunchScreen : MonoBehaviour
         infoMass = false;
         infoPlan = null;
         failedTries = 0;
+        usedAdvice = false;
         report?.AddToClassList("report--hidden");
         BuildRocketCards();
         BuildCargoRows();
@@ -687,6 +696,12 @@ public class LaunchScreen : MonoBehaviour
         }
         SetText(hintLabel, T("launch.hint." + r.Light));
         RefreshWeather(editable);
+        if (adviseButton != null)
+        {
+            adviseButton.text = T("advise.button");
+            adviseButton.EnableInClassList("advise-btn--hidden", !IsFirstMission);   // підказка — для першої місії
+            adviseButton.SetEnabled(editable);
+        }
 
         RefreshPlan(editable);
         RefreshMission(r);
@@ -805,9 +820,10 @@ public class LaunchScreen : MonoBehaviour
     class MissionStars
     {
         public bool FirstTry, Supplies, NoWaste;
+        public bool UsedAdvice;   // натискали «Порадь мені» — не більше 2 зірок
         public string TipKey;
         public object[] TipArgs = new object[0];
-        public int Count => (FirstTry ? 1 : 0) + (Supplies ? 1 : 0) + (NoWaste ? 1 : 0);
+        public int Count => Math.Min(UsedAdvice ? 2 : 3, (FirstTry ? 1 : 0) + (Supplies ? 1 : 0) + (NoWaste ? 1 : 0));
     }
 
     MissionStars RateMission()
@@ -823,7 +839,8 @@ public class LaunchScreen : MonoBehaviour
         {
             FirstTry = failedTries == 0,
             Supplies = plan.SurviveOk,
-            NoWaste = !oxygenWasted && smaller == null
+            NoWaste = !oxygenWasted && smaller == null,
+            UsedAdvice = usedAdvice
         };
         if (!stars.Supplies) stars.TipKey = "report.tip_supplies";
         else if (oxygenWasted) { stars.TipKey = "report.tip_oxygen"; stars.TipArgs = new object[] { plan.OxygenTankMax.ToString("0") }; }
@@ -843,6 +860,7 @@ public class LaunchScreen : MonoBehaviour
         AddReportRow(stars.FirstTry, "report.star_first");
         AddReportRow(stars.Supplies, "report.star_supplies");
         AddReportRow(stars.NoWaste, "report.star_nowaste");
+        if (stars.UsedAdvice) AddReportRow(false, "report.star_advice");   // пояснюємо, куди поділась зірка
         SetText(reportTip, T(stars.TipKey, stars.TipArgs));
         if (reportNext != null) reportNext.text = T("report.next");
 
@@ -982,6 +1000,18 @@ public class LaunchScreen : MonoBehaviour
             GameEvents.RaiseStateChanged();
             Refresh();
         }
+    }
+
+    // ---------- «Порадь мені» ----------
+
+    /// <summary>Центр керування заливає паливо рівно до зеленого. Ціна: у звіті максимум 2 зірки.</summary>
+    void OnAdviseClicked()
+    {
+        if (animating || State == null || !IsFirstMission) return;
+        usedAdvice = true;
+        string err = Supply.AdviseFuel(State, true);
+        SetResult(err ?? "advise.done");
+        Refresh();
     }
 
     // ---------- Погода ----------
