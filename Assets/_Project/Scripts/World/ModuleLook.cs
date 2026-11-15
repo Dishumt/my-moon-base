@@ -65,6 +65,26 @@ public class ModuleLook : MonoBehaviour
         new TypeColor { type = ModuleType.Reactor,    color = new Color(0.70f, 0.70f, 0.30f) },
     };
 
+    [Serializable]
+    public class FurnitureSprite
+    {
+        public string name;   // назва файлу без .png, наприклад "bunk_bed"
+        public Sprite sprite;
+    }
+
+    [Header("Меблі (заповнює меню Moon → Налаштувати меблі)")]
+    public List<FurnitureSprite> furniture = new List<FurnitureSprite>();
+
+    /// <summary>Чи є хоч одна картинка меблів.</summary>
+    public bool HasFurniture => furniture.Count > 0;
+
+    /// <summary>Картинка меблів за назвою файлу або null.</summary>
+    public Sprite Furniture(string name)
+    {
+        foreach (var f in furniture) if (f.name == name) return f.sprite;
+        return null;
+    }
+
     /// <summary>Колір типу модуля (білий, якщо не задано).</summary>
     public Color ColorOf(ModuleType type)
     {

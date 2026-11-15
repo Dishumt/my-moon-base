@@ -64,7 +64,8 @@ public static class RoomBuilder
         Wall(root, "Block Front R", new Vector3(w / 2 - part / 2, wallH / 2, L.roomFront + t / 2), new Vector3(part, wallH, t));
 
         // ----- Меблі -----
-        Furnish(root, solid, type, roomMid, roomDepth, w, interior);
+        if (!FurnishWithSprites(root, look, type, roomMid, roomDepth, w))
+            Furnish(root, solid, type, roomMid, roomDepth, w, interior); // картинок ще немає — прості коробки
 
         // ----- Оболонка (видно надворі) -----
         BuildShell(root, look, type, typeColor, roomMid, roomDepth, w, shell, shellColors);
@@ -160,7 +161,64 @@ public static class RoomBuilder
         }
     }
 
-    // ---------- Меблі (поки прості фігури; потім заміняться спрайтами від 02) ----------
+    // ---------- Меблі-спрайти від 02 (Art/Props/Furniture) ----------
+    //
+    // Картинки намальовані «спереду й трохи згори», тому стоять як білборди FaceCamera — паралельно екрану,
+    // і виглядають рівно так, як намалювала Юля. Стоять уздовж задньої стіни й по боках,
+    // щоб не заступати прохід від шлюзу. x — від центру кімнати вліво/вправо, row: 0 = біля задньої стіни, 1 = збоку.
+
+    struct Item
+    {
+        public string name; public float x; public int row;
+        public Item(string name, float x, int row) { this.name = name; this.x = x; this.row = row; }
+    }
+
+    static Item[] LayoutFor(ModuleType type)
+    {
+        switch (type)
+        {
+            case ModuleType.Habitat:
+                return new[] { new Item("bunk_bed", -1.9f, 0), new Item("wardrobe_storage", -0.4f, 0), new Item("galley_kitchen", 1.3f, 0),
+                               new Item("dining_table", 2.2f, 1), new Item("shower_toilet", -2.3f, 1) };
+            case ModuleType.Greenhouse:
+                return new[] { new Item("hydroponic_rack", -1.9f, 0), new Item("hydroponic_rack", 0f, 0), new Item("hydroponic_rack", 1.9f, 0),
+                               new Item("hydroponic_rack", -2.3f, 1), new Item("water_recycler", 2.3f, 1) };
+            case ModuleType.Medbay:
+                return new[] { new Item("medical_cabinet", -1.8f, 0), new Item("bunk_bed", 0.4f, 0), new Item("wash_station", 2.2f, 0),
+                               new Item("specimen_cabinet", -2.3f, 1) };
+            case ModuleType.Lab:
+                return new[] { new Item("science_bench", -1.6f, 0), new Item("specimen_cabinet", 0.4f, 0), new Item("workstation_desk", 2.1f, 0),
+                               new Item("repair_workbench", -2.3f, 1), new Item("power_control_panel", 2.4f, 1) };
+            case ModuleType.Shelter:
+                return new[] { new Item("cargo_crates", -1.9f, 0), new Item("oxygen_generator", 0f, 0), new Item("power_control_panel", 1.9f, 0),
+                               new Item("cargo_crates", -2.3f, 1), new Item("water_recycler", 2.3f, 1) };
+        }
+        return new Item[0];
+    }
+
+    /// <summary>Розставляє меблі-спрайти. false — якщо картинок немає (тоді будуть коробки).</summary>
+    static bool FurnishWithSprites(Transform root, ModuleLook look, ModuleType type, float mid, float depth, float w)
+    {
+        if (look == null || !look.HasFurniture) return false;
+        float backZ = mid + depth / 2 - 1.2f; // не впритул до стіни: верх картинки нахилений назад разом з камерою
+        float sideZ = mid - 0.4f;
+        bool any = false;
+        foreach (var it in LayoutFor(type))
+        {
+            var sprite = look.Furniture(it.name);
+            if (sprite == null) continue;
+            var go = new GameObject("Furniture " + it.name);
+            go.transform.SetParent(root, false);
+            go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.7f, w / 2 - 0.7f), 0.1f, it.row == 0 ? backZ : sideZ);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
+            any = true;
+        }
+        return any;
+    }
+
+    // ---------- Меблі-коробки (запасний варіант, якщо картинок немає) ----------
 
     static void Furnish(Transform root, Material m, ModuleType type, float mid, float depth, float w, List<Renderer> list)
     {
