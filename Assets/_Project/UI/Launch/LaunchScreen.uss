@@ -394,3 +394,6 @@
 .plan-btn:hover { border-color: var(--color-accent); }
 .plan-btn--on { border-color: var(--color-energy); color: var(--color-energy); background-color: var(--color-card-selected); }
 .rocket-card--locked { opacity: 0.4; }
+
+/* --- планшет екрана запуску підлаштовується під ширину вікна (не обрізається справа) --- */
+.launch-stage > .tablet { left: 16px; right: 16px; top: 12px; bottom: 12px; width: auto; height: auto; }

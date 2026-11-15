@@ -8,12 +8,16 @@ public class SupplyDays
     public float Have;      // уже на базі
     public float Bring;     // у ракеті
     public float PerDay;    // скільки витрачається за день (0 = не витрачається)
+    public float Cap;       // скільки вміщує склад/бак (0 = без меж). Більше — пропадає
 
-    public float Total => Have + Bring;
+    /// <summary>Скільки привеземо разом із тим, що є, без урахування бака.</summary>
+    public float RawTotal => Have + Bring;
+    /// <summary>Скільки реально буде на базі: більше за бак не влізе.</summary>
+    public float Total => Cap > 0f ? System.Math.Min(RawTotal, System.Math.Max(Cap, Have)) : RawTotal;
     /// <summary>На скільки днів вистачить. float.PositiveInfinity — машини роблять досить.</summary>
     public float Days => PerDay <= 0.0001f ? float.PositiveInfinity : Total / PerDay;
     /// <summary>Скільки днів додає те, що в ракеті.</summary>
-    public float BringDays => PerDay <= 0.0001f ? 0f : Bring / PerDay;
+    public float BringDays => PerDay <= 0.0001f ? 0f : (Total - Have) / PerDay;
 }
 
 /// <summary>Ціль розділу «побудувати модуль» і чи вистачає для неї того, що вже є, плюс наборів у ракеті.</summary>
@@ -86,6 +90,7 @@ public static class MissionPlanner
         plan.Water.PerDay = s.Power.LifeSupport * (life != null ? life.waterUsePerBlockPerDay : 2f)
                           + s.Power.Greenhouse * (green != null ? green.waterUsePerBlockPerDay : 1f);
         plan.OxygenTankMax = life != null && life.oxygenTankMax > 0f ? life.oxygenTankMax : 100f;
+        plan.Oxygen.Cap = plan.OxygenTankMax;   // кисень понад бак пропадає — і в днях його не рахуємо
 
         // цілі «побудувати модуль»
         if (chapter != null && chapter.goals != null)
@@ -135,7 +140,7 @@ public static class MissionPlanner
         if (p.Food.Days < need) { Tip(p, "tip.food_low", true, Whole(p.Food.Days), need); return; }
         foreach (var g in p.Goals)
             if (!g.Done) { Tip(p, "tip.goal", true, LaunchText.Get("launch.module." + g.Module), g.Target - g.Have - g.Packed); return; }
-        if (p.Oxygen.Total > p.OxygenTankMax + 0.01f) { Tip(p, "tip.oxygen_full", true, p.OxygenTankMax.ToString("0")); return; }
+        if (p.Oxygen.RawTotal > p.OxygenTankMax + 0.01f) { Tip(p, "tip.oxygen_full", true, p.OxygenTankMax.ToString("0")); return; }
         if (launch != null && launch.Light == LaunchLight.Yellow) { Tip(p, "tip.risky", true, launch.RiskPercent); return; }
         Tip(p, "tip.all_good", false);
     }

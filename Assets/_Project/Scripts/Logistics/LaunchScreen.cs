@@ -792,7 +792,7 @@ public class LaunchScreen : MonoBehaviour
         var chapters = GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<ChapterSystem>() : null;
         var plan = MissionPlanner.Build(s, Supply, true, r, balance, chapters != null ? chapters.Current : null);
         var smaller = MissionPlanner.SmallerRocketThatFits(s, Supply, true);
-        bool oxygenWasted = plan.Oxygen.Total > plan.OxygenTankMax + 0.01f;
+        bool oxygenWasted = plan.Oxygen.RawTotal > plan.OxygenTankMax + 0.01f;
 
         var stars = new MissionStars
         {
