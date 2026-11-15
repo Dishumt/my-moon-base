@@ -20,7 +20,7 @@ Solar storms in the game are **real 2024 events from NASA DONKI**, including the
 
 ### Links
 
-- DONKI web service (no key needed): https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/FLR?startDate=2024-05-08&endDate=2024-05-15
+- DONKI web service (no key needed): https://ccmc.gsfc.nasa.gov/DONKI/WS/get/FLR?startDate=2024-05-08&endDate=2024-05-15 (the same API is also served from `kauai.ccmc.gsfc.nasa.gov`, which some networks block)
 - DONKI via api.nasa.gov: https://api.nasa.gov/ (DONKI section)
 - RadLab data API: https://visualization.osdr.nasa.gov/radlab/gui/data-api/
 - NASA-STD-3001: https://www.nasa.gov/ochmo/nasa-standard-3001/
@@ -51,9 +51,9 @@ Solar storms in the game are **real 2024 events from NASA DONKI**, including the
 
 ## Data status (honest note)
 
-The event list, RadLab numbers and fact sources were prepared during the hackathon while our build machine could not reach NASA servers. Every record has a `verified` flag:
+The event list, RadLab numbers and fact sources were first prepared during the hackathon while our build machine could not reach NASA servers. Every record has a `verified` flag:
 
-- `donki_storms.json`: run **Moon → 06: Check DONKI data** in Unity. It looks up each event in DONKI, writes the real DONKI id, exact time and link, and sets `verified: true`. Events that are not found stay `false` and must be fixed or removed before submission.
+- `donki_storms.json`: **all 15 events were checked against NASA DONKI on 2026-11-15 and are `verified: true`**. Each one now has its real DONKI id (e.g. `2024-05-11T01:10:00-FLR-001`), exact time and a link to its DONKI page; flare class, active region and the flare↔proton-event links matched what we had. The check can be repeated at any time with **Moon → 06: Check DONKI data** in Unity (it asks `ccmc.gsfc.nasa.gov` first, then `kauai.ccmc.gsfc.nasa.gov`, then the rate-limited `api.nasa.gov` mirror). If NASA DONKI cannot be reached, the tool prints a message and **leaves the file unchanged**. Events that are not found stay `false` and must be fixed or removed before submission.
 - `radlab_dose.json` and `facts.json`: check against the RadLab API and OSDR studies; write the study number into `studyId`.
 
 The game never shows archive data as live: live DONKI data is labelled **LIVE**, everything from our files **ARCHIVE**.
@@ -71,8 +71,8 @@ See also `docs/AI_USE.md`.
 
 | Title (EN) | Text (EN) | Badge | Link |
 |---|---|---|---|
-| Solar storms — NASA DONKI | Real solar flares and particle storms of 2024, including the May 2024 storms. | ARCHIVE | https://kauai.ccmc.gsfc.nasa.gov/DONKI/ |
-| Space weather today — NASA DONKI | Flares of the last 7 days, if the internet works. | LIVE / ARCHIVE | https://kauai.ccmc.gsfc.nasa.gov/DONKI/ |
+| Solar storms — NASA DONKI | Real solar flares and particle storms of 2024, including the May 2024 storms. | ARCHIVE | https://ccmc.gsfc.nasa.gov/DONKI/ |
+| Space weather today — NASA DONKI | Flares of the last 7 days, if the internet works. | LIVE / ARCHIVE | https://ccmc.gsfc.nasa.gov/DONKI/ |
 | Radiation on the ISS — NASA RadLab (OSDR) | How much radiation astronauts really get: about 0.5 mSv a day. | ARCHIVE | https://visualization.osdr.nasa.gov/radlab/ |
 | Dose limit — NASA-STD-3001 | Every astronaut may get at most 600 mSv in a whole career. | ARCHIVE | https://www.nasa.gov/ochmo/nasa-standard-3001/ |
 | Astronaut health — NASA OSDR | Facts about bones, muscles, sleep and food in space. | ARCHIVE | https://osdr.nasa.gov/bio/repo/ |
