@@ -3,7 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// «Як у Project Zomboid»: коли інженер заходить у модуль, оболонка (бочка, купол, дах шлюзу) плавно зникає,
-/// а все всередині (підлога, меблі) світлішає теплим світлом. Вулицю затемнює OutdoorDarkening (на Sun).
+/// а все всередині (підлога, меблі) світлішає теплим світлом.
+/// Поки гравець надворі, меблі й люди всередині сховані — як у Project Zomboid чи The Sims. Вулицю затемнює OutdoorDarkening (на Sun).
 /// Цей компонент додає RoomBuilder сам — руками ставити не треба.
 /// Замість фізичного тригера перевіряємо, чи інженер у прямокутнику модуля: так простіше і не потрібні Rigidbody.
 /// </summary>
@@ -21,14 +22,20 @@ public class ModuleInterior : MonoBehaviour
     Renderer[] shell;
     Color[] shellColors;
     Renderer[] interior;
+    Renderer[] hiddenWhenClosed; // меблі-спрайти: видно тільки, коли оболонка відкрита
+
+    /// <summary>Чи модуль зараз «відкритий» (оболонка майже зникла) — тоді видно меблі й людей усередині.</summary>
+    public bool IsOpen => shellAlpha < 0.6f;
     MaterialPropertyBlock block;
     float shellAlpha = 1f;   // 1 = оболонку видно, 0 = сховано
     float applied = -1f;     // яке значення вже намальоване (щоб не робити зайвої роботи щокадру)
     bool inside;
 
-    public void Setup(ModuleView view, Renderer[] shell, Color[] shellColors, Renderer[] interior)
+    public void Setup(ModuleView view, Renderer[] shell, Color[] shellColors, Renderer[] interior, Renderer[] hiddenWhenClosed)
     {
         this.view = view;
+        view.Interior = this;
+        this.hiddenWhenClosed = hiddenWhenClosed;
         this.shell = shell;
         this.shellColors = shellColors;
         this.interior = interior;
@@ -83,6 +90,9 @@ public class ModuleInterior : MonoBehaviour
             block.SetColor(BaseColor, c);
             r.SetPropertyBlock(block);
         }
+
+        // Меблі-спрайти: поки ти надворі — сховані (інакше плоска картинка вилазить крізь оболонку)
+        foreach (var r in hiddenWhenClosed) if (r != null) r.enabled = IsOpen;
 
         // Світло всередині: шейдер Moon/Toon підмішує теплий колір (_Indoor 0..1)
         foreach (var r in interior)

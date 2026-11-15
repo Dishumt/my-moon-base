@@ -5,14 +5,14 @@ using UnityEngine;
 
 /// <summary>
 /// Меню Unity: Moon → Налаштувати меблі (спрайти Юлі).
-/// Усі картинки з Art/Props/Furniture стають спрайтами (низ предмета — на підлозі, розмір ≈ 1,4 м)
+/// Усі картинки з Art/Props/Furniture стають спрайтами (низ предмета — на підлозі, розмір ≈ 1,85 м)
 /// і потрапляють у World → ModuleLook → Furniture. RoomBuilder ставить їх у кімнати за назвами файлів.
 /// Модулі, які вже стоять у грі, оновляться після перезапуску Play.
 /// </summary>
 public static class FurnitureSetupTool
 {
     const string Dir = "Assets/_Project/Art/Props/Furniture";
-    const float PixelsPerUnit = 150f;                          // 256 px → 1,7 м полотна, сам предмет ≈ 1,4 м
+    const float PixelsPerUnit = 115f;                          // 256 px → 2,2 м полотна, сам предмет ≈ 1,85 м
     static readonly Vector2 Pivot = new Vector2(0.5f, 0.07f);  // низ предмета (≈ 238-й піксель з 256)
 
     [MenuItem("Moon/Налаштувати меблі (спрайти Юлі)")]

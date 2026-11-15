@@ -64,7 +64,8 @@ public static class RoomBuilder
         Wall(root, "Block Front R", new Vector3(w / 2 - part / 2, wallH / 2, L.roomFront + t / 2), new Vector3(part, wallH, t));
 
         // ----- Меблі -----
-        if (!FurnishWithSprites(root, look, type, roomMid, roomDepth, w))
+        var furniture = new List<Renderer>();
+        if (!FurnishWithSprites(root, look, type, roomMid, roomDepth, w, furniture))
             Furnish(root, solid, type, roomMid, roomDepth, w, interior); // картинок ще немає — прості коробки
 
         // ----- Оболонка (видно надворі) -----
@@ -92,7 +93,7 @@ public static class RoomBuilder
         var outerDoor = DoubleDoor(root, "Door Outer", solid, new Vector3(0f, ah / 2, L.airlockFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
         var innerDoor = DoubleDoor(root, "Door Inner", solid, new Vector3(0f, ah / 2, L.roomFront + t / 2), door, ah - 0.1f, t * 0.6f, doorColor);
 
-        root.gameObject.AddComponent<ModuleInterior>().Setup(view, shell.ToArray(), shellColors.ToArray(), interior.ToArray());
+        root.gameObject.AddComponent<ModuleInterior>().Setup(view, shell.ToArray(), shellColors.ToArray(), interior.ToArray(), furniture.ToArray());
         // front = зовнішній край шлюзу, inner = середина внутрішніх дверей
         root.gameObject.AddComponent<Airlock>().Setup(outerDoor.transform, innerDoor.transform, door, aw,
                                                       L.airlockFront, L.roomFront + t / 2, ah);
@@ -178,30 +179,32 @@ public static class RoomBuilder
         switch (type)
         {
             case ModuleType.Habitat:
-                return new[] { new Item("bunk_bed", -1.9f, 0), new Item("wardrobe_storage", -0.4f, 0), new Item("galley_kitchen", 1.3f, 0),
-                               new Item("dining_table", 2.2f, 1), new Item("shower_toilet", -2.3f, 1) };
+                return new[] { new Item("bunk_bed", -2.0f, 0), new Item("galley_kitchen", 0f, 0), new Item("wardrobe_storage", 2.0f, 0),
+                               new Item("shower_toilet", -2.1f, 1), new Item("dining_table", 2.1f, 1) };
             case ModuleType.Greenhouse:
-                return new[] { new Item("hydroponic_rack", -1.9f, 0), new Item("hydroponic_rack", 0f, 0), new Item("hydroponic_rack", 1.9f, 0),
-                               new Item("hydroponic_rack", -2.3f, 1), new Item("water_recycler", 2.3f, 1) };
+                return new[] { new Item("hydroponic_rack", -2.0f, 0), new Item("hydroponic_rack", 0f, 0), new Item("hydroponic_rack", 2.0f, 0),
+                               new Item("hydroponic_rack", -2.1f, 1), new Item("water_recycler", 2.1f, 1) };
             case ModuleType.Medbay:
-                return new[] { new Item("medical_cabinet", -1.8f, 0), new Item("bunk_bed", 0.4f, 0), new Item("wash_station", 2.2f, 0),
-                               new Item("specimen_cabinet", -2.3f, 1) };
+                return new[] { new Item("medical_cabinet", -2.0f, 0), new Item("bunk_bed", 0f, 0), new Item("wash_station", 2.0f, 0),
+                               new Item("wardrobe_storage", -2.1f, 1) };
             case ModuleType.Lab:
-                return new[] { new Item("science_bench", -1.6f, 0), new Item("specimen_cabinet", 0.4f, 0), new Item("workstation_desk", 2.1f, 0),
-                               new Item("repair_workbench", -2.3f, 1), new Item("power_control_panel", 2.4f, 1) };
+                return new[] { new Item("science_bench", -2.0f, 0), new Item("specimen_cabinet", 0f, 0), new Item("workstation_desk", 2.0f, 0),
+                               new Item("repair_workbench", -2.1f, 1), new Item("power_control_panel", 2.1f, 1) };
             case ModuleType.Shelter:
-                return new[] { new Item("cargo_crates", -1.9f, 0), new Item("oxygen_generator", 0f, 0), new Item("power_control_panel", 1.9f, 0),
-                               new Item("cargo_crates", -2.3f, 1), new Item("water_recycler", 2.3f, 1) };
+                return new[] { new Item("cargo_crates", -2.0f, 0), new Item("oxygen_generator", 0f, 0), new Item("power_control_panel", 2.0f, 0),
+                               new Item("cargo_crates", -2.1f, 1), new Item("water_recycler", 2.1f, 1) };
         }
         return new Item[0];
     }
 
-    /// <summary>Розставляє меблі-спрайти. false — якщо картинок немає (тоді будуть коробки).</summary>
-    static bool FurnishWithSprites(Transform root, ModuleLook look, ModuleType type, float mid, float depth, float w)
+    /// <summary>Розставляє меблі-спрайти і кладе їх у list. false — якщо картинок немає (тоді будуть коробки).</summary>
+    static bool FurnishWithSprites(Transform root, ModuleLook look, ModuleType type, float mid, float depth, float w, List<Renderer> list)
     {
         if (look == null || !look.HasFurniture) return false;
-        float backZ = mid + depth / 2 - 1.2f; // не впритул до стіни: верх картинки нахилений назад разом з камерою
-        float sideZ = mid - 0.4f;
+        // Впритул до задньої стіни: поки гравець надворі, меблі сховані (ModuleInterior),
+        // тож верх картинки, що нахилений назад разом з камерою, ніхто не побачить крізь оболонку.
+        float backZ = mid + depth / 2 - 0.35f;
+        float sideZ = mid - 0.6f;
         bool any = false;
         foreach (var it in LayoutFor(type))
         {
@@ -209,10 +212,11 @@ public static class RoomBuilder
             if (sprite == null) continue;
             var go = new GameObject("Furniture " + it.name);
             go.transform.SetParent(root, false);
-            go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.7f, w / 2 - 0.7f), 0.1f, it.row == 0 ? backZ : sideZ);
+            go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.9f, w / 2 - 0.9f), 0.1f, it.row == 0 ? backZ : sideZ);
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
             go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
+            list.Add(sr);
             any = true;
         }
         return any;
