@@ -71,6 +71,7 @@ public static class Loc
         // Load it first: the main table wins when both have the same key.
         AddEntries(dict, "Launch/texts_launch_" + language, optional: true);
         AddEntries(dict, "Incidents/texts_incidents_" + language, optional: true); // випадкові поломки (техлід)
+        AddEntries(dict, "IcePlant/texts_iceplant_" + language, optional: true);   // бур і переробник льоду (техлід)
         AddEntries(dict, "Text/texts_" + language, optional: false);
         return dict;
     }

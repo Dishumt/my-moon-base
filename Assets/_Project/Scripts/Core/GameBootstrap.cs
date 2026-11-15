@@ -122,6 +122,7 @@ public class GameBootstrap : MonoBehaviour
         Clock.Register(new CommsSystem());        // 04
         Clock.Register(new ChapterSystem(food, construction)); // 03
         Clock.Register(new IncidentSystem());     // 01: випадкові поломки (унітаз, пил, мікрометеорит)
+        Clock.Register(new IcePlantSystem());     // 01: бур → переробник → труби води й кисню
     }
 
     /// <summary>Знайти систему за типом, наприклад GetSystem&lt;CrewSystem&gt;().</summary>
