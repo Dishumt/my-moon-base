@@ -23,13 +23,25 @@ public static class FurnitureSetupTool
 
         Undo.RecordObject(look, "Furniture sprites");
         look.furniture.Clear();
-        foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { Dir }))
+        // Юля розклала меблі по підпапках (Living room, MedBay, greenhouse...). FindAssets шукає і в них.
+        // Якщо дві картинки мають однакову назву (water_recycler у greenhouse і в Laboratory), стару назву лишає
+        // та, що з папки вище в списку FolderPriority, а інша стає «назва_папка» (water_recycler_laboratory).
+        var paths = new System.Collections.Generic.List<string>();
+        foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { Dir })) paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+        paths.Sort((x, y) =>
         {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
+            int c = FolderRank(x).CompareTo(FolderRank(y));
+            return c != 0 ? c : string.CompareOrdinal(x, y);
+        });
+        foreach (string path in paths)
+        {
             Import(path);
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (sprite == null) continue;
-            var item = new ModuleLook.FurnitureSprite { name = System.IO.Path.GetFileNameWithoutExtension(path), sprite = sprite };
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            if (look.FurnitureInfo(name) != null)
+                name += "_" + System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path)).ToLowerInvariant().Replace(' ', '_');
+            var item = new ModuleLook.FurnitureSprite { name = name, sprite = sprite };
             Measure(path, item);
             look.furniture.Add(item);
         }
@@ -37,6 +49,16 @@ public static class FurnitureSetupTool
         EditorUtility.SetDirty(look);
         EditorSceneManager.MarkSceneDirty(look.gameObject.scene);
         Debug.Log("FurnitureSetupTool: готово! Меблів: " + look.furniture.Count + ". Збережи сцену (Ctrl+S).");
+    }
+
+    // Папки, чиї картинки першими отримують «чисту» назву, якщо назви збігаються
+    static readonly string[] FolderPriority = { "greenhouse", "Living room", "MedBay", "bathroom", "cafeteria", "Laboratory" };
+
+    static int FolderRank(string path)
+    {
+        string folder = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path));
+        int i = System.Array.IndexOf(FolderPriority, folder);
+        return i >= 0 ? i : FolderPriority.Length;
     }
 
     /// <summary>

@@ -91,6 +91,10 @@ public class RobotView : MonoBehaviour
         }
         bool atSite = !driving && mv != null;
 
+        var pos = transform.position;
+        pos.y = MoonTerrain.HeightAt(pos); // їде по рельєфу (біля бази земля рівна)
+        transform.position = pos;
+
         // Лампа: жовта — працює, червона — є завдання, але немає енергії, зелена — вільний
         Color c = data.Working ? Yellow : (data.Task != RobotTask.Idle ? Red : Green);
         if (data.Working && Mathf.Repeat(Time.time * 3f, 1f) > 0.5f) c = Color.white; // блимає

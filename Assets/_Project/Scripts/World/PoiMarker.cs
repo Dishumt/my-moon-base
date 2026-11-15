@@ -47,6 +47,14 @@ public class PoiMarker : MonoBehaviour
         foreach (var l in GetComponentsInChildren<Light>(true)) l.enabled = on;
     }
 
+    void Start()
+    {
+        // Точка стоїть на рельєфі (наприклад, лід — на дні кратера). Start — після того, як MoonTerrain готовий.
+        var p = transform.position;
+        p.y = MoonTerrain.HeightAt(p);
+        transform.position = p;
+    }
+
     void OnEnable() => all.Add(this);
     void OnDisable() => all.Remove(this);
 

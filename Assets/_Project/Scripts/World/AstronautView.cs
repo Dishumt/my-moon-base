@@ -109,6 +109,9 @@ public class AstronautView : MonoBehaviour
         }
 
         bool moving = DoSteps(dt);
+        var pos = transform.position;
+        pos.y = MoonTerrain.HeightAt(pos); // по рельєфу: у кратер і з кратера (у базі земля рівна)
+        transform.position = pos;
 
         Data.InsideSlot = BaseView.SlotAt(transform.position); // світ пише щокадру
 

@@ -142,7 +142,8 @@ public class MoonHop : MonoBehaviour
     {
         if (shadow == null) return;
         var p = transform.position;
-        shadow.position = new Vector3(p.x, 0.12f, p.z); // трохи вище підлоги модулів (0.1 м)
+        shadow.position = new Vector3(p.x, MoonTerrain.HeightAt(p) + 0.12f, p.z); // трохи вище підлоги модулів (0.1 м)
+        shadow.rotation = MoonTerrain.FlatOnGround(p);                            // на схилі лежить уздовж схилу
         float k = maxHeight > 0f ? Height / maxHeight : 0f;      // 0 на землі, 1 на вершині
         float s = shadowSize * (1f - 0.3f * k);                  // у повітрі тінь менша
         shadow.localScale = new Vector3(s, s, 1f);
@@ -209,7 +210,7 @@ public class MoonHop : MonoBehaviour
         if (dust != null)
         {
             var p = transform.position;
-            dust.transform.position = new Vector3(p.x, 0.05f, p.z);
+            dust.transform.position = new Vector3(p.x, MoonTerrain.HeightAt(p) + 0.05f, p.z);
         }
     }
 }

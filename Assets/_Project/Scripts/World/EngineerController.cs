@@ -121,9 +121,12 @@ public class EngineerController : MonoBehaviour
 
         if (velocity.sqrMagnitude > 0.0001f)
         {
-            controller.Move(velocity * dt);
+            Vector3 step = velocity * dt;
+            if (dt > 0f) step = LimitBySlope(step); // надто круто вгору (хребет) — не пускаємо, ковзаємо вздовж схилу
+            controller.Move(step);
             ClampToMap();
         }
+        FollowGround();
         if (wantMove) facing = input;
 
         IsMoving = wantMove || velocity.sqrMagnitude > 0.25f;
@@ -155,6 +158,55 @@ public class EngineerController : MonoBehaviour
         return dir;
     }
 
+    // ---------- Рельєф (MoonTerrain) ----------
+
+    /// <summary>Від низу капсули CharacterController до точки, де стоїть об'єкт інженера.</summary>
+    float FootOffset => controller.height * 0.5f - controller.center.y;
+
+    /// <summary>Ноги — на землі: висота рельєфу під інженером (у базі земля рівна, висота 0).</summary>
+    void FollowGround()
+    {
+        Vector3 p = transform.position;
+        float want = MoonTerrain.HeightAt(p) + FootOffset;
+        if (Mathf.Abs(p.y - want) > 0.0005f) controller.Move(new Vector3(0f, want - p.y, 0f));
+    }
+
+    /// <summary>
+    /// Крок по рельєфу: якщо попереду надто круто вгору (стінка хребта), іти туди не можна.
+    /// Тоді пробуємо ковзнути вздовж схилу (по горизонталі), як по стіні; не виходить — зупиняємось.
+    /// </summary>
+    Vector3 LimitBySlope(Vector3 step)
+    {
+        Vector3 p = transform.position;
+        if (CanGo(p, step)) return step;
+
+        // Уздовж схилу = перпендикулярно до напрямку, куди земля росте найшвидше
+        const float e = 0.5f;
+        float gx = MoonTerrain.HeightAt(p.x + e, p.z) - MoonTerrain.HeightAt(p.x - e, p.z);
+        float gz = MoonTerrain.HeightAt(p.x, p.z + e) - MoonTerrain.HeightAt(p.x, p.z - e);
+        var along = new Vector3(-gz, 0f, gx);
+        if (along.sqrMagnitude > 1e-6f)
+        {
+            along.Normalize();
+            Vector3 slide = along * Vector3.Dot(step, along);
+            if (CanGo(p, slide))
+            {
+                velocity = along * Vector3.Dot(velocity, along);
+                return slide;
+            }
+        }
+        velocity = Vector3.zero;
+        return Vector3.zero;
+    }
+
+    static bool CanGo(Vector3 p, Vector3 step)
+    {
+        float len = step.magnitude;
+        if (len < 0.0001f) return true;
+        Vector3 ahead = p + step / len * Mathf.Max(len, 0.4f); // міряємо схил на 0,4 м уперед — так надійніше
+        return MoonTerrain.CanWalk(p, ahead);
+    }
+
     /// <summary>WASD або стрілки → вектор від (-1,-1) до (1,1).</summary>
     static Vector2 ReadInput()
     {
@@ -180,6 +232,9 @@ public class EngineerController : MonoBehaviour
         Vector3 p = transform.position;
         float x = Mathf.Clamp(p.x, -mapHalfSize, mapHalfSize);
         float z = Mathf.Clamp(p.z, -mapHalfSize, mapHalfSize);
+        // Запобіжник: далі підніжжя хребта не відходимо, навіть якщо схил десь виявився пологим
+        float r = Mathf.Sqrt(x * x + z * z), max = MoonTerrain.MaxRadius;
+        if (r > max) { x *= max / r; z *= max / r; }
         if (x != p.x || z != p.z)
         {
             controller.enabled = false; // CharacterController не дає просто так міняти позицію

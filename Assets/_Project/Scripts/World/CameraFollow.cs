@@ -48,8 +48,19 @@ public class CameraFollow : MonoBehaviour
         }
 
         targetDistance = distance;
-        if (target != null) focus = target.position;
+        if (target != null) focus = FocusPoint();
         ApplyPosition();
+    }
+
+    /// <summary>
+    /// Куди дивитись: на інженера, але по висоті — на землю під ним (+0,5 м, як раніше),
+    /// щоб камера не підскакувала разом із місячним стрибком.
+    /// </summary>
+    Vector3 FocusPoint()
+    {
+        Vector3 p = target.position;
+        p.y = MoonTerrain.Instance != null ? MoonTerrain.HeightAt(p) + 0.5f : p.y;
+        return p;
     }
 
     void LateUpdate() // LateUpdate іде після руху інженера, тож камера не тремтить
@@ -58,7 +69,7 @@ public class CameraFollow : MonoBehaviour
 
         // Плавно: щокадру проходимо частину шляху до цілі.
         float dt = Time.unscaledDeltaTime;
-        if (target != null) focus = Vector3.Lerp(focus, target.position, 1f - Mathf.Exp(-followSpeed * dt));
+        if (target != null) focus = Vector3.Lerp(focus, FocusPoint(), 1f - Mathf.Exp(-followSpeed * dt));
         distance = Mathf.Lerp(distance, targetDistance, 1f - Mathf.Exp(-zoomSpeed * dt));
 
         ApplyPosition();
@@ -80,14 +91,22 @@ public class CameraFollow : MonoBehaviour
     {
         var rotation = Quaternion.Euler(pitch, yaw, 0f);
         var lookAt = focus + Vector3.up * lookHeight;
-        transform.SetPositionAndRotation(lookAt - rotation * Vector3.forward * distance, rotation);
+        // Біля хребта камера могла б опинитися всередині гори — тоді підсуваємо її ближче
+        float d = distance;
+        Vector3 pos = lookAt - rotation * Vector3.forward * d;
+        for (int i = 0; i < 12 && d > 4f && pos.y < MoonTerrain.HeightAt(pos) + 2f; i++)
+        {
+            d *= 0.85f;
+            pos = lookAt - rotation * Vector3.forward * d;
+        }
+        transform.SetPositionAndRotation(pos, rotation);
     }
 
     /// <summary>Миттєво перенести камеру до цілі (наприклад, після завантаження гри).</summary>
     public void SnapToTarget()
     {
         if (target == null) return;
-        focus = target.position;
+        focus = FocusPoint();
         distance = targetDistance;
         ApplyPosition();
     }
