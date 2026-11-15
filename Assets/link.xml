@@ -1,0 +1,11 @@
+<!-- AI-assisted: written with Claude. See docs/AI_USE.md -->
+<!--
+  Не дає збірці WebGL «вирізати» потрібні класи Unity (engine code stripping).
+  Без цього файлу у веб-збірці в консолі браузера були помилки
+  «Can't add component because class 'CapsuleCollider' doesn't exist!»:
+  ModuleParts створює циліндри й сфери через GameObject.CreatePrimitive, а їхні колайдери (CapsuleCollider, SphereCollider)
+  вирізалися, тож у веб-збірці батарея, щогла антени й каміння не мали зіткнень.
+-->
+<linker>
+    <assembly fullname="UnityEngine.PhysicsModule" preserve="all"/>
+</linker>

@@ -1047,7 +1047,11 @@ public class LaunchScreen : MonoBehaviour
             bool ok = Supply.LaunchFirstMission(State); // розрахунок і «кубик» — у SupplySystem
             if (!ok) failedTries++;
             if (pad != null && showLaunchPad) StartCoroutine(PadLaunch(ok, stars));
-            else StartCoroutine(Fly(ok));
+            else
+            {
+                GameAudio.Play(ok ? Sfx.Launch : Sfx.LaunchFail); // без майданчика звук злету — тут
+                StartCoroutine(Fly(ok));
+            }
         }
         else
         {

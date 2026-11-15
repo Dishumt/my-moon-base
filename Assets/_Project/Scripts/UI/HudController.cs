@@ -16,7 +16,7 @@ public class HudController : MonoBehaviour
 
     VisualElement root, goalList;
     Label day, chapter, walk, demo, link, hint;
-    Button tablet;
+    Button tablet, helpButton, soundButton, menuButton;
     readonly Button[] speedButtons = new Button[4];
     SimBalanceData balance;
     bool bound;
@@ -26,6 +26,7 @@ public class HudController : MonoBehaviour
     {
         GameEvents.StateChanged += Refresh;
         Loc.LanguageChanged += Refresh;
+        GameAudio.MuteChanged += Refresh;
         Bind(logErrors: false);
     }
 
@@ -39,6 +40,7 @@ public class HudController : MonoBehaviour
     {
         GameEvents.StateChanged -= Refresh;
         Loc.LanguageChanged -= Refresh;
+        GameAudio.MuteChanged -= Refresh;
         bound = false;
     }
 
@@ -64,6 +66,14 @@ public class HudController : MonoBehaviour
         hint = root.Q<Label>("hud-hint");
         tablet = root.Q<Button>("hud-tablet");
         if (tablet != null) tablet.clicked += () => { if (TabletController.Instance != null) TabletController.Instance.Open(); };
+
+        // small buttons under the clock: how to play, sound, menu (the same as the keys H, M, Esc)
+        helpButton = root.Q<Button>("hud-help");
+        soundButton = root.Q<Button>("hud-sound");
+        menuButton = root.Q<Button>("hud-menu");
+        if (helpButton != null) helpButton.clicked += () => { if (GameMenu.Instance != null) GameMenu.Instance.OpenHelp(false); };
+        if (soundButton != null) soundButton.clicked += GameAudio.ToggleMute;
+        if (menuButton != null) menuButton.clicked += () => { if (GameMenu.Instance != null) GameMenu.Instance.OpenPause(); };
 
         for (int i = 0; i < Speeds.Length; i++)
         {
@@ -174,6 +184,10 @@ public class HudController : MonoBehaviour
         }
 
         UiKit.SetText(tablet, Loc.Get("hud.tablet") + "  [TAB]");
+        UiKit.SetText(helpButton, Loc.Get("hud.help"));
+        UiKit.SetText(soundButton, Loc.Get(GameAudio.Muted ? "hud.sound_off" : "hud.sound_on"));
+        soundButton?.EnableInClassList("hud-tool--off", GameAudio.Muted);
+        UiKit.SetText(menuButton, Loc.Get("hud.menu"));
         UiKit.SetText(walk, Loc.Get("hud.walk"));
         UiKit.Show(demo, game.IsDemo);
         if (game.IsDemo) UiKit.SetText(demo, Loc.Get("hud.demo"));

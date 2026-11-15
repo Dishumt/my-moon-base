@@ -67,6 +67,39 @@
           border-width: 2px; border-color: var(--color-radiation); border-radius: 0; color: var(--color-radiation); }
 .cr-all:hover { background-color: rgba(165, 105, 232, 0.15); }
 
+/* ---------- MAP (MapTabView.cs) ---------- */
+.mp-area { width: 470px; height: 470px; flex-shrink: 0; overflow: hidden; background-color: #05090F;
+           border-width: 2px; border-color: var(--color-line); }
+.mp-area--storm { border-color: var(--color-alarm); }
+.mp-ground { position: absolute; background-color: #1C232B; border-width: 2px; border-color: var(--color-line-hi); }
+.mp-ring { position: absolute; border-width: 1px; border-color: rgba(111, 147, 173, 0.35); }
+.mp-ring-label { position: absolute; font-size: 10px; color: var(--color-muted); }
+.mp-dot { position: absolute; }
+.mp-dot--module { background-color: var(--color-accent); }
+.mp-dot--building { background-color: var(--color-energy); }
+.mp-dot--crew { background-color: var(--color-ok); }
+.mp-dot--you { background-color: #FFFFFF; border-width: 3px; border-color: var(--color-accent); }
+.mp-dot--poi { border-width: 2px; border-color: #FFFFFF; }
+.mp-dot--Ice { background-color: var(--color-oxygen); }
+.mp-dot--Sample { background-color: var(--color-warn); }
+.mp-dot--Fact { background-color: var(--color-energy); }
+.mp-dot--LandingPad { background-color: #FFFFFF; }
+.mp-dot--unknown { background-color: rgba(0, 0, 0, 0.55); border-color: var(--color-muted); align-items: center; justify-content: center; }
+.mp-q { margin: 0; padding: 0; font-size: 12px; -unity-font-style: bold; -unity-text-align: middle-center; color: var(--color-text); }
+.mp-label { position: absolute; font-size: 11px; color: var(--color-soft); }
+.mp-label--base { color: var(--color-accent); }
+.mp-row { flex-direction: row; align-items: center; margin-bottom: 6px; }
+.mp-row-text { flex-shrink: 1; font-size: 13px; color: var(--color-soft); white-space: normal; }
+.mp-swatch { width: 12px; height: 12px; flex-shrink: 0; margin-right: 8px; border-radius: 6px; }
+.mp-swatch--you { background-color: #FFFFFF; border-width: 2px; border-color: var(--color-accent); }
+.mp-swatch--module { background-color: var(--color-accent); border-radius: 0; }
+.mp-swatch--crew { background-color: var(--color-ok); }
+.mp-swatch--Ice { background-color: var(--color-oxygen); }
+.mp-swatch--Sample { background-color: var(--color-warn); }
+.mp-swatch--Fact { background-color: var(--color-energy); }
+.mp-swatch--LandingPad { background-color: #FFFFFF; }
+.mp-swatch--unknown { background-color: rgba(0, 0, 0, 0.55); border-width: 1.5px; border-color: var(--color-muted); }
+
 /* ---------- COMMS ---------- */
 .cm-window { flex-direction: row; align-items: center; height: 40px; margin-bottom: 6px; padding: 0 12px;
              background-color: var(--color-card); border-width: 2px; border-color: var(--color-line); font-size: 15px; color: var(--color-soft); }
