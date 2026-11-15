@@ -8,6 +8,8 @@ using UnityEngine;
 ///   label.text = Loc.Get("hud.oxygen");
 ///   Loc.Get("report.sick", astronaut.Name)  → підставляє ім'я замість {0}
 /// Файли: Resources/Data/Text/texts_en.json і texts_uk.json, формат {"items":[{"key":"...","text":"..."}]}.
+/// Ще читає таблицю ролі 04: Resources/Data/Launch/texts_launch_en.json / _uk.json (той самий формат).
+/// Якщо ключ є в обох, перемагає основна таблиця Text/.
 /// Якщо ключа немає — повертає "#ключ", щоб одразу було видно, що забули додати текст.
 /// </summary>
 public static class Loc
@@ -64,13 +66,23 @@ public static class Loc
 
     static Dictionary<string, string> LoadTable(string language)
     {
-        var table = DataLoader.Load<TextTable>("Text/texts_" + language);
         var dict = new Dictionary<string, string>();
+        // Role 04 keeps its texts (launch screen, supplies, its reports and errors) in its own table.
+        // Load it first: the main table wins when both have the same key.
+        AddEntries(dict, "Launch/texts_launch_" + language, optional: true);
+        AddEntries(dict, "Text/texts_" + language, optional: false);
+        return dict;
+    }
+
+    static void AddEntries(Dictionary<string, string> dict, string path, bool optional)
+    {
+        if (optional && !DataLoader.Exists(path)) return;
+        var table = DataLoader.Load<TextTable>(path);
+        if (table?.items == null) return;
         foreach (var entry in table.items)
         {
             if (!string.IsNullOrEmpty(entry.key)) dict[entry.key] = entry.text;
         }
-        return dict;
     }
 
     /// <summary>Скинути завантажені тексти (Unity викликає перед кожним Play).</summary>

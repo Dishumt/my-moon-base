@@ -378,6 +378,7 @@
     { "key": "weather.live_flare", "text": "Latest solar flare: class {0}, {1} (UTC)" },
     { "key": "weather.quiet", "text": "The Sun is quiet: no flares in the last 7 days." },
     { "key": "weather.archive_event", "text": "No connection. A past real event: class {0} flare, {1}." },
-    { "key": "error.not_found", "text": "Not found." }
+    { "key": "error.not_found", "text": "Not found." },
+    { "key": "error.unknown_rocket", "text": "We don't know this rocket." }
   ]
 }

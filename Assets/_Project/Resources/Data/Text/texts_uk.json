@@ -378,6 +378,7 @@
     { "key": "weather.live_flare", "text": "Останній сонячний спалах: клас {0}, {1} (UTC)" },
     { "key": "weather.quiet", "text": "Сонце спокійне: за 7 днів спалахів не було." },
     { "key": "weather.archive_event", "text": "Немає зв'язку. Справжня подія з минулого: спалах класу {0}, {1}." },
-    { "key": "error.not_found", "text": "Не знайдено." }
+    { "key": "error.not_found", "text": "Не знайдено." },
+    { "key": "error.unknown_rocket", "text": "Ми не знаємо такої ракети." }
   ]
 }
