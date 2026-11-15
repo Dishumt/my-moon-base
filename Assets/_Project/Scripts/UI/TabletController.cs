@@ -9,7 +9,8 @@ using UnityEngine.UIElements;
 /// Engineer tablet (role 05). Put it on the GameObject with UIDocument whose Source Asset is UI/Tablet/Tablet.uxml.
 ///  - Tab opens / closes the tablet, Esc, the X button or a click on the dark backdrop closes it;
 ///  - while the tablet is open the game is paused (Clock.PushModal / PopModal);
-///  - 6 tabs switch the panes (for now every pane is a placeholder);
+///  - 6 tabs switch the panes: BUILD (BuildGridView), POWER (PowerTabView), CREW (CrewTabView),
+///    COMMS (CommsTabView), SUPPLY (role 04 puts SupplyTabView there); MAP is hidden until it is made;
 ///  - the strip at the bottom shows water, oxygen and food from GameState.
 /// Other scripts (for example the HUD "Tablet" button) call TabletController.Instance.Open().
 /// </summary>
@@ -38,6 +39,9 @@ public class TabletController : MonoBehaviour
     readonly Dictionary<string, VisualElement> panes = new Dictionary<string, VisualElement>();
     TabletBalance balance;
     BuildGridView buildGrid;   // BUILD tab: building on the base grid
+    PowerTabView powerTab;     // POWER tab: sharing the power blocks
+    CrewTabView crewTab;       // CREW tab: jobs for the astronauts
+    CommsTabView commsTab;     // COMMS tab: when Earth can hear us
 
     // ---------- start / stop ----------
 
@@ -66,6 +70,7 @@ public class TabletController : MonoBehaviour
             return;
         }
         bound = true;
+        root.pickingMode = PickingMode.Ignore; // the empty root must not catch clicks meant for the HUD below
 
         Instance = this;
         balance = DataLoader.Load<TabletBalance>("Balance/balance");
@@ -97,6 +102,11 @@ public class TabletController : MonoBehaviour
         BuildSegments("food");
 
         if (panes.TryGetValue("build", out var buildPane)) buildGrid = new BuildGridView(buildPane);
+        if (panes.TryGetValue("power", out var powerPane)) powerTab = new PowerTabView(powerPane);
+        if (panes.TryGetValue("crew", out var crewPane)) crewTab = new CrewTabView(crewPane);
+        if (panes.TryGetValue("comms", out var commsPane)) commsTab = new CommsTabView(commsPane);
+        // MAP is only a placeholder for now: hide its tab so the player never sees "not ready"
+        if (tabButtons.TryGetValue("map", out var mapButton)) mapButton.style.display = DisplayStyle.None;
 
         GameEvents.StateChanged += Refresh;
         Loc.LanguageChanged += ApplyTexts;
@@ -127,6 +137,7 @@ public class TabletController : MonoBehaviour
         var keyboard = Keyboard.current;
         if (!bound || keyboard == null) return;
 
+        if (!IsOpen && UiKit.Blocked) return; // start menu, report or launch screen is on top
         if (keyboard.tabKey.wasPressedThisFrame) Toggle();
         else if (IsOpen && keyboard.escapeKey.wasPressedThisFrame) Close();
     }
@@ -140,7 +151,7 @@ public class TabletController : MonoBehaviour
 
     public void Open()
     {
-        if (!bound || IsOpen) return;
+        if (!bound || IsOpen || UiKit.Blocked) return;
         IsOpen = true;
         GameBootstrap.Instance?.Clock?.PushModal();
 
@@ -170,7 +181,7 @@ public class TabletController : MonoBehaviour
 
     public void ShowTab(string id)
     {
-        if (!panes.ContainsKey(id)) id = TabIds[0];
+        if (!panes.ContainsKey(id) || id == "map") id = "power";
         CurrentTab = id;
 
         foreach (var pair in tabButtons) pair.Value.EnableInClassList("tab--on", pair.Key == id);
@@ -223,7 +234,12 @@ public class TabletController : MonoBehaviour
         SetBar("oxygen", s.Res.Oxygen, ls.oxygenTankMax, ls.oxygenAlarmPercent);
         SetBar("food", s.Res.Food, start.food, foodLowPercent);
 
+        // the tabs are redrawn only while the tablet is open (the game is paused then, so this is cheap)
+        if (!IsOpen) return;
         buildGrid?.Refresh();
+        powerTab?.Refresh();
+        crewTab?.Refresh();
+        commsTab?.Refresh();
     }
 
     void BuildSegments(string kind)
