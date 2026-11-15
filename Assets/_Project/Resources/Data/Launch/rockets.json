@@ -1,0 +1,47 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Ракети на вибір (роль 04). emptyMassKg — маса порожньої ракети, maxFuelKg — найбільший бак, flightHours — скільки годин летить поставка. scale — розмір на планшеті. heightInCrew — у скільки разів ракета вища за астронавта на пусковому майданчику. doorX/doorY — де люк капсули на картинці (частка ширини зліва і висоти зверху). Картинки (Art/Launch/Rockets) вибираються в інспекторі LaunchScreen за id.",
+  "defaultId": "medium",
+  "items": [
+    {
+      "id": "small",
+      "nameKey": "rocket.small.name",
+      "hintKey": "rocket.small.hint",
+      "emptyMassKg": 600,
+      "maxFuelKg": 3500,
+      "flightHours": 8,
+      "scale": 0.9,
+      "heightInCrew": 8.0,
+      "doorX": 0.06,
+      "doorY": 0.27,
+      "maxCargoKg": 250
+    },
+    {
+      "id": "medium",
+      "nameKey": "rocket.medium.name",
+      "hintKey": "rocket.medium.hint",
+      "emptyMassKg": 1000,
+      "maxFuelKg": 6000,
+      "flightHours": 12,
+      "scale": 1.0,
+      "heightInCrew": 9.0,
+      "doorX": 0.11,
+      "doorY": 0.29,
+      "maxCargoKg": 450
+    },
+    {
+      "id": "heavy",
+      "nameKey": "rocket.heavy.name",
+      "hintKey": "rocket.heavy.hint",
+      "emptyMassKg": 2000,
+      "maxFuelKg": 10000,
+      "flightHours": 24,
+      "scale": 1.05,
+      "heightInCrew": 9.5,
+      "doorX": 0.165,
+      "doorY": 0.25,
+      "maxCargoKg": 700
+    }
+  ],
+  "maxCargoKg_note": "Скільки кг вантажу вміщує трюм (люди летять окремо, у капсулі). Підібрано так, щоб поставка покривала лише ≈ половину потреб бази до наступного корабля: решту — лід, теплиця й життєзабезпечення. Набір модуля займає пів трюму «Бджоли» — доводиться обирати: модуль чи запаси."
+}

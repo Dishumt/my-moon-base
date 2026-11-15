@@ -1,0 +1,910 @@
+{
+  "_ai": "AI-assisted (Claude)",
+  "_note": "Texts of the launch screen (role 04). Loc reads texts_en/uk.json (role 05); LaunchText looks here only when a key is missing there. Role 05 can move these keys into the main files at any time.",
+  "items": [
+    {
+      "key": "cargo.water",
+      "text": "Water tanks"
+    },
+    {
+      "key": "cargo.food",
+      "text": "Food boxes"
+    },
+    {
+      "key": "cargo.materials",
+      "text": "Building materials"
+    },
+    {
+      "key": "cargo.medkits",
+      "text": "Med kit"
+    },
+    {
+      "key": "cargo.solar_panel",
+      "text": "Solar panel kit"
+    },
+    {
+      "key": "cargo.battery",
+      "text": "Battery kit"
+    },
+    {
+      "key": "cargo.crew_seat",
+      "text": "Crew seat"
+    },
+    {
+      "key": "launch.title_first",
+      "text": "FIRST MISSION: PACK THE SHIP"
+    },
+    {
+      "key": "launch.title_supply",
+      "text": "SUPPLY ORDER"
+    },
+    {
+      "key": "launch.cargo",
+      "text": "2. PACK THE CARGO"
+    },
+    {
+      "key": "launch.ship",
+      "text": "SHIP"
+    },
+    {
+      "key": "launch.fuel",
+      "text": "FUEL"
+    },
+    {
+      "key": "launch.kg",
+      "text": "{0} kg"
+    },
+    {
+      "key": "launch.fuel_value",
+      "text": "Fuel: {0} kg · needed: {1} kg"
+    },
+    {
+      "key": "launch.seats",
+      "text": "Crew seats: {0} × {1} kg"
+    },
+    {
+      "key": "launch.mass",
+      "text": "Ship to the Moon: {0} kg (cargo {1} kg)"
+    },
+    {
+      "key": "launch.risk",
+      "text": "Risk: {0}%"
+    },
+    {
+      "key": "launch.link_ok",
+      "text": "LINK OK"
+    },
+    {
+      "key": "launch.link_off",
+      "text": "NO LINK"
+    },
+    {
+      "key": "launch.legend_crew",
+      "text": "CREW"
+    },
+    {
+      "key": "launch.legend_cargo",
+      "text": "CARGO"
+    },
+    {
+      "key": "launch.hint.Green",
+      "text": "Enough fuel. The flight is safe."
+    },
+    {
+      "key": "launch.hint.Yellow",
+      "text": "Just enough fuel. It may fail!"
+    },
+    {
+      "key": "launch.hint.Red",
+      "text": "Not enough fuel. The ship will turn back."
+    },
+    {
+      "key": "launch.go",
+      "text": "CONFIRM"
+    },
+    {
+      "key": "launch.send",
+      "text": "SEND ORDER"
+    },
+    {
+      "key": "launch.flying",
+      "text": "Flying to the Moon..."
+    },
+    {
+      "key": "launch.turning_back",
+      "text": "Out of fuel! Turning back to Earth."
+    },
+    {
+      "key": "launch.success",
+      "text": "Landed on the Moon!"
+    },
+    {
+      "key": "launch.failed_repack",
+      "text": "The ship came back. Take less cargo or add fuel, then try again."
+    },
+    {
+      "key": "launch.must_launch",
+      "text": "First, fly the crew to the Moon."
+    },
+    {
+      "key": "launch.order_sent",
+      "text": "Order sent to Earth! The ship starts on schedule. You can still cancel it before the start."
+    },
+    {
+      "key": "launch.status.Draft",
+      "text": "DRAFT"
+    },
+    {
+      "key": "launch.status.Sent",
+      "text": "SENT · WAITING FOR LAUNCH"
+    },
+    {
+      "key": "launch.status.Launched",
+      "text": "FLYING"
+    },
+    {
+      "key": "launch.status.Returned",
+      "text": "CAME BACK · 3 DAYS LATE"
+    },
+    {
+      "key": "error.comms_closed",
+      "text": "No contact with Earth now. Wait for the next comms window."
+    },
+    {
+      "key": "error.order_already_sent",
+      "text": "The order is already sent."
+    },
+    {
+      "key": "error.order_locked",
+      "text": "The ship is already flying. Change the next order."
+    },
+    {
+      "key": "error.unknown_cargo",
+      "text": "Unknown cargo."
+    },
+    {
+      "key": "error.not_found",
+      "text": "Not found."
+    },
+    {
+      "key": "crew.err_severe",
+      "text": "Very sick. Can only rest in the med bay."
+    },
+    {
+      "key": "crew.err_no_place",
+      "text": "There is no place for this job yet."
+    },
+    {
+      "key": "crew.err_no_reserve",
+      "text": "Nobody with this job is waiting on Earth."
+    },
+    {
+      "key": "crew.err_already_requested",
+      "text": "A replacement is already on the list."
+    },
+    {
+      "key": "report.comms_no_power",
+      "text": "The antenna has no power. No contact with Earth."
+    },
+    {
+      "key": "report.supply_not_sent",
+      "text": "The supply ship is waiting: the order was not sent."
+    },
+    {
+      "key": "report.supply_launched",
+      "text": "The supply ship took off from Earth."
+    },
+    {
+      "key": "report.supply_returned",
+      "text": "Not enough fuel! The supply ship turned back. It comes {0} days later."
+    },
+    {
+      "key": "report.supply_arrived",
+      "text": "The supply ship landed on the pad."
+    },
+    {
+      "key": "report.went_home",
+      "text": "{0} flew home to Earth."
+    },
+    {
+      "key": "report.crew_arrived",
+      "text": "{0} arrived from Earth."
+    },
+    {
+      "key": "report.ice_mined",
+      "text": "Water from mined ice"
+    },
+    {
+      "key": "report.ice_empty",
+      "text": "No more ice in crater {0}."
+    },
+    {
+      "key": "report.samples_empty",
+      "text": "No more samples at {0}."
+    },
+    {
+      "key": "report.science_gained",
+      "text": "Science from samples and the lab"
+    },
+    {
+      "key": "rocket.title",
+      "text": "1. CHOOSE A ROCKET"
+    },
+    {
+      "key": "rocket.small.name",
+      "text": "BEE · small"
+    },
+    {
+      "key": "rocket.medium.name",
+      "text": "PELICAN · medium"
+    },
+    {
+      "key": "rocket.heavy.name",
+      "text": "WHALE · heavy"
+    },
+    {
+      "key": "rocket.small.hint",
+      "text": "Small and fast, but its hold is tiny."
+    },
+    {
+      "key": "rocket.medium.hint",
+      "text": "The all-rounder: a medium hold at a normal speed."
+    },
+    {
+      "key": "rocket.heavy.hint",
+      "text": "The biggest hold, but the rocket itself is heavy and flies slowly."
+    },
+    {
+      "key": "rocket.stats",
+      "text": "hold {0} kg · {1} h"
+    },
+    {
+      "key": "rocket.why",
+      "text": "Why choose? A bigger rocket carries more, but it is heavy itself and flies longer. While it flies, the base waits."
+    },
+    {
+      "key": "launch.group.supplies",
+      "text": "SUPPLIES"
+    },
+    {
+      "key": "launch.group.modules",
+      "text": "MODULE KITS"
+    },
+    {
+      "key": "launch.info_title",
+      "text": "WHAT IS IT FOR?"
+    },
+    {
+      "key": "launch.info_default",
+      "text": "Tap ? next to any cargo to learn what it is for."
+    },
+    {
+      "key": "launch.gives",
+      "text": "Gives the base: {0}"
+    },
+    {
+      "key": "launch.kit_note",
+      "text": "A kit is heavier than plain materials, but robots start building it right after landing."
+    },
+    {
+      "key": "launch.fuel_why",
+      "text": "Fuel is heavy too! More cargo means more fuel."
+    },
+    {
+      "key": "launch.res.water",
+      "text": "water"
+    },
+    {
+      "key": "launch.res.food",
+      "text": "food"
+    },
+    {
+      "key": "launch.res.oxygen",
+      "text": "oxygen"
+    },
+    {
+      "key": "launch.res.materials",
+      "text": "materials"
+    },
+    {
+      "key": "launch.res.medkits",
+      "text": "med kits"
+    },
+    {
+      "key": "launch.res.module",
+      "text": "a new {0}"
+    },
+    {
+      "key": "launch.res.seat",
+      "text": "a seat for a person"
+    },
+    {
+      "key": "cargo.oxygen",
+      "text": "Oxygen tanks"
+    },
+    {
+      "key": "cargo.water.hint",
+      "text": "Water from Earth is VERY heavy: one tank gives only a little. It is better to mine ice on the Moon. Take water only for emergencies!"
+    },
+    {
+      "key": "cargo.food.hint",
+      "text": "Food is hard to make on the Moon, so it is the main thing ships bring. Hungry astronauts work slowly."
+    },
+    {
+      "key": "cargo.oxygen.hint",
+      "text": "Air to breathe. The base makes oxygen from water (life support), so from Earth take only a little, for emergencies. The tank holds up to 100."
+    },
+    {
+      "key": "cargo.medkits.hint",
+      "text": "Medicine for sick astronauts. Space radiation can make people ill."
+    },
+    {
+      "key": "cargo.materials.hint",
+      "text": "Metal and plastic parts. Robots build any module from them."
+    },
+    {
+      "key": "cargo.kit.habitat",
+      "text": "Habitat kit"
+    },
+    {
+      "key": "cargo.kit.solar",
+      "text": "Solar panel kit"
+    },
+    {
+      "key": "cargo.kit.battery",
+      "text": "Battery kit"
+    },
+    {
+      "key": "cargo.kit.greenhouse",
+      "text": "Greenhouse kit"
+    },
+    {
+      "key": "cargo.kit.shelter",
+      "text": "Storm shelter kit"
+    },
+    {
+      "key": "cargo.kit.medbay",
+      "text": "Med bay kit"
+    },
+    {
+      "key": "cargo.kit.antenna",
+      "text": "Antenna kit"
+    },
+    {
+      "key": "cargo.kit.lab",
+      "text": "Lab kit"
+    },
+    {
+      "key": "cargo.kit.habitat.hint",
+      "text": "A home for the crew: beds, a kitchen and strong walls."
+    },
+    {
+      "key": "cargo.kit.solar.hint",
+      "text": "Turns sunlight into electricity. At the south pole the Sun stays low, so the panels stand tall."
+    },
+    {
+      "key": "cargo.kit.battery.hint",
+      "text": "Stores electricity for the time when the panels are in shadow."
+    },
+    {
+      "key": "cargo.kit.greenhouse.hint",
+      "text": "Plants grow fresh food here."
+    },
+    {
+      "key": "cargo.kit.shelter.hint",
+      "text": "Thick walls against solar storms. Hide the crew here when the Sun is angry."
+    },
+    {
+      "key": "cargo.kit.medbay.hint",
+      "text": "A small hospital. The medic heals people here."
+    },
+    {
+      "key": "cargo.kit.antenna.hint",
+      "text": "Talks to Earth. Without contact you can't order new supplies."
+    },
+    {
+      "key": "cargo.kit.lab.hint",
+      "text": "Scientists study Moon rocks here and earn science points."
+    },
+    {
+      "key": "launch.module.Habitat",
+      "text": "habitat"
+    },
+    {
+      "key": "launch.module.Solar",
+      "text": "solar panel"
+    },
+    {
+      "key": "launch.module.Battery",
+      "text": "battery"
+    },
+    {
+      "key": "launch.module.Greenhouse",
+      "text": "greenhouse"
+    },
+    {
+      "key": "launch.module.Shelter",
+      "text": "storm shelter"
+    },
+    {
+      "key": "launch.module.Medbay",
+      "text": "med bay"
+    },
+    {
+      "key": "launch.module.Antenna",
+      "text": "antenna"
+    },
+    {
+      "key": "launch.module.Lab",
+      "text": "lab"
+    },
+    {
+      "key": "report.kit_building",
+      "text": "The kit landed. Robots started building: {0}."
+    },
+    {
+      "key": "report.kit_unpacked",
+      "text": "The kit for {0} was unpacked into building materials."
+    },
+    {
+      "key": "pad.title",
+      "text": "LAUNCH PAD"
+    },
+    {
+      "key": "pad.skip",
+      "text": "SKIP >>"
+    },
+    {
+      "key": "pad.boarding",
+      "text": "The crew bus has arrived. The astronauts are boarding the rocket..."
+    },
+    {
+      "key": "pad.arm",
+      "text": "The tower arm moves away. Ready!"
+    },
+    {
+      "key": "pad.countdown",
+      "text": "Countdown"
+    },
+    {
+      "key": "pad.liftoff",
+      "text": "LIFT OFF!"
+    },
+    {
+      "key": "pad.success",
+      "text": "The crew is on the way to the Moon!"
+    },
+    {
+      "key": "pad.fail",
+      "text": "Not enough fuel! The rocket turns back to Earth."
+    },
+    {
+      "key": "pad.fact.1",
+      "text": "A rocket pushes hot gas down hard, so the rocket goes up."
+    },
+    {
+      "key": "pad.fact.2",
+      "text": "Most of a rocket's weight at launch is fuel."
+    },
+    {
+      "key": "pad.fact.3",
+      "text": "During launch astronauts feel 3 to 4 times heavier than usual."
+    },
+    {
+      "key": "pad.fact.4",
+      "text": "The Moon is about 384,000 km away. Real astronauts flew there in about 3 days."
+    },
+    {
+      "key": "mission.title",
+      "text": "MISSION GOALS"
+    },
+    {
+      "key": "mission.survive",
+      "text": "Survive {0} days"
+    },
+    {
+      "key": "mission.build",
+      "text": "Build: {0} ({1}/{2})"
+    },
+    {
+      "key": "days.title",
+      "text": "SUPPLIES WILL LAST (white line = need)"
+    },
+    {
+      "key": "days.food",
+      "text": "Food"
+    },
+    {
+      "key": "days.water",
+      "text": "Water"
+    },
+    {
+      "key": "days.oxygen",
+      "text": "Oxygen"
+    },
+    {
+      "key": "days.value",
+      "text": "{0} days"
+    },
+    {
+      "key": "days.value_bring",
+      "text": "{0} days (+{1})"
+    },
+    {
+      "key": "days.enough",
+      "text": "enough"
+    },
+    {
+      "key": "advisor.name",
+      "text": "MISSION CONTROL:"
+    },
+    {
+      "key": "tip.too_heavy",
+      "text": "Too heavy! Add fuel, pick a bigger rocket or leave something behind."
+    },
+    {
+      "key": "tip.oxygen_low",
+      "text": "Oxygen for only {0} days out of {1}. Give more power to life support: it makes oxygen from water."
+    },
+    {
+      "key": "tip.water_low",
+      "text": "Water for only {0} days, and the next ship comes in {1} (with reserve). Send the geologist to mine ice: it is much cheaper than water from Earth!"
+    },
+    {
+      "key": "tip.food_low",
+      "text": "Food for only {0} days, but the next ship comes in {1} (with reserve). Take food boxes: food is hard to make on the Moon!"
+    },
+    {
+      "key": "tip.goal",
+      "text": "Mission goal: build a {0}. Pack {1} more kit(s), or bring building materials."
+    },
+    {
+      "key": "tip.oxygen_full",
+      "text": "The oxygen tank holds only {0}. Extra oxygen will be wasted. Take something else!"
+    },
+    {
+      "key": "tip.risky",
+      "text": "Risky: {0}% chance to fail. Add a bit more fuel to be safe."
+    },
+    {
+      "key": "tip.all_good",
+      "text": "Great packing! The crew has everything for the mission. Press CONFIRM!"
+    },
+    {
+      "key": "launch.locked",
+      "text": "LOCKED"
+    },
+    {
+      "key": "launch.locked_hint",
+      "text": "This module opens in a later chapter."
+    },
+    {
+      "key": "error.kit_locked",
+      "text": "This module is not available yet. It opens in a later chapter."
+    },
+    {
+      "key": "mission.next_ship",
+      "text": "Last until the next ship: {0} days + {1} days reserve"
+    },
+    {
+      "key": "mission.reserve_why",
+      "text": "Why a reserve? If a ship has to turn back, it arrives a few days late."
+    },
+    {
+      "key": "pad.fact.5",
+      "text": "In real space, launch windows to the Moon open about once a month. In our game, time runs much faster!"
+    },
+    {
+      "key": "launch.hold",
+      "text": "CARGO HOLD"
+    },
+    {
+      "key": "launch.like_elephants",
+      "text": "With fuel the ship weighs like {0} elephants!"
+    },
+    {
+      "key": "launch.like_cars",
+      "text": "With fuel the ship weighs like {0} cars!"
+    },
+    {
+      "key": "report.title",
+      "text": "MISSION REPORT"
+    },
+    {
+      "key": "report.star_first",
+      "text": "Reached the Moon on the first try"
+    },
+    {
+      "key": "report.star_supplies",
+      "text": "Enough supplies until the next ship, with a reserve"
+    },
+    {
+      "key": "report.star_nowaste",
+      "text": "Nothing wasted: no extra oxygen, the rocket is not too big"
+    },
+    {
+      "key": "report.tip_supplies",
+      "text": "Tip: take more food, water or oxygen, so the crew can wait for the next ship."
+    },
+    {
+      "key": "report.tip_oxygen",
+      "text": "Tip: the oxygen tank holds only {0}. Extra oxygen is wasted."
+    },
+    {
+      "key": "report.tip_smaller",
+      "text": "Tip: the {0} rocket could carry this too, and it flies faster."
+    },
+    {
+      "key": "report.tip_first",
+      "text": "Tip: watch the traffic light. Green means a safe flight."
+    },
+    {
+      "key": "report.all",
+      "text": "Perfect mission! 3 out of 3 stars!"
+    },
+    {
+      "key": "report.next",
+      "text": "CONTINUE"
+    },
+    {
+      "key": "supply.open",
+      "text": "PACK THE SHIP →"
+    },
+    {
+      "key": "supply.view",
+      "text": "VIEW THE ORDER →"
+    },
+    {
+      "key": "supply.lands",
+      "text": "Lands: {0}"
+    },
+    {
+      "key": "supply.lands_in",
+      "text": "lands in {0} h"
+    },
+    {
+      "key": "supply.waiting",
+      "text": "The ship is waiting! Send the order in a comms window."
+    },
+    {
+      "key": "supply.first_mission",
+      "text": "First, fly the crew to the Moon."
+    },
+    {
+      "key": "supply.link_in",
+      "text": "link in {0} h"
+    },
+    {
+      "key": "supply.link_none",
+      "text": "NO LINK · next window in {0} h"
+    },
+    {
+      "key": "supply.link_nopower",
+      "text": "NO LINK · the antenna has no power"
+    },
+    {
+      "key": "supply.day_time",
+      "text": "day {0}, {1}"
+    },
+    {
+      "key": "supply.done",
+      "text": "done"
+    },
+    {
+      "key": "supply.empty",
+      "text": "The order is empty. Press PACK THE SHIP and choose the cargo!"
+    },
+    {
+      "key": "supply.order_title",
+      "text": "THIS ORDER"
+    },
+    {
+      "key": "supply.returned",
+      "text": "Not enough fuel: the ship turned back and comes {0} days late."
+    },
+    {
+      "key": "supply.passengers",
+      "text": "Crew from Earth ×{0}"
+    },
+    {
+      "key": "supply.step_flight",
+      "text": "FLIGHT · {0} H"
+    },
+    {
+      "key": "supply.cancel",
+      "text": "CANCEL SENDING"
+    },
+    {
+      "key": "supply.cancelled",
+      "text": "Sending cancelled. Now you can change the order."
+    },
+    {
+      "key": "supply.flying_btn",
+      "text": "THE SHIP IS FLYING"
+    },
+    {
+      "key": "supply.no_link_btn",
+      "text": "NO LINK · {0} H"
+    },
+    {
+      "key": "supply.no_power_btn",
+      "text": "GIVE POWER TO THE ANTENNA"
+    },
+    {
+      "key": "launch.schedule",
+      "text": "start {0} · lands {1}"
+    },
+    {
+      "key": "launch.mass_title",
+      "text": "WHY SO LIGHT?"
+    },
+    {
+      "key": "launch.mass_why",
+      "text": "We count only the ship that flies to the Moon: the capsule with the crew and the cargo. A real Moon rocket at launch weighs about 2,900 tonnes, like 600 elephants! Almost all of it is fuel, and its big stages fall off on the way."
+    },
+    {
+      "key": "pad.fact.6",
+      "text": "A real Moon rocket weighs about 2,900 tonnes at launch, like 600 elephants! Only a small capsule reaches the Moon."
+    },
+    {
+      "key": "pad.fact.7",
+      "text": "Launch pads stand by the ocean: used rocket parts fall into the water, far from people."
+    },
+    {
+      "key": "pad.fact.8",
+      "text": "At launch, water pours under the rocket. It makes the roar quieter and protects the pad."
+    },
+    {
+      "key": "flight.title",
+      "text": "FLIGHT TO THE MOON"
+    },
+    {
+      "key": "flight.earth",
+      "text": "EARTH"
+    },
+    {
+      "key": "flight.moon",
+      "text": "MOON"
+    },
+    {
+      "key": "flight.dnipro",
+      "text": "Dnipro"
+    },
+    {
+      "key": "flight.pole",
+      "text": "South pole · our base"
+    },
+    {
+      "key": "flight.not_to_scale",
+      "text": "Not to scale"
+    },
+    {
+      "key": "flight.step1",
+      "text": "Launch from Dnipro"
+    },
+    {
+      "key": "flight.step2",
+      "text": "One orbit around Earth: checking all systems"
+    },
+    {
+      "key": "flight.step3",
+      "text": "Flight to the Moon (in real space it takes about 3 days)"
+    },
+    {
+      "key": "flight.step4",
+      "text": "Orbit around the Moon: slowing down"
+    },
+    {
+      "key": "flight.step5",
+      "text": "Landing at the south pole!"
+    },
+    {
+      "key": "flight.landed",
+      "text": "Landed! Welcome to the Moon's south pole."
+    },
+    {
+      "key": "flight.fact1",
+      "text": "Rockets are really built in Dnipro! The Zenit and Cyclone rockets and the first stage of the Antares rocket were made here."
+    },
+    {
+      "key": "flight.fact2",
+      "text": "In orbit, the ship flies around the whole Earth in about 90 minutes!"
+    },
+    {
+      "key": "flight.fact3",
+      "text": "We aim not at the Moon, but at the place where the Moon will be: it moves too! You could line up 30 Earths between Earth and the Moon."
+    },
+    {
+      "key": "flight.fact4",
+      "text": "The Moon has no air, so parachutes don't work there. The ship slows down with its engines."
+    },
+    {
+      "key": "flight.fact5",
+      "text": "Dark craters at the Moon's south pole hide ice. That's water for our base!"
+    },
+    {
+      "key": "mission.title.1",
+      "text": "MISSION STAGE 1 GOALS"
+    },
+    {
+      "key": "mission.title.2",
+      "text": "MISSION STAGE 2 GOALS"
+    },
+    {
+      "key": "mission.title.3",
+      "text": "MISSION STAGE 3 GOALS"
+    },
+    {
+      "key": "plan.title",
+      "text": "3. HOW OFTEN DO SHIPS COME?"
+    },
+    {
+      "key": "plan.often",
+      "text": "EVERY 2 DAYS"
+    },
+    {
+      "key": "plan.normal",
+      "text": "EVERY 3 DAYS"
+    },
+    {
+      "key": "plan.rare",
+      "text": "EVERY 4 DAYS"
+    },
+    {
+      "key": "plan.often.hint",
+      "text": "Ships come often, but only the small Bee rocket: big rockets need more time to get ready for launch."
+    },
+    {
+      "key": "plan.normal.hint",
+      "text": "A ship every 3 days: the Bee or the Pelican."
+    },
+    {
+      "key": "plan.rare.hint",
+      "text": "A ship only every 4 days, but it can even be the heavy Whale. The wait is long, so take more supplies now!"
+    },
+    {
+      "key": "plan.rockets",
+      "text": "Rockets: {0}"
+    },
+    {
+      "key": "plan.current",
+      "text": "Ships: {0}"
+    },
+    {
+      "key": "plan.locked_hint",
+      "text": "The plan was chosen before the first launch."
+    },
+    {
+      "key": "rocket.not_in_plan",
+      "text": "not in the supply plan"
+    },
+    {
+      "key": "error.rocket_not_in_plan",
+      "text": "This rocket is not in your supply plan. Choose a smaller one."
+    },
+    {
+      "key": "error.plan_locked",
+      "text": "The supply plan is chosen before the first launch."
+    },
+    {
+      "key": "error.unknown_plan",
+      "text": "Unknown supply plan."
+    },
+    {
+      "key": "days.ice",
+      "text": "ice +{0}/day"
+    },
+    {
+      "key": "launch.hold_kg",
+      "text": "HOLD {0}/{1} KG"
+    },
+    {
+      "key": "error.hold_full",
+      "text": "The cargo hold is full! Take something out first."
+    },
+    {
+      "key": "error.hold_too_small",
+      "text": "This cargo won't fit into this rocket's hold. Take something out first."
+    }
+  ]
+}

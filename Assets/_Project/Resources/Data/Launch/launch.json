@@ -2,18 +2,19 @@
   "_ai": "AI-assisted (Claude)",
   "_note": "Числа запуску, поставок і зв'язку (роль 04). Змінюй тут, а не в коді.",
   "emptyShipMassKg": 1000,
-  "fuelPerKg": 1.5,
-  "fuelPerKg_note": "Потрібне паливо = fuelPerKg × (порожній корабель + вантаж + люди).",
+  "fuelPerKg": 2,
+  "fuelPerKg_note": "Потрібне паливо = fuelPerKg × (порожній корабель + вантаж + люди). 2 = паливо важке: на зеленому світлі з екіпажем «Бджола» піднімає ≈ 400 кг вантажу, «Пелікан» ≈ 1100 кг, «Кит» ≈ 1900 кг. Було 1.5 — вантаж був надто «дешевий».",
   "maxFuelKg": 6000,
   "greenMargin": 1.1,
   "redMargin": 0.9,
   "margin_note": "Запас = паливо / потрібне паливо. >= greenMargin зелений, < redMargin червоний, між ними жовтий.",
-  "yellowMinChance": 0.30,
+  "yellowMinChance": 0.3,
   "yellowMaxChance": 0.95,
   "personMassKg": 150,
   "firstMissionSeats": 4,
-  "startFuelKg": 3000,
-  "supplyEveryDays": 4,
+  "startFuelKg": 3600,
+  "supplyEveryDays": 3,
+  "supplyEveryDays_note": "Кожні скільки ігрових днів летить поставка. 3 дні ≈ 9 хв гри: перша поставка встигає в розділі 1. У справжньому космосі вікна до Місяця бувають приблизно раз на місяць — у грі час прискорений.",
   "launchHour": 8,
   "launchHour_note": "О котрій годині дня стартує поставка за розкладом.",
   "flightHours": 12,
@@ -21,5 +22,39 @@
   "commsOpenHours": 30,
   "commsClosedHours": 18,
   "commsOffsetHours": 0,
-  "comms_note": "Вікно зв'язку: 30 годин є, 18 немає, і так по колу. Offset зсуває початок шаблону."
+  "comms_note": "Вікно зв'язку: 30 годин є, 18 немає, і так по колу. Offset зсуває початок шаблону.",
+  "defaultPlanId": "normal",
+  "supplyPlans_note": "Плани поставок, які гравець обирає перед першим стартом. everyDays — як часто летить поставка; rockets — які ракети (id з rockets.json) встигають підготувати за цей час. Ціна вибору: часто = тільки мала ракета; рідко = будь-яка, але база довше чекає.",
+  "supplyPlans": [
+    {
+      "id": "often",
+      "nameKey": "plan.often",
+      "hintKey": "plan.often.hint",
+      "everyDays": 2,
+      "rockets": [
+        "small"
+      ]
+    },
+    {
+      "id": "normal",
+      "nameKey": "plan.normal",
+      "hintKey": "plan.normal.hint",
+      "everyDays": 3,
+      "rockets": [
+        "small",
+        "medium"
+      ]
+    },
+    {
+      "id": "rare",
+      "nameKey": "plan.rare",
+      "hintKey": "plan.rare.hint",
+      "everyDays": 4,
+      "rockets": [
+        "small",
+        "medium",
+        "heavy"
+      ]
+    }
+  ]
 }

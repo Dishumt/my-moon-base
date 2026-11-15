@@ -481,10 +481,10 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: cde0efc48e2b92445acffd13c0ab7a61, type: 2}
+  m_PanelSettings: {fileID: 11400000, guid: 0aa68ad65012a754f8f4da55da2c7bb6, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: 0e725d850b9ed324a8b3e74b762295c2, type: 3}
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_Position: 0
   m_WorldSpaceSizeMode: 1
   m_WorldSpaceWidth: 1920
@@ -519,6 +519,206 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 017692bf8c25245428e419def745a1ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game::LaunchScreen
+  openOnStart: 1
+  rocketTexture: {fileID: 2800000, guid: 4994d70e72b045c094eae054162c2226, type: 3}
+  rocketLooks:
+  - id: small
+    texture: {fileID: 2800000, guid: dc89d76573d94f55a6fdb41143a0beb7, type: 3}
+  - id: medium
+    texture: {fileID: 2800000, guid: 4994d70e72b045c094eae054162c2226, type: 3}
+  - id: heavy
+    texture: {fileID: 2800000, guid: 16ea0c32ed28413194e8dcd7ce4cee9c, type: 3}
+  cargoIcons:
+  - id: water
+    texture: {fileID: 2800000, guid: eab93be6d4f3f49459dbcc2b2994bbfd, type: 3}
+  - id: food
+    texture: {fileID: 2800000, guid: 0396f6a7407191e429edf35274ce86a5, type: 3}
+  - id: oxygen
+    texture: {fileID: 2800000, guid: 2fe5396e6190f674baea8fde95a89a57, type: 3}
+  - id: medkits
+    texture: {fileID: 2800000, guid: 01ba0421cdac8524b8d34dc20af7612a, type: 3}
+  - id: materials
+    texture: {fileID: 2800000, guid: 3f8c66128c1fe944da5098a973be5960, type: 3}
+  - id: kit_habitat
+    texture: {fileID: 2800000, guid: 91766e3c4177444b9bea265aef03c21c, type: 3}
+  - id: kit_solar
+    texture: {fileID: 2800000, guid: c7bb38752ea84e2d8f408f5785460866, type: 3}
+  - id: kit_battery
+    texture: {fileID: 2800000, guid: bfb8efdcb2a54afead71486e5b6c3ca2, type: 3}
+  - id: kit_greenhouse
+    texture: {fileID: 2800000, guid: db4c80b02951485fb3d076a7795d9101, type: 3}
+  - id: kit_shelter
+    texture: {fileID: 2800000, guid: 8e47633e0f33f344aa785888ace7228c, type: 3}
+  - id: kit_medbay
+    texture: {fileID: 2800000, guid: 4c6dea224e034d6f93e80ed802625117, type: 3}
+  - id: kit_antenna
+    texture: {fileID: 2800000, guid: 1553ed83118445b8835428570aa4f2b0, type: 3}
+  - id: kit_lab
+    texture: {fileID: 2800000, guid: fe4a0720e73b4190a788bd6c789d8a82, type: 3}
+  crewSuits:
+  - role: 0
+    walkRight:
+    - {fileID: 2800000, guid: 55a6a2fd54f850846ae4e534417237bb, type: 3}
+    - {fileID: 2800000, guid: ae32e1ba1fc49274db5cfc2025e5e5bf, type: 3}
+    - {fileID: 2800000, guid: dbedeae83582979489a1d2da71f49f51, type: 3}
+    - {fileID: 2800000, guid: 315c151f5da58c14489b32aed1555658, type: 3}
+    back: {fileID: 2800000, guid: 9d6c4fad46b271245a242739ff31b1f7, type: 3}
+  - role: 1
+    walkRight:
+    - {fileID: 2800000, guid: a303a4b3407aa6c46a7981e0c181c330, type: 3}
+    - {fileID: 2800000, guid: 3ff53949e6d340849bb563795052ed99, type: 3}
+    - {fileID: 2800000, guid: 7917c2a26dc5b6945a3757300cb48f00, type: 3}
+    - {fileID: 2800000, guid: 6d90069ae3aff9b4cbe8c1c94d5790e1, type: 3}
+    back: {fileID: 2800000, guid: e896831f55c2e2243a2f3229431a7072, type: 3}
+  - role: 2
+    walkRight:
+    - {fileID: 2800000, guid: e80ff2afbe5aeab43a71fc7fca317a27, type: 3}
+    - {fileID: 2800000, guid: 9642aeeb7747e104bb2243f45c279256, type: 3}
+    - {fileID: 2800000, guid: c913d0713584e6b46b83ae565b0c7312, type: 3}
+    - {fileID: 2800000, guid: 357fac6f32627d149ab625d74a1f8c52, type: 3}
+    back: {fileID: 2800000, guid: d93fc3a13af69b947b7836bc0e0e4475, type: 3}
+  - role: 3
+    walkRight:
+    - {fileID: 2800000, guid: 56a6e4947b032ef4584e143fec3cbe92, type: 3}
+    - {fileID: 2800000, guid: 3fc046f9bd29b724db142cfef575c07b, type: 3}
+    - {fileID: 2800000, guid: f39ad85f674a0874096f8a23c664ef2a, type: 3}
+    - {fileID: 2800000, guid: 38dc5ec47e086b445b2d1faf7e7a74c8, type: 3}
+    back: {fileID: 2800000, guid: b5b9e0ef2a7071b4b84bd92a81e22c31, type: 3}
+  showLaunchPad: 1
+  attachToTablet: 1
+  flightSeconds: 3
+--- !u!1 &2100000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2100000002}
+  - component: {fileID: 2100000003}
+  - component: {fileID: 2100000004}
+  m_Layer: 0
+  m_Name: Game
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2100000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e014cf4541324c98a6287945628dc954, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game::GameBootstrap
+  chapterFile: Chapters/chapter_01
+  continueFromSave: 0
+  autoSave: 0
+--- !u!114 &2100000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d4200fff2044f479aff2caaf1d3e503, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game::DebugPanel
+  visible: 1
+  scale: 1.3
+--- !u!1 &2100000011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2100000012}
+  - component: {fileID: 2100000013}
+  - component: {fileID: 2100000014}
+  m_Layer: 0
+  m_Name: Tablet
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2100000012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2100000013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 0aa68ad65012a754f8f4da55da2c7bb6, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 2ff312574a234210893bf15f4e682dcb, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!114 &2100000014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0e6873415284472a3a84bf2568346fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game::TabletController
+  startTab: supply
+  foodLowPercent: 25
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -527,3 +727,5 @@ SceneRoots:
   - {fileID: 376229644}
   - {fileID: 1342412060}
   - {fileID: 1570994827}
+  - {fileID: 2100000002}
+  - {fileID: 2100000012}

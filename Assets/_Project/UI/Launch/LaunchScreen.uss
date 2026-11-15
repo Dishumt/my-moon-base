@@ -1,17 +1,21 @@
 /* AI-assisted: written with Claude. See docs/AI_USE.md */
 /* Власні класи екрана запуску. Усе спільне (.tablet, .panel, .btn, .t-label...) береться з Theme.uss */
 
-.body { flex-direction: row; flex-grow: 1; margin-top: 14px; }
+.body { flex-direction: row; flex-grow: 1; flex-shrink: 1; margin-top: 10px; }
 .pad { padding: 16px 20px; }
-.cargo-panel { width: 520px; }
+.cargo-panel { width: 500px; }
+.rocket-panel { width: 270px; }
+.mr-16 { margin-right: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
 .ship-panel { flex-grow: 1; }
 
 /* --- рядки вантажу (їх створює код: cargo-row, cargo-name, cargo-count, small-btn) --- */
 .cargo-row {
     flex-direction: row;
     align-items: center;
-    min-height: 72px;
-    margin-bottom: 8px;
+    min-height: 52px;
+    margin-bottom: 6px;
     padding: 4px 12px;
     background-color: var(--color-card);
     border-width: 2px;
@@ -21,22 +25,24 @@
 .cargo-row:hover { border-color: var(--color-accent); }
 .cargo-name {
     flex-grow: 1;
-    font-size: 18px;
-    letter-spacing: 2px;
+    flex-shrink: 1;
+    font-size: 16px;
+    letter-spacing: 1px;
+    white-space: normal;
     color: var(--color-text);
 }
 .cargo-count {
-    width: 72px;
-    font-size: 28px;
+    width: 48px;
+    font-size: 24px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
     color: var(--color-energy);
 }
 .small-btn {
-    width: 64px;
-    height: 64px;
+    width: 44px;
+    height: 44px;
     margin: 0 0 0 6px;
-    font-size: 34px;
+    font-size: 28px;
     color: var(--color-accent);
     background-color: rgba(0, 0, 0, 0);
     border-width: 2px;
@@ -47,7 +53,7 @@
 .small-btn:active { scale: 0.95 0.95; }
 
 /* --- ракета з прямокутників --- */
-.ship-area { height: 230px; align-items: center; justify-content: center; }
+.ship-area { height: 140px; align-items: center; justify-content: center; }
 .ship { width: 120px; height: 210px; }
 .ship-nose-tip { position: absolute; left: 50px; top: 0px; width: 20px; height: 14px; background-color: var(--color-accent); }
 .ship-nose-mid { position: absolute; left: 40px; top: 14px; width: 40px; height: 18px; background-color: var(--color-accent); }
@@ -82,7 +88,7 @@
 .legend-cargo { background-color: var(--color-energy); }
 
 /* --- низ: паливо, світлофор, запуск --- */
-.bottom-row { flex-direction: row; align-items: center; margin-top: 14px; }
+.bottom-row { flex-direction: row; align-items: center; margin-top: 8px; padding: 10px 20px; }
 .fuel-box { flex-grow: 1; margin-right: 24px; }
 
 .unity-base-slider__tracker { background-color: var(--color-line); border-radius: 0; }
@@ -111,3 +117,283 @@
 .light--yellow-on { background-color: var(--color-energy); }
 .light--green-on  { background-color: var(--color-ok); }
 .cargo-mass { width: 80px; font-size: 14px; color: var(--color-muted); -unity-text-align: middle-right; margin-right: 6px; }
+
+/* --- додано роллю 04: вибір ракети, групи вантажів, підказки --- */
+.rocket-card {
+    flex-direction: row;
+    align-items: center;
+    min-height: 62px;
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    background-color: var(--color-card);
+    border-width: 2px;
+    border-color: var(--color-line);
+}
+.rocket-card:hover { border-color: var(--color-accent); }
+.rocket-card--on { border-color: var(--color-energy); background-color: var(--color-card-selected); }
+.rocket-pic { width: 52px; height: 52px; margin-right: 8px; -unity-background-scale-mode: scale-to-fit; background-color: var(--color-void); }
+.rocket-texts { flex-grow: 1; flex-shrink: 1; }
+.rocket-name { font-size: 15px; -unity-font-style: bold; color: var(--color-text); white-space: normal; }
+.rocket-stats { font-size: 13px; color: var(--color-muted); white-space: normal; }
+.why-text { font-size: 14px; margin-top: 6px; }
+
+.cargo-scroll { flex-grow: 1; }
+.cargo-group { font-size: 13px; letter-spacing: 3px; color: var(--color-energy); margin: 8px 0 6px 2px; }
+.cargo-icon { width: 36px; height: 36px; margin-right: 10px; -unity-background-scale-mode: scale-to-fit; }
+.cargo-icon--none { display: none; }
+.cargo-row--on { border-color: var(--color-energy); }
+.help-btn {
+    width: 36px;
+    height: 36px;
+    margin: 0 4px 0 0;
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: var(--color-energy);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 2px;
+    border-color: var(--color-energy);
+    border-radius: 18px;
+}
+.help-btn:hover { background-color: rgba(255, 200, 61, 0.15); }
+
+.info-box { margin-top: 8px; flex-grow: 1; padding: 6px 10px; }
+.info-box > .t-body { font-size: 15px; }
+
+/* --- пусковий майданчик (роль 04): позиції ставить код LaunchPadView --- */
+.launch-hidden { display: none; }
+.pad-view { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: #12305A; overflow: hidden; }
+.pad-view--hidden { display: none; }
+.pad-scene { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.pad-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.pad-ground { background-color: #3B4250; border-top-width: 4px; border-color: #5A6272; }
+.pad-platform { background-color: #23272F; border-width: 2px; border-color: #5A6272; }
+.pad-tower { background-color: rgba(0, 0, 0, 0); border-left-width: 4px; border-right-width: 4px; border-color: #C9562E; }
+.pad-tower-bar { background-color: #C9562E; }
+.pad-arm { background-color: #C9562E; }
+.pad-rocket { -unity-background-scale-mode: scale-to-fit; }
+.pad-rocket--box { background-color: var(--color-soft); border-top-left-radius: 60px; border-top-right-radius: 60px; }
+.pad-flame { position: absolute; background-color: #FF8A2A; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; transform-origin: 50% 0%; opacity: 0; }
+.pad-flame-core { position: absolute; left: 25%; top: 0; width: 50%; height: 60%; background-color: #FFE27A; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
+.pad-trail { background-color: #FFB347; opacity: 0.8; }
+.pad-puff { position: absolute; background-color: #D9DDE3; }
+.pad-astronaut { position: absolute; -unity-background-scale-mode: scale-to-fit; }
+.pad-astronaut--box { background-color: var(--color-accent); }
+.pad-name { position: absolute; width: 120px; font-size: 13px; color: #FFFFFF; -unity-text-align: middle-center; }
+.pad-title { position: absolute; left: 24px; top: 18px; color: #FFFFFF; }
+.pad-status { position: absolute; left: 24px; top: 44px; right: 260px; color: #FFFFFF; white-space: normal; }
+.pad-count { position: absolute; left: 24px; right: 55%; top: 110px; font-size: 110px; -unity-font-style: bold; color: #FFE27A; -unity-text-align: middle-center; }
+.pad-fact { position: absolute; left: 24px; bottom: 24px; width: 520px; }
+.pad-skip { position: absolute; right: 24px; top: 18px; }
+
+/* --- цілі місії, дні запасів, «Центр керування» (роль 04) --- */
+.goals-box { margin-top: 8px; padding-top: 8px; border-top-width: 1px; border-color: var(--color-line); }
+.goal-row { flex-direction: row; align-items: center; margin-bottom: 6px; }
+.goal-box { width: 16px; height: 16px; margin-right: 8px; border-width: 2px; border-color: var(--color-muted); }
+.goal-box--done { background-color: var(--color-ok); border-color: var(--color-ok); }
+.goal-text { font-size: 14px; color: var(--color-soft); white-space: normal; flex-shrink: 1; }
+.goal-text--done { color: var(--color-ok); }
+
+.days-box { margin-top: 8px; }
+.days-row { flex-direction: row; align-items: center; margin-bottom: 4px; }
+.days-name { width: 70px; font-size: 13px; color: var(--color-soft); }
+.days-bar { flex-grow: 1; height: 14px; flex-direction: row; background-color: var(--color-card); border-width: 1px; border-color: var(--color-line); overflow: hidden; }
+.days-have { background-color: var(--color-line-hi); }
+.days-bring { background-color: var(--color-energy); }
+.days-mark { position: absolute; left: 50%; top: -2px; width: 2px; height: 16px; background-color: #FFFFFF; }
+.days-value { width: 104px; font-size: 13px; -unity-text-align: middle-right; color: var(--color-soft); }
+.days-row--bad .days-value { color: var(--color-alarm); }
+.days-row--warn .days-value { color: var(--color-warn); }
+.days-row--ok .days-value { color: var(--color-ok); }
+.days-row--bad .days-have { background-color: var(--color-alarm); }
+
+.advisor { flex-direction: row; align-items: center; margin-top: 8px; min-height: 40px; padding: 6px 14px; }
+.advisor--good { border-color: var(--color-ok); background-color: rgba(80, 200, 120, 0.08); }
+.advisor--warn { border-color: var(--color-warn); background-color: rgba(255, 154, 92, 0.08); }
+.advisor-name { margin-right: 12px; color: var(--color-accent); }
+.advisor-text { flex-grow: 1; flex-shrink: 1; font-size: 16px; }
+
+.cargo-row--locked { opacity: 0.45; }
+
+/* --- компактна розкладка, щоб усе влазило в планшет 1280×720 (роль 04) --- */
+.body { min-height: 0; overflow: hidden; }
+.rocket-panel, .cargo-panel, .ship-panel { padding-top: 10px; padding-bottom: 10px; }
+.cargo-scroll { flex-shrink: 1; min-height: 0; }
+.info-box { flex-grow: 0; flex-shrink: 0; height: 86px; margin-top: 6px; padding: 4px 10px; overflow: hidden; }
+.info-box > .t-body { font-size: 13px; }
+.info-box > .t-label { font-size: 12px; }
+.ship-area { height: 104px; }
+.legend { margin-top: 4px; }
+.days-box { margin-top: 6px; }
+.days-row { margin-bottom: 2px; }
+.advisor { min-height: 36px; margin-top: 6px; padding: 4px 14px; flex-shrink: 0; }
+.advisor-text { font-size: 15px; }
+.bottom-row { height: 104px; flex-shrink: 0; padding: 8px 16px; margin-top: 6px; }
+.fuel-box > .t-body { font-size: 15px; margin-bottom: 2px; }
+.fuel-box > .t-label { font-size: 12px; margin-bottom: 2px; }
+.fuel-box > .msg { margin-top: 2px; min-height: 16px; font-size: 13px; }
+.light { width: 44px; height: 44px; border-radius: 22px; margin: 3px; }
+.traffic-light { padding: 4px; margin-right: 16px; }
+.launch-box { width: 280px; }
+.launch-box > .t-big { font-size: 22px; margin-bottom: 4px; }
+.launch-btn { height: 52px; }
+.hint-small { display: none; }
+
+/* --- вантажі плитками (роль 04) --- */
+#cargo-list { flex-direction: row; flex-wrap: wrap; }
+.cargo-group { width: 100%; }
+.cargo-row {
+    flex-direction: column;
+    align-items: stretch;
+    width: 136px;
+    min-height: 0;
+    height: 124px;
+    margin: 0 6px 6px 0;
+    padding: 6px 6px 4px 6px;
+}
+.tile-top { flex-direction: row; align-items: center; height: 40px; }
+.cargo-row .cargo-icon { width: 40px; height: 40px; margin-right: 0; }
+.cargo-row .cargo-icon--none { display: flex; background-color: var(--color-energy); opacity: 0.35; }
+.cargo-row .help-btn { margin: 0; }
+.tile-gap { flex-grow: 1; }
+.cargo-row .cargo-name { flex-grow: 1; font-size: 13px; letter-spacing: 0; margin-top: 2px; -unity-font-style: bold; }
+.cargo-row .cargo-mass { width: auto; font-size: 12px; -unity-text-align: middle-left; margin: 0; }
+.tile-bottom { flex-direction: row; align-items: center; justify-content: space-between; }
+.cargo-row .small-btn { width: 36px; height: 30px; margin: 0; font-size: 22px; }
+.cargo-row .cargo-count { width: 40px; font-size: 20px; }
+.cargo-row--has { border-color: var(--color-accent); background-color: var(--color-card-selected); }
+
+/* --- трюм ракети: кожен ящик — одне місце вантажу --- */
+.ship-area { flex-direction: row; justify-content: center; }
+.hold-box { width: 118px; margin-left: 8px; }
+.hold-title { font-size: 11px; letter-spacing: 2px; color: var(--color-muted); }
+.hold {
+    flex-grow: 1;
+    flex-direction: row;
+    flex-wrap: wrap-reverse;
+    align-content: flex-start;
+    padding: 2px;
+    background-color: var(--color-void);
+    border-width: 2px;
+    border-color: var(--color-line);
+}
+.crate { width: 20px; height: 20px; margin: 1px; background-color: var(--color-line-hi); -unity-background-scale-mode: scale-to-fit; border-width: 1px; border-color: var(--color-line); }
+.crate--kit { background-color: var(--color-energy); }
+.crate--more { background-color: rgba(0, 0, 0, 0); border-width: 0; font-size: 11px; color: var(--color-soft); -unity-text-align: middle-center; width: 42px; }
+.mass-like { font-size: 13px; color: var(--color-energy); white-space: normal; }
+
+/* --- звіт місії із зірочками --- */
+.report { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(2, 7, 13, 0.85); align-items: center; justify-content: center; }
+.report--hidden { display: none; }
+.report-card { width: 620px; padding: 24px 32px; align-items: center; }
+.report-title { margin-bottom: 12px; }
+.report-stars { flex-direction: row; margin-bottom: 14px; }
+.star { width: 72px; height: 72px; margin: 0 8px; }
+.star--small { width: 26px; height: 26px; margin: 0 10px 0 0; }
+.report-list { align-self: stretch; margin-bottom: 12px; }
+.report-row { flex-direction: row; align-items: center; margin-bottom: 8px; }
+.report-text { font-size: 16px; color: var(--color-soft); white-space: normal; flex-shrink: 1; }
+.report-text--off { color: var(--color-muted); }
+.report-tip { align-self: stretch; margin-bottom: 14px; }
+.report-next { flex-grow: 0; width: 260px; }
+
+/* --- вкладка «ПОСТАВКИ» в планшеті (SupplyTabView, роль 04). Ці стилі копіюються у вкладку з екрана запуску --- */
+.sup-root { flex-grow: 1; align-self: stretch; padding: 12px 16px; }
+.sup-top { flex-direction: row; align-items: center; margin-bottom: 12px; }
+.sup-next { margin-right: 32px; }
+.sup-big { font-size: 34px; -unity-font-style: bold; color: var(--color-accent); }
+.sup-status { margin-right: 16px; }
+.sup-link { flex-direction: row; align-items: center; margin-top: 4px; }
+.sup-open { flex-grow: 0; width: 340px; height: 60px; }
+
+.sup-steps { flex-direction: row; margin-bottom: 12px; }
+.sup-step { flex-grow: 1; flex-basis: 0; margin-right: 6px; padding: 8px 10px; background-color: var(--color-card); border-width: 2px; border-color: var(--color-line); }
+.sup-step-title { font-size: 13px; letter-spacing: 1px; color: var(--color-text); white-space: normal; -unity-font-style: bold; margin-bottom: 4px; }
+.sup-step-sub { font-size: 12px; color: var(--color-muted); white-space: normal; }
+.sup-step--now { border-color: var(--color-accent); background-color: var(--color-card-selected); }
+.sup-step--now .sup-step-title { color: var(--color-accent); }
+.sup-step--done { opacity: 0.55; }
+.sup-step--done .sup-step-sub { color: var(--color-ok); }
+
+.sup-order { flex-direction: row; flex-grow: 1; padding: 12px 16px; }
+.sup-rocket-box { width: 120px; align-items: center; margin-right: 16px; }
+.sup-rocket { width: 100px; height: 150px; -unity-background-scale-mode: scale-to-fit; }
+.sup-rocket-name { font-size: 12px; color: var(--color-soft); -unity-text-align: middle-center; white-space: normal; }
+.sup-order-mid { flex-grow: 1; flex-shrink: 1; margin-right: 16px; }
+.sup-chips { flex-direction: row; flex-wrap: wrap; margin-top: 6px; }
+.sup-chip { flex-direction: row; align-items: center; margin: 0 6px 6px 0; padding: 3px 8px 3px 4px; background-color: var(--color-card); border-width: 1px; border-color: var(--color-line); }
+.sup-chip-icon { width: 24px; height: 24px; margin-right: 6px; -unity-background-scale-mode: scale-to-fit; }
+.sup-chip-icon--kit { background-color: var(--color-energy); width: 14px; height: 14px; margin: 0 6px 0 4px; }
+.sup-chip-text { font-size: 13px; color: var(--color-soft); }
+.sup-order-right { width: 330px; }
+.sup-risk { flex-direction: row; align-items: center; margin: 6px 0 8px 0; }
+.sup-light { width: 22px; height: 22px; border-radius: 11px; margin-right: 10px; background-color: var(--color-card); }
+.sup-light--green { background-color: var(--color-ok); }
+.sup-light--yellow { background-color: var(--color-energy); }
+.sup-light--red { background-color: var(--color-alarm); }
+.sup-order-right > .note { font-size: 14px; }
+
+/* --- політ Дніпро → південний полюс Місяця (FlightMapView, роль 04) --- */
+.flight-view { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: #050B18; overflow: hidden; }
+.flight-view--hidden { display: none; }
+.flight-title { position: absolute; left: 24px; top: 18px; color: #FFFFFF; }
+.flight-caption { position: absolute; left: 24px; top: 44px; right: 260px; color: #FFE27A; white-space: normal; }
+.flight-fact { position: absolute; left: 24px; bottom: 24px; width: 560px; }
+.flight-scale { position: absolute; right: 24px; bottom: 24px; font-size: 12px; color: var(--color-muted); }
+.flight-skip { position: absolute; right: 24px; top: 18px; }
+.flight-rocket { position: absolute; -unity-background-scale-mode: scale-to-fit; }
+.flight-rocket--box { background-color: #FF9A3D; }
+.flight-map-label { position: absolute; width: 120px; font-size: 14px; letter-spacing: 3px; color: var(--color-muted); -unity-text-align: middle-center; }
+.flight-city { position: absolute; width: 120px; font-size: 13px; color: #FFE27A; -unity-text-align: middle-center; -unity-font-style: bold; }
+
+/* --- щоб текст нікуди не налазив (роль 04) --- */
+/* шапка: статус стискається, а не налазить на заголовок */
+#status-label { flex-shrink: 1; font-size: 13px; -unity-text-align: middle-right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#title-label { flex-shrink: 0; }
+/* картки ракет */
+.rocket-name { font-size: 14px; }
+.rocket-stats { font-size: 12px; }
+/* ракета на планшеті вміщується у свою область і не закриває назву та «Місця екіпажу» */
+.ship-area { height: 112px; overflow: hidden; }
+.ship { width: 90px; height: 108px; }
+/* плитки: місце на назву у 2 рядки */
+.cargo-row { height: 134px; }
+.tile-top { height: 36px; }
+.cargo-row .cargo-icon { width: 36px; height: 36px; }
+.cargo-row .cargo-name { font-size: 12px; white-space: normal; }
+/* «Навіщо це?»: вище і дрібніший шрифт */
+.info-box { height: 110px; }
+.info-box > .t-body { font-size: 12px; white-space: normal; }
+.info-box > .t-label { font-size: 12px; color: var(--color-energy); }
+.mass-like, .days-title, #days-title { white-space: normal; }
+/* кнопка: довгі написи (НЕМАЄ ЗВ'ЯЗКУ…) влазять */
+.launch-btn { font-size: 16px; letter-spacing: 1px; white-space: normal; }
+/* майданчик: «СТАРТ!» менше за цифри */
+.pad-count--word { font-size: 72px; }
+.pad-status { font-size: 20px; }
+.pad-fact { font-size: 15px; }
+/* політ: підписи ширші */
+.flight-map-label, .flight-city { width: 200px; white-space: normal; }
+.flight-caption { font-size: 22px; }
+.flight-fact { font-size: 15px; }
+/* вкладка планшета */
+.sup-next { max-width: 440px; }
+.sup-next > .t-body { white-space: normal; font-size: 14px; }
+.sup-open { white-space: normal; font-size: 16px; }
+.report-text { white-space: normal; }
+.goal-text { white-space: normal; }
+#goals-title { white-space: normal; }
+
+/* --- план поставок (роль 04) --- */
+.legend { display: none; }               /* кольори смужки маси пояснює підпис «вантаж / екіпаж» у тексті */
+.ship-area { height: 100px; }
+.ship { height: 98px; }
+.plan-box { margin-top: 6px; }
+.plan-list { flex-direction: row; }
+.plan-btn { flex-grow: 1; flex-basis: 0; height: 30px; margin: 0 4px 0 0; padding: 0 4px; font-size: 12px; letter-spacing: 0; white-space: normal;
+            color: var(--color-soft); background-color: var(--color-card); border-width: 2px; border-color: var(--color-line); border-radius: 0; }
+.plan-btn:hover { border-color: var(--color-accent); }
+.plan-btn--on { border-color: var(--color-energy); color: var(--color-energy); background-color: var(--color-card-selected); }
+.rocket-card--locked { opacity: 0.4; }
+
+/* --- планшет екрана запуску підлаштовується під ширину вікна (не обрізається справа) --- */
+.launch-stage > .tablet { left: 16px; right: 16px; top: 12px; bottom: 12px; width: auto; height: auto; }

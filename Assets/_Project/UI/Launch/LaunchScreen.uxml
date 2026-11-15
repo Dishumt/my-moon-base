@@ -21,13 +21,29 @@
 
             <ui:VisualElement class="body">
 
+                <ui:VisualElement name="rocket-panel" class="panel pad rocket-panel mr-16">
+                    <ui:Label name="rocket-title" text="1. CHOOSE A ROCKET" class="t-label mb-8" />
+                    <ui:VisualElement name="rocket-list" />
+                    <ui:VisualElement name="goals-box" class="goals-box">
+                        <ui:Label name="goals-title" text="MISSION GOALS" class="t-label mb-4" />
+                        <ui:VisualElement name="goals-list" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
                 <ui:VisualElement name="cargo-panel" class="panel pad cargo-panel mr-16">
-                    <ui:Label name="cargo-title" text="SELECT CARGO" class="t-label mb-12" />
-                    <ui:VisualElement name="cargo-list" />
+                    <ui:Label name="cargo-title" text="2. PACK THE CARGO" class="t-label mb-8" />
+                    <ui:ScrollView name="cargo-scroll" class="cargo-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
+                        <ui:VisualElement name="cargo-list" />
+                    </ui:ScrollView>
+                    <ui:VisualElement name="info-box" class="note info-box">
+                        <ui:Label name="info-title" text="WHAT IS IT FOR?" class="t-label mb-4" />
+                        <ui:Label name="info-text" text="" class="t-body" />
+                        <ui:Label name="info-gives" text="" class="t-body c-en" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
                 <ui:VisualElement name="ship-panel" class="panel panel--side ship-panel">
-                    <ui:Label name="ship-title" text="SHIP" class="t-label mb-8" />
+                    <ui:Label name="ship-title" text="SHIP" class="t-label mb-4" />
                     <ui:VisualElement class="ship-area">
                         <ui:VisualElement name="ship" class="ship">
                             <ui:VisualElement class="ship-nose-tip" />
@@ -41,9 +57,14 @@
                             <ui:VisualElement class="ship-flame" />
                             <ui:VisualElement class="ship-flame-core" />
                         </ui:VisualElement>
+                        <ui:VisualElement class="hold-box">
+                            <ui:Label name="hold-title" text="HOLD" class="hold-title" />
+                            <ui:VisualElement name="hold" class="hold" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:Label name="seats-label" text="" class="t-body mb-4" />
-                    <ui:Label name="mass-label" text="Mass: 1600 kg" class="t-body c-acc mb-8" />
+                    <ui:Label name="mass-label" text="Mass: 1600 kg" class="t-body c-acc" />
+                    <ui:Label name="mass-like" text="" class="mass-like mb-4" />
                     <ui:VisualElement class="mass-bar">
                         <ui:VisualElement name="mass-crew" class="mass-crew" />
                         <ui:VisualElement name="mass-cargo" class="mass-cargo" />
@@ -54,13 +75,27 @@
                         <ui:VisualElement class="legend-dot legend-cargo" />
                         <ui:Label name="legend-cargo" text="CARGO" class="t-label" />
                     </ui:VisualElement>
+                    <ui:VisualElement name="days-box" class="days-box">
+                        <ui:Label name="days-title" text="SUPPLIES WILL LAST" class="t-label mb-4" />
+                        <ui:VisualElement name="days-list" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="plan-box" class="plan-box">
+                        <ui:Label name="plan-title" text="3. SUPPLY SHIPS" class="t-label mb-4" />
+                        <ui:VisualElement name="plan-list" class="plan-list" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
             </ui:VisualElement>
 
+            <ui:VisualElement name="advisor" class="note advisor">
+                <ui:Label name="advisor-name" text="MISSION CONTROL:" class="t-label advisor-name" />
+                <ui:Label name="advisor-text" text="" class="t-body advisor-text" />
+            </ui:VisualElement>
+
             <ui:VisualElement name="bottom" class="panel pad bottom-row">
                 <ui:VisualElement class="fuel-box">
-                    <ui:Label name="fuel-label" text="Fuel: 3000 kg" class="t-body mb-8" />
+                    <ui:Label name="fuel-label" text="Fuel: 3000 kg" class="t-body mb-4" />
+                    <ui:Label name="fuel-why" text="" class="t-label mb-4" />
                     <ui:Slider name="fuel-slider" low-value="0" high-value="6000" value="3000" />
                     <ui:Label name="result-label" text="" class="msg mt-8" />
                 </ui:VisualElement>
@@ -73,11 +108,51 @@
 
                 <ui:VisualElement class="launch-box">
                     <ui:Label name="risk-label" text="Risk: 0%" class="t-big mb-4" />
-                    <ui:Label name="hint-label" text="" class="t-body mb-8" />
+                    <ui:Label name="hint-label" text="" class="t-body hint-small" />
                     <ui:Button name="launch-button" text="LAUNCH" class="btn btn--primary launch-btn" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
+        </ui:VisualElement>
+
+        <ui:VisualElement name="pad-view" class="pad-view pad-view--hidden">
+            <ui:VisualElement name="pad-scene" class="pad-scene" picking-mode="Ignore">
+                <ui:VisualElement name="pad-ground" class="pad-ground" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-platform" class="pad-platform" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-trail" class="pad-trail" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-tower" class="pad-tower" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-arm" class="pad-arm" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-rocket" class="pad-rocket" picking-mode="Ignore">
+                    <ui:VisualElement name="pad-flame" class="pad-flame" picking-mode="Ignore">
+                        <ui:VisualElement class="pad-flame-core" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="pad-smoke" class="pad-layer" picking-mode="Ignore" />
+                <ui:VisualElement name="pad-crew" class="pad-layer" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="pad-title" text="LAUNCH PAD" class="t-label pad-title" />
+            <ui:Label name="pad-status" text="" class="t-big pad-status" />
+            <ui:Label name="pad-count" text="" class="pad-count" />
+            <ui:Label name="pad-fact" text="" class="note note--fact pad-fact" />
+            <ui:Button name="pad-skip" text="SKIP" class="btn btn--small pad-skip" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="flight-view" class="flight-view flight-view--hidden">
+            <ui:Label name="flight-title" text="FLIGHT TO THE MOON" class="t-label flight-title" />
+            <ui:Label name="flight-caption" text="" class="t-big flight-caption" />
+            <ui:Label name="flight-fact" text="" class="note note--fact flight-fact" />
+            <ui:Label name="flight-scale" text="" class="flight-scale" />
+            <ui:Button name="flight-skip" text="SKIP" class="btn btn--small flight-skip" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="report" class="report report--hidden">
+            <ui:VisualElement class="panel report-card">
+                <ui:Label name="report-title" text="MISSION REPORT" class="t-title report-title" />
+                <ui:VisualElement name="report-stars" class="report-stars" />
+                <ui:VisualElement name="report-list" class="report-list" />
+                <ui:Label name="report-tip" text="" class="note note--fact report-tip" />
+                <ui:Button name="report-next" text="CONTINUE" class="btn btn--primary report-next" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

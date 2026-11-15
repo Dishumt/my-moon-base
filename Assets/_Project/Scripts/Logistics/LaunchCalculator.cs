@@ -33,14 +33,23 @@ public class LaunchCalculator
 
     public LaunchData Data => data;
 
-    /// <summary>Порахувати за масою вантажу, кількістю людей і паливом.</summary>
+    /// <summary>Порахувати за масою вантажу, кількістю людей і паливом (ракета з launch.json).</summary>
     public LaunchResult Evaluate(float cargoKg, int people, float fuelKg)
     {
+        return Evaluate(cargoKg, people, fuelKg, null);
+    }
+
+    /// <summary>Те саме для вибраної ракети: її маса і бак замість чисел з launch.json. rocket = null — як без ракети.</summary>
+    public LaunchResult Evaluate(float cargoKg, int people, float fuelKg, RocketData rocket)
+    {
+        float emptyKg = rocket != null ? rocket.emptyMassKg : data.emptyShipMassKg;
+        float tankKg = rocket != null ? rocket.maxFuelKg : data.maxFuelKg;
+
         var r = new LaunchResult();
         r.CargoKg = Math.Max(0f, cargoKg);
         r.PeopleKg = Math.Max(0, people) * data.personMassKg;
-        r.TotalMassKg = data.emptyShipMassKg + r.CargoKg + r.PeopleKg;
-        r.FuelKg = Math.Max(0f, Math.Min(fuelKg, data.maxFuelKg));
+        r.TotalMassKg = emptyKg + r.CargoKg + r.PeopleKg;
+        r.FuelKg = Math.Max(0f, Math.Min(fuelKg, tankKg));
         r.FuelNeededKg = data.fuelPerKg * r.TotalMassKg;
         r.Margin = r.FuelNeededKg > 0f ? r.FuelKg / r.FuelNeededKg : 0f;
 
@@ -69,7 +78,13 @@ public class LaunchCalculator
     /// <summary>Порахувати за списком вантажу з каталогу.</summary>
     public LaunchResult Evaluate(List<CargoLine> cargo, CargoCatalog catalog, int people, float fuelKg)
     {
-        return Evaluate(CargoMass(cargo, catalog), people, fuelKg);
+        return Evaluate(CargoMass(cargo, catalog), people, fuelKg, null);
+    }
+
+    /// <summary>Порахувати за списком вантажу для вибраної ракети.</summary>
+    public LaunchResult Evaluate(List<CargoLine> cargo, CargoCatalog catalog, int people, float fuelKg, RocketData rocket)
+    {
+        return Evaluate(CargoMass(cargo, catalog), people, fuelKg, rocket);
     }
 
     /// <summary>Маса всього вантажу в кг.</summary>
