@@ -476,7 +476,7 @@
     },
     {
       "key": "pad.fail",
-      "text": "Not enough fuel! The rocket turns back to Earth."
+      "text": "Not enough fuel! The crew is safe: the capsule landed in the ocean. Repack the rocket and try again."
     },
     {
       "key": "pad.fact.1",
@@ -977,6 +977,46 @@
     {
       "key": "report.trip",
       "text": "On the way the crew ate {0} food and breathed {1} oxygen."
+    },
+    {
+      "key": "pad.telemetry",
+      "text": "T+{0} · altitude {1} km · speed {2} km/h"
+    },
+    {
+      "key": "pad.event.maxq",
+      "text": "Max Q: the air pushes hardest. Engines ease off a little."
+    },
+    {
+      "key": "pad.event.staging",
+      "text": "Stage separation! The empty first stage falls away."
+    },
+    {
+      "key": "pad.event.turn",
+      "text": "The rocket leans east and speeds up."
+    },
+    {
+      "key": "pad.event.orbit",
+      "text": "Engines off. We are in orbit!"
+    },
+    {
+      "key": "pad.event.abort",
+      "text": "ALARM! The engines stopped. The rescue system pulls the capsule away!"
+    },
+    {
+      "key": "pad.fact.staging",
+      "text": "Empty fuel tanks are just extra weight. The rocket drops them, so flying gets easier."
+    },
+    {
+      "key": "pad.fact.turn",
+      "text": "Rockets lean east on purpose: the Earth spins that way and gives them a free push."
+    },
+    {
+      "key": "pad.fact.orbit",
+      "text": "In orbit the ship flies about 28 000 km/h. That's 8 km every second!"
+    },
+    {
+      "key": "pad.fact.abort",
+      "text": "Real crew ships have a rescue system: small motors pull the capsule away from the rocket, and parachutes bring the crew down safely."
     }
   ]
 }

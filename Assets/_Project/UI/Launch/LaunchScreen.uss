@@ -409,3 +409,6 @@
 /* --- екіпаж у дорозі (роль 04) --- */
 .days-trip { font-size: 12px; white-space: normal; color: var(--color-warn); margin-top: 2px; }
 .report-trip { margin-top: 6px; white-space: normal; }
+
+/* --- телеметрія злету (роль 04) --- */
+.pad-telemetry { position: absolute; left: 24px; top: 100px; right: 40%; font-size: 18px; color: #9FE8FF; -unity-font-style: bold; white-space: normal; }
