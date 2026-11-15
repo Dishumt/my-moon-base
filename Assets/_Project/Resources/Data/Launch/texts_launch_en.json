@@ -64,7 +64,7 @@
     },
     {
       "key": "launch.mass",
-      "text": "Ship mass: {0} kg (cargo {1} kg)"
+      "text": "Ship to the Moon: {0} kg (cargo {1} kg)"
     },
     {
       "key": "launch.risk",
@@ -600,11 +600,11 @@
     },
     {
       "key": "launch.like_elephants",
-      "text": "With fuel it weighs like {0} elephants!"
+      "text": "With fuel the ship weighs like {0} elephants!"
     },
     {
       "key": "launch.like_cars",
-      "text": "With fuel it weighs like {0} cars!"
+      "text": "With fuel the ship weighs like {0} cars!"
     },
     {
       "key": "report.title",
@@ -733,6 +733,18 @@
     {
       "key": "launch.schedule",
       "text": "start {0} · lands {1}"
+    },
+    {
+      "key": "launch.mass_title",
+      "text": "WHY SO LIGHT?"
+    },
+    {
+      "key": "launch.mass_why",
+      "text": "We count only the ship that flies to the Moon: the capsule with the crew and the cargo. A real Moon rocket at launch weighs about 2,900 tonnes, like 600 elephants! Almost all of it is fuel, and its big stages fall off on the way."
+    },
+    {
+      "key": "pad.fact.6",
+      "text": "A real Moon rocket weighs about 2,900 tonnes at launch, like 600 elephants! Only a small capsule reaches the Moon."
     }
   ]
 }

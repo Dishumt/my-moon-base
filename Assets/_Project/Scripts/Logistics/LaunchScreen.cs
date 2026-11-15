@@ -90,6 +90,7 @@ public class LaunchScreen : MonoBehaviour
     // що зараз показано в полі «Навіщо це?»: вантаж або ракета (null — загальна підказка)
     CargoItemData infoItem;
     RocketData infoRocket;
+    bool infoMass;            // показати «чому корабель такий легкий»
 
     GameState State => GameBootstrap.Instance != null ? GameBootstrap.Instance.State : null;
     SupplySystem Supply => GameBootstrap.Instance != null ? GameBootstrap.Instance.GetSystem<SupplySystem>() : null;
@@ -144,6 +145,8 @@ public class LaunchScreen : MonoBehaviour
         hold = root.Q("hold");
         holdTitle = root.Q<Label>("hold-title");
         massLike = root.Q<Label>("mass-like");
+        // навели на масу корабля — пояснюємо, чому він важить лише тонни, а не тисячі тонн
+        root.Q("ship-panel")?.RegisterCallback<PointerEnterEvent>(_ => { infoItem = null; infoRocket = null; infoMass = true; RefreshInfo(); });
         report = root.Q("report");
         reportStars = root.Q("report-stars");
         reportList = root.Q("report-list");
@@ -287,6 +290,7 @@ public class LaunchScreen : MonoBehaviour
         SetResult(null);
         infoItem = null;
         infoRocket = null;
+        infoMass = false;
         failedTries = 0;
         report?.AddToClassList("report--hidden");
         BuildRocketCards();
@@ -463,6 +467,7 @@ public class LaunchScreen : MonoBehaviour
 
     void ShowInfo(CargoItemData item, RocketData rocket)
     {
+        infoMass = false;
         infoItem = item;
         infoRocket = item == null ? rocket : null;
         RefreshInfo();
@@ -483,6 +488,12 @@ public class LaunchScreen : MonoBehaviour
         {
             SetText(infoText, T(infoRocket.nameKey) + ". " + T(infoRocket.hintKey) + " " + T("rocket.why"));
             SetText(infoGives, T("rocket.stats", infoRocket.maxFuelKg.ToString("0"), infoRocket.flightHours));
+        }
+        else if (infoMass)
+        {
+            SetText(infoTitle, T("launch.mass_title"));
+            SetText(infoText, T("launch.mass_why"));
+            SetText(infoGives, "");
         }
         else
         {
