@@ -63,14 +63,18 @@ public static class FurnitureSetupTool
         item.centerX = ((xMin + xMax + 1) * 0.5f - w * 0.5f) / PixelsPerUnit;
     }
 
+    // Ці картинки гра читає попіксельно (FurnitureLife відрізає рослини від полиці, щоб вони росли) — потрібна галочка Read/Write.
+    static readonly string[] ReadableNames = { "hydroponic_rack" };
+
     static void Import(string path)
     {
         var imp = AssetImporter.GetAtPath(path) as TextureImporter;
         if (imp == null) return;
+        bool readable = System.Array.IndexOf(ReadableNames, System.IO.Path.GetFileNameWithoutExtension(path)) >= 0;
         var settings = new TextureImporterSettings();
         imp.ReadTextureSettings(settings);
         bool already = imp.textureType == TextureImporterType.Sprite && Mathf.Approximately(imp.spritePixelsPerUnit, PixelsPerUnit)
-                       && settings.spriteAlignment == (int)SpriteAlignment.Custom;
+                       && settings.spriteAlignment == (int)SpriteAlignment.Custom && imp.isReadable == readable;
         if (already) return;
 
         imp.textureType = TextureImporterType.Sprite;
@@ -81,6 +85,7 @@ public static class FurnitureSetupTool
         imp.wrapMode = TextureWrapMode.Clamp;
         imp.filterMode = FilterMode.Point;                                   // піксель-арт без розмиття
         imp.textureCompression = TextureImporterCompression.Uncompressed;
+        imp.isReadable = readable;
         imp.ReadTextureSettings(settings);
         settings.spriteAlignment = (int)SpriteAlignment.Custom;
         settings.spritePivot = Pivot;

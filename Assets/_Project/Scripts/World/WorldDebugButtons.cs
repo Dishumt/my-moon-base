@@ -30,6 +30,17 @@ public class WorldDebugButtons : MonoBehaviour
         if (GUILayout.Button("Світ: прибрати модулі")) s.Modules.Clear();
         GUILayout.EndHorizontal();
 
+        // ----- Живі меблі: тип нового модуля, енергія кімнатам, аптечки -----
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Світ: тип " + testType + " →")) testType = NextRoomType(testType);
+        if (GUILayout.Button(savedPlan == null ? "Енергія кімнатам: 0" : "Енергія кімнатам: назад")) TogglePower(game);
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Аптечки -1")) s.Res.MedKits = Mathf.Max(0, s.Res.MedKits - 1);
+        if (GUILayout.Button("Аптечки +1")) s.Res.MedKits++;
+        GUILayout.Label("аптечок: " + s.Res.MedKits + ", кисню: " + Mathf.RoundToInt(s.Res.Oxygen), GUILayout.Width(170));
+        GUILayout.EndHorizontal();
+
         // ----- Екіпаж: перемкнути завдання (поки CrewSystem.Assign від 04 не готовий) -----
         foreach (var a in s.Crew)
         {
@@ -43,6 +54,52 @@ public class WorldDebugButtons : MonoBehaviour
         if (GUILayout.Button("Екіпаж: тест іконок")) TestIcons(s);
         if (GUILayout.Button("Роботам енергія +1")) s.Power.Robots += 1;
         GUILayout.EndHorizontal();
+    }
+
+    static readonly ModuleType[] RoomCycle =
+    {
+        ModuleType.Habitat, ModuleType.Greenhouse, ModuleType.Medbay, ModuleType.Lab, ModuleType.Shelter,
+    };
+
+    static ModuleType NextRoomType(ModuleType t)
+    {
+        int i = System.Array.IndexOf(RoomCycle, t);
+        return RoomCycle[(i + 1) % RoomCycle.Length];
+    }
+
+    PowerPlan savedPlan; // план енергії до натискання «Енергія кімнатам: 0»
+
+    /// <summary>
+    /// Забрати енергію в усіх кімнат (житловий, теплиця, медмодуль, лабораторія, укриття) або повернути як було.
+    /// Міняємо і план гравця, і Granted, щоб меблі відреагували одразу, не чекаючи наступної години.
+    /// </summary>
+    void TogglePower(GameBootstrap game)
+    {
+        var s = game.State;
+        var power = game.GetSystem<PowerSystem>();
+        if (savedPlan == null)
+        {
+            savedPlan = new PowerPlan();
+            CopyRooms(s.Power, savedPlan);
+            CopyRooms(new PowerPlan(), s.Power);
+            if (power != null) CopyRooms(new PowerPlan(), power.Granted);
+        }
+        else
+        {
+            CopyRooms(savedPlan, s.Power);
+            if (power != null) CopyRooms(savedPlan, power.Granted);
+            savedPlan = null;
+        }
+        GameEvents.RaiseStateChanged();
+    }
+
+    static void CopyRooms(PowerPlan from, PowerPlan to)
+    {
+        to.LifeSupport = from.LifeSupport;
+        to.Greenhouse = from.Greenhouse;
+        to.Medbay = from.Medbay;
+        to.Lab = from.Lab;
+        to.Shelter = from.Shelter;
     }
 
     static readonly CrewTask[] TaskCycle =

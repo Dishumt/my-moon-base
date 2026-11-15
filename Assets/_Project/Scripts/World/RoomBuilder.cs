@@ -65,7 +65,7 @@ public static class RoomBuilder
 
         // ----- Меблі -----
         var furniture = new List<Renderer>();
-        if (!FurnishWithSprites(root, look, type, roomMid, roomDepth, w, furniture))
+        if (!FurnishWithSprites(root, view, look, type, roomMid, roomDepth, w, furniture))
             Furnish(root, solid, type, roomMid, roomDepth, w, interior); // картинок ще немає — прості коробки
 
         // ----- Оболонка (видно надворі) -----
@@ -198,7 +198,7 @@ public static class RoomBuilder
     }
 
     /// <summary>Розставляє меблі-спрайти і кладе їх у list. false — якщо картинок немає (тоді будуть коробки).</summary>
-    static bool FurnishWithSprites(Transform root, ModuleLook look, ModuleType type, float mid, float depth, float w, List<Renderer> list)
+    static bool FurnishWithSprites(Transform root, ModuleView view, ModuleLook look, ModuleType type, float mid, float depth, float w, List<Renderer> list)
     {
         if (look == null || !look.HasFurniture) return false;
         // Впритул до задньої стіни: поки гравець надворі, меблі сховані (ModuleInterior),
@@ -216,8 +216,11 @@ public static class RoomBuilder
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = info.sprite;
             go.AddComponent<Billboard>().BillboardMode = Billboard.Mode.FaceCamera;
+            // Предмет разом з лампами й товщиною сортується як одне ціле: лампи поверх предмета, але не поверх людей перед ним
+            go.AddComponent<UnityEngine.Rendering.SortingGroup>();
             list.Add(sr);
             AddDepth(root, go.transform, sr, info, list);
+            go.AddComponent<FurnitureLife>().Init(it.name, view, type, sr); // лампи, екрани, рослини (показують стан гри)
             any = true;
         }
         return any;
