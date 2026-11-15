@@ -106,6 +106,7 @@ public class LaunchScreen : MonoBehaviour
     LaunchPadView pad;
     LaunchSounds sounds;      // біп відліку, «СТАРТ!», гул двигунів
     FlightMapView flight;     // політ Дніпро → південний полюс Місяця
+    LandingView landing;      // посадка на південному полюсі (вид збоку)
     bool animating, modalPushed, ready;
 
     // що зараз показано в полі «Навіщо це?»: вантаж або ракета (null — загальна підказка)
@@ -195,6 +196,9 @@ public class LaunchScreen : MonoBehaviour
         }
         flight = new FlightMapView(root);
         if (!flight.Ready) flight = null;
+        root.Q("landing-view")?.RemoveFromHierarchy();   // OnEnable може викликатись кілька разів
+        landing = new LandingView(root) { Sounds = sounds };
+        if (flight != null) flight.EndInLunarOrbit = true;   // карта — до орбіти Місяця, посадку покаже LandingView
 
         ready = stage != null && cargoList != null && ship != null && fuelSlider != null && launchButton != null;
         if (!ready)
@@ -1118,7 +1122,8 @@ public class LaunchScreen : MonoBehaviour
 
         yield return pad.Play(crew, tex != null ? new StyleBackground(tex) : default, tex != null, aspect, rocket, success);
 
-        if (success && flight != null) yield return flight.Play(tex, aspect); // Дніпро → південний полюс Місяця
+        if (success && flight != null) yield return flight.Play(tex, aspect); // Дніпро → орбіта Місяця
+        if (success && landing != null) yield return landing.Play(crew);     // посадка на південному полюсі
         if (success) yield return ShowReport(stars);
         tablet?.RemoveFromClassList("launch-hidden");
         if (success)
