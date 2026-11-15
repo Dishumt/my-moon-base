@@ -134,6 +134,11 @@ public class ModuleView : MonoBehaviour
     public bool IsEnterableRoom => shown == Shown.Built && !float.IsNaN(roomFront);
     /// <summary>Чи модуль ще будується (там працюють роботи).</summary>
     public bool IsUnderConstruction => shown == Shown.Building;
+    /// <summary>Оболонка й меблі кімнати (null, якщо це не кімната).</summary>
+    public ModuleInterior Interior { get; set; }
+    /// <summary>Чи видно, що всередині (гравець у модулі). Обладнання й будова — завжди «відкриті».</summary>
+    public bool InteriorOpen => Interior == null || Interior.IsOpen;
+
     /// <summary>Тип модуля, який зараз намальований.</summary>
     public ModuleType Type => shownType;
 

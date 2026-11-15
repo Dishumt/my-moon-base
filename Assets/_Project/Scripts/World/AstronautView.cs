@@ -28,6 +28,7 @@ public class AstronautView : MonoBehaviour
     public Astronaut Data { get; private set; }
     int index;
     SpriteRenderer body, icon;
+    List<SpriteRenderer> bodyParts;
     Billboard iconBillboard;
     MoonHop hop;
     bool suit = true;
@@ -62,6 +63,8 @@ public class AstronautView : MonoBehaviour
         iconBillboard.BillboardMode = Billboard.Mode.FaceCamera;
 
         hop = gameObject.AddComponent<MoonHop>(); // після спрайта: MoonHop шукає білборд для сплющення
+        bodyParts = new List<SpriteRenderer>(GetComponentsInChildren<SpriteRenderer>(true));
+        bodyParts.Remove(icon); // тіло й тінь; іконка — окремо
 
         // Звідки починаємо: у модулі (якщо збережена гра так каже) або на «площі» в центрі бази
         var room = a.InsideSlot >= 0 ? BaseView.Find(a.InsideSlot) : null;
@@ -93,6 +96,11 @@ public class AstronautView : MonoBehaviour
         bool moving = DoSteps(dt);
 
         Data.InsideSlot = BaseView.SlotAt(transform.position); // світ пише щокадру
+
+        // У закритому модулі (гравець надворі) людину не видно — тільки іконку стану над дахом
+        var room = Data.InsideSlot >= 0 ? BaseView.Find(Data.InsideSlot) : null;
+        bool visible = room == null || room.InteriorOpen;
+        foreach (var r in bodyParts) if (r != null) r.enabled = visible;
         hop.Step(moving, suit, dt);
         RefreshSprite();
         RefreshIcon();
