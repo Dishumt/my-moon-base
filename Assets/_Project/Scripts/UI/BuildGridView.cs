@@ -166,15 +166,22 @@ public class BuildGridView
 
     // ---------- Тунелі (роль 04) ----------
 
-    /// <summary>Кнопка «тунель до сусіда», якщо його можна прокласти (BaseGrid.CanConnect). slotA — лівий модуль пари.</summary>
+    /// <summary>
+    /// Кнопка «тунель до сусіда». Якщо прокласти поки не можна — кнопка сіра і пише чому
+    /// (наприклад, «поруч має стояти ще одна готова кімната»), щоб гравець знав, що тунелі взагалі є.
+    /// slotA — лівий модуль пари. Край сітки або вже готовий тунель — кнопки немає.
+    /// </summary>
     void AddTunnelButton(GameState state, int slotA, string key)
     {
-        if (slotA < 0 || BaseGrid.Row(slotA) != BaseGrid.Row(selectedSlot) || BaseGrid.CanConnect(state, slotA) != null) return;
+        if (slotA < 0 || BaseGrid.Row(slotA) != BaseGrid.Row(selectedSlot)) return;
+        string err = BaseGrid.CanConnect(state, slotA);
+        if (err == "error.tunnel_place" || err == "error.tunnel_exists") return;
         int a = slotA;
         var button = new Button(() => OrderTunnel(a));
         button.AddToClassList("opt");
         button.text = Loc.Get(key) + "  ·  " + Loc.Get("map.cost", UiKit.Num(costs.Tunnel.Materials), UiKit.Num(costs.Tunnel.BuildHours))
-                    + "\n<size=12>" + Loc.Get("map.tunnel_desc") + "</size>";
+                    + "\n<size=12>" + Loc.Get(err ?? "map.tunnel_desc") + "</size>";
+        button.SetEnabled(err == null);
         options.Add(button);
     }
 
