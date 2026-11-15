@@ -435,6 +435,14 @@
     { "key": "menu.chapter", "text": "CHAPTER {0}" },
     { "key": "menu.locked", "text": "Finish chapter {0} first." },
     { "key": "menu.weather_wait", "text": "Asking NASA about the Sun…" },
-    { "key": "menu.credit", "text": "Made for the NASA Space Apps Challenge 2026. The solar storms are real events from NASA DONKI." }
+    { "key": "menu.credit", "text": "Made for the NASA Space Apps Challenge 2026. The solar storms are real events from NASA DONKI." },
+    { "key": "hint.storm", "text": "Solar storm! Press TAB → CREW → EVERYONE INTO THE SHELTER. Then POWER → give the SHELTER blocks." },
+    { "key": "hint.oxygen", "text": "The crew breathes more oxygen than the base makes. Press TAB → POWER → LIFE SUPPORT → +." },
+    { "key": "hint.robots", "text": "The robots have no power, so nothing gets built. Press TAB → POWER → ROBOTS → +." },
+    { "key": "hint.build", "text": "Next goal: build {0}. Press TAB → BUILD → pick an empty square." },
+    { "key": "hint.ice", "text": "Water is running low. Press TAB → CREW and send the geologist to MINE ICE." },
+    { "key": "hint.greenhouse", "text": "The greenhouse is ready, but it has no power. Press TAB → POWER → GREENHOUSE → +." },
+    { "key": "hint.science", "text": "For science: send the geologist to COLLECT SAMPLES, and someone to LAB WORK (TAB → CREW)." },
+    { "key": "hint.speed", "text": "The base is fine! Press x2 or x4 at the top so the days go faster." }
   ]
 }

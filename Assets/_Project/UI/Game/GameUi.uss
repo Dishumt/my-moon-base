@@ -40,6 +40,10 @@
 .hud-tablet:hover { background-color: #8BE3FA; }
 .hud-walk { position: absolute; left: 10px; bottom: 10px; padding: 6px 10px; font-size: 13px; letter-spacing: 1px;
             background-color: rgba(4, 16, 26, 0.75); color: var(--color-soft); }
+.hud-hint { position: absolute; left: 50%; bottom: 74px; translate: -50% 0; max-width: 620px; padding: 10px 16px;
+            font-size: 17px; color: var(--color-text); white-space: normal; -unity-text-align: middle-center;
+            background-color: rgba(4, 16, 26, 0.9); border-width: 2px; border-color: var(--color-accent); }
+.hud-hint--urgent { border-color: var(--color-warn); color: #FFE2CF; }
 .hud-demo { position: absolute; left: 50%; bottom: 10px; translate: -50% 0; padding: 4px 12px; font-size: 13px; letter-spacing: 2px;
             -unity-font-style: bold; color: var(--color-panel); background-color: var(--color-energy); }
 

@@ -4,7 +4,8 @@ using UnityEngine.UIElements;
 
 /// <summary>
 /// HUD over the game (UI/Game/Hud.uxml): supplies at the top, day and time with ⏸ / ×1 / ×2 / ×4,
-/// goals of the chapter on the left, link with Earth and the TABLET button at the bottom.
+/// goals of the chapter on the left, link with Earth and the TABLET button at the bottom,
+/// and one hint "what to do now" (Coach) at the bottom in the middle.
 /// Reads GameState and the systems; the only actions are the speed buttons and opening the tablet.
 /// Put it on a GameObject with UIDocument (Source Asset = UI/Game/Hud.uxml). Menu: Moon → Інтерфейс гри в Main.
 /// </summary>
@@ -14,7 +15,7 @@ public class HudController : MonoBehaviour
     static readonly float[] Speeds = { 0f, 1f, 2f, 4f };
 
     VisualElement root, goalList;
-    Label day, chapter, walk, demo, link;
+    Label day, chapter, walk, demo, link, hint;
     Button tablet;
     readonly Button[] speedButtons = new Button[4];
     SimBalanceData balance;
@@ -60,6 +61,7 @@ public class HudController : MonoBehaviour
         walk = root.Q<Label>("hud-walk");
         demo = root.Q<Label>("hud-demo");
         link = root.Q<Label>("hud-link");
+        hint = root.Q<Label>("hud-hint");
         tablet = root.Q<Button>("hud-tablet");
         if (tablet != null) tablet.clicked += () => { if (TabletController.Instance != null) TabletController.Instance.Open(); };
 
@@ -158,6 +160,15 @@ public class HudController : MonoBehaviour
             bool open = comms.IsOpen(s);
             UiKit.SetText(link, Loc.Get(open ? "hud.comms_on" : "hud.comms_off"));
             link.EnableInClassList("hud-link--ok", open);
+        }
+
+        // one hint: what to do now (Coach)
+        var next = Coach.Pick(s, chapters, balance, clock.UserPaused ? 1f : clock.Speed);
+        UiKit.Show(hint, next.HasValue);
+        if (next.HasValue)
+        {
+            UiKit.SetText(hint, "?  " + Loc.Get(next.Value.Key, next.Value.Arg ?? ""));
+            hint.EnableInClassList("hud-hint--urgent", next.Value.Urgent);
         }
 
         UiKit.SetText(tablet, Loc.Get("hud.tablet") + "  [TAB]");

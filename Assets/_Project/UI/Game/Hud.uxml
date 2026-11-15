@@ -28,6 +28,7 @@
             <ui:VisualElement name="hud-goal-list" picking-mode="Ignore" />
         </ui:VisualElement>
 
+        <ui:Label name="hud-hint" class="hud-hint" picking-mode="Ignore" />
         <ui:Label name="hud-walk" class="hud-walk" picking-mode="Ignore" />
         <ui:Label name="hud-demo" class="hud-demo" picking-mode="Ignore" />
 
