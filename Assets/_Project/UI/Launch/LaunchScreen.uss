@@ -341,6 +341,12 @@
 .flight-scale { position: absolute; right: 24px; bottom: 24px; font-size: 12px; color: var(--color-muted); }
 .flight-skip { position: absolute; right: 24px; top: 18px; }
 .flight-rocket { position: absolute; -unity-background-scale-mode: scale-to-fit; }
+.flight-art { -unity-background-scale-mode: scale-to-fit; }
+.flight-city-pin { position: absolute; background-color: #FFE27A; border-radius: 3px; }
+.flight-progress { position: absolute; left: 24px; right: 24px; top: 134px; height: 3px; background-color: #173044; }
+.flight-progress__fill { height: 3px; background-color: #7FC9DE; }
+.flight-engine { position: absolute; left: 24px; top: 100px; font-size: 13px; color: #7FC9DE; letter-spacing: 1px; }
+.flight-engine--burn { color: #FFBC74; }
 .flight-rocket--box { background-color: #FF9A3D; }
 .flight-map-label { position: absolute; width: 120px; font-size: 14px; letter-spacing: 3px; color: var(--color-muted); -unity-text-align: middle-center; }
 .flight-city { position: absolute; width: 120px; font-size: 13px; color: #FFE27A; -unity-text-align: middle-center; -unity-font-style: bold; }
@@ -374,7 +380,7 @@
 /* політ: підписи ширші */
 .flight-map-label, .flight-city { width: 200px; white-space: normal; }
 .flight-caption { font-size: 22px; }
-.flight-fact { font-size: 15px; }
+.flight-fact { font-size: 15px; max-width: 64%; background-color: rgba(6, 16, 26, 0.94); }
 /* вкладка планшета */
 .sup-next { max-width: 440px; }
 .sup-next > .t-body { white-space: normal; font-size: 14px; }
@@ -414,7 +420,7 @@
 .pad-telemetry { position: absolute; left: 24px; top: 100px; right: 40%; font-size: 18px; color: #9FE8FF; -unity-font-style: bold; white-space: normal; }
 
 /* --- годинник місії на карті польоту (роль 04) --- */
-.flight-clock { position: absolute; right: 24px; top: 64px; font-size: 15px; color: #9FE8FF; -unity-text-align: upper-right; -unity-font-style: bold; }
+.flight-clock { position: absolute; right: 24px; top: 100px; font-size: 15px; color: #9FE8FF; -unity-text-align: upper-right; -unity-font-style: bold; }
 
 /* --- сцена посадки на Місяці (роль 04) --- */
 .landing-view { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: #020308; overflow: hidden; }
