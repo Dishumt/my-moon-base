@@ -1,7 +1,7 @@
 {
   "_ai": "AI-assisted (Claude)",
   "_note": "Real 2024 space-weather events (NASA DONKI) used as solar storms in the game. strength 1-3 is a GAME simplification: FLR <X2 = 1, X2-X4.9 = 2, >=X5 = 3; SEP = 2, or 3 if linked to a >=X5 flare; GST Kp>=8 = 3. Owner: role 06.",
-  "_status": "TO VERIFY: written from NASA/NOAA public reports while the DONKI API was not reachable from the build machine. In Unity run menu Moon -> 06: Check DONKI data: it finds each event in DONKI, fills donkiId and the exact time and sets verified=true.",
+  "_status": "ARCHIVE: real 2024 events written from NASA DONKI / NASA and NOAA public reports; each item has a sourceUrl (DONKI query for that day). Not yet confirmed through the DONKI API (verified=false): on 2026-11-15 kauai.ccmc.gsfc.nasa.gov was not reachable from the hackathon network and the api.nasa.gov DEMO_KEY limit was used up. To confirm, run Unity menu Moon -> 06: Check DONKI data from another network.",
   "items": [
     {
       "id": "flr-2024-02-09-x3.3",

@@ -13,11 +13,18 @@ using UnityEngine.Networking;
 /// Для кожної події з donki_storms.json питає справжню базу NASA DONKI, знаходить ту саму подію,
 /// записує її справжній id (donkiId), точний час і посилання, і ставить verified = true.
 /// Події, яких не знайдено, лишаються verified = false — їх треба виправити або прибрати.
+/// Якщо kauai.ccmc.gsfc.nasa.gov не відповідає, пробує дзеркало api.nasa.gov (DEMO_KEY, ліміт запитів на годину).
+/// Якщо NASA не відповіла ЖОДНОГО разу (немає мережі, ліміт), файл НЕ перезаписується.
 /// </summary>
 public static class DonkiCheckTool
 {
     const string FilePath = "Assets/_Project/Resources/Data/Nasa/donki_storms.json";
     const double TimeoutSeconds = 30;
+    const string MirrorBase = "https://api.nasa.gov/DONKI/";  // те саме API DONKI, через api.nasa.gov
+    const string MirrorKey = "DEMO_KEY";                       // публічний демо-ключ, не секрет
+
+    static int answered;      // скільки запитів отримали відповідь від NASA (за один запуск меню)
+    static bool rateLimited;  // api.nasa.gov сказав «забагато запитів» (429)
 
     /// <summary>Усі можливі поля відповіді DONKI (FLR, SEP, GST) — JsonUtility пропускає зайві.</summary>
     [Serializable]
@@ -46,6 +53,8 @@ public static class DonkiCheckTool
         }
         var list = JsonUtility.FromJson<DonkiStormList>(File.ReadAllText(FilePath));
         int ok = 0;
+        answered = 0;
+        rateLimited = false;
         try
         {
             for (int i = 0; i < list.items.Count; i++)
@@ -58,6 +67,14 @@ public static class DonkiCheckTool
         finally
         {
             EditorUtility.ClearProgressBar();
+        }
+
+        // Жоден запит не дійшов до NASA: перевірки не було, тож файл не чіпаємо.
+        if (answered == 0)
+        {
+            Debug.LogError("DonkiCheckTool: NASA DONKI недоступний, спробуй з іншої мережі. Файл не змінено."
+                + (rateLimited ? " (api.nasa.gov: вичерпано ліміт DEMO_KEY, спробуй пізніше.)" : ""));
+            return;
         }
 
         list._status = "Checked with NASA DONKI on " + DateTime.UtcNow.ToString("yyyy-MM-dd") + ": "
@@ -75,10 +92,12 @@ public static class DonkiCheckTool
             Debug.LogWarning("DonkiCheckTool: погана дата у " + e.id);
             return false;
         }
-        string url = SpaceWeather.DonkiWs + e.type + "?startDate=" + day.AddDays(-1).ToString("yyyy-MM-dd")
-                   + "&endDate=" + day.AddDays(1).ToString("yyyy-MM-dd");
-        string text = Download(url);
-        if (text == null) return false;
+        string query = e.type + "?startDate=" + day.AddDays(-1).ToString("yyyy-MM-dd")
+                     + "&endDate=" + day.AddDays(1).ToString("yyyy-MM-dd");
+        string text = Download(SpaceWeather.DonkiWs + query);
+        if (text == null) text = Download(MirrorBase + query + "&api_key=" + MirrorKey); // дзеркало
+        if (text == null) return false; // NASA не відповіла: подію не чіпаємо
+        answered++;
 
         var found = JsonUtility.FromJson<DonkiAnyList>("{\"items\":" + (string.IsNullOrWhiteSpace(text) ? "[]" : text) + "}");
         DonkiAny best = null;
@@ -128,6 +147,7 @@ public static class DonkiCheckTool
             }
             if (req.result != UnityWebRequest.Result.Success)
             {
+                if (req.responseCode == 429) rateLimited = true;
                 Debug.LogError("DonkiCheckTool: запит не вдався (" + req.error + "): " + url);
                 return null;
             }

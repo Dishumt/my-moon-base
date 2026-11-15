@@ -22,6 +22,14 @@ public class DebugPanel : MonoBehaviour
     Vector2 scroll;
     readonly StringBuilder sb = new StringBuilder();
 
+    void Awake()
+    {
+        // У звичайній веб-збірці (для гравців і суддів) панелі немає: вона для розробників,
+        // а ще шрифт браузера не має кирилиці — замість тексту були б порожні кнопки.
+        // Видно тільки в редакторі Unity і в Development Build.
+        if (!Application.isEditor && !Debug.isDebugBuild) enabled = false;
+    }
+
     void OnGUI()
     {
         var game = GameBootstrap.Instance;
