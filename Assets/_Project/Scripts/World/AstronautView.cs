@@ -390,7 +390,7 @@ public class AstronautView : MonoBehaviour
         {
             Vector3 p = f.Spot(k);
             Vector3 c = room.ClampInRoom(p);
-            if ((c - p).sqrMagnitude > 0.2f * 0.2f) continue; // за стіною
+            if (Mathf.Abs(c.x - p.x) > 0.2f) continue; // за бічною стіною (біля задньої стіни просто підсуваємо вперед)
             if (SpotTaken(c)) continue;
             spot = c;
             return true;

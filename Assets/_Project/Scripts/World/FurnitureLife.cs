@@ -125,10 +125,12 @@ public class FurnitureLife : MonoBehaviour
         float side = Width * 0.5f + 0.1f;
         switch (k)
         {
-            case 0: return new Vector3(c.x - side, 0f, c.z - 0.35f);
-            case 1: return new Vector3(c.x + side, 0f, c.z - 0.35f);
-            case 2: return new Vector3(c.x - 0.45f, 0f, c.z - 1f);
-            default: return new Vector3(c.x + 0.45f, 0f, c.z - 1f);
+            // Збоку — на рівні самого предмета (картинка показує його з глибиною, ніжки спереду — це точка c)
+            case 0: return new Vector3(c.x - side, 0f, c.z + 0.15f);
+            case 1: return new Vector3(c.x + side, 0f, c.z + 0.15f);
+            // Спереду — впритул до предмета
+            case 2: return new Vector3(c.x - 0.45f, 0f, c.z - 0.55f);
+            default: return new Vector3(c.x + 0.45f, 0f, c.z - 0.55f);
         }
     }
 

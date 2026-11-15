@@ -172,8 +172,10 @@ public static class RoomBuilder
 
     struct Item
     {
-        public string name; public float x; public int row; public float scale;
-        public Item(string name, float x, int row, float scale = 1f) { this.name = name; this.x = x; this.row = row; this.scale = scale; }
+        public string name; public float x; public int row; public float scale; public float dz;
+        // dz — зсув уперед (до камери, «нижче» на екрані), метри: велике ліжко інакше візуально заходить за стіну
+        public Item(string name, float x, int row, float scale = 1f, float dz = 0f)
+        { this.name = name; this.x = x; this.row = row; this.scale = scale; this.dz = dz; }
     }
 
     // Ліжко-капсула більше за інші меблі: у ньому лежить людина звичайного розміру (AstronautView).
@@ -184,13 +186,13 @@ public static class RoomBuilder
         switch (type)
         {
             case ModuleType.Habitat: // генератор кисню тут: житловий модуль перший, і дитина одразу бачить, звідки кисень
-                return new[] { new Item("bunk_bed", -1.7f, 0, BedScale), new Item("galley_kitchen", 0.45f, 0), new Item("oxygen_generator", 2.1f, 0),
+                return new[] { new Item("bunk_bed", -1.7f, 0, BedScale, -0.5f), new Item("galley_kitchen", 0.45f, 0), new Item("oxygen_generator", 2.1f, 0),
                                new Item("shower_toilet", -2.1f, 1), new Item("dining_table", 2.1f, 1) };
             case ModuleType.Greenhouse:
                 return new[] { new Item("hydroponic_rack", -2.0f, 0), new Item("hydroponic_rack", 0f, 0), new Item("hydroponic_rack", 2.0f, 0),
                                new Item("hydroponic_rack", -2.1f, 1), new Item("water_recycler", 2.1f, 1) };
             case ModuleType.Medbay:
-                return new[] { new Item("medical_cabinet", -2.1f, 0), new Item("bunk_bed", 0f, 0, BedScale), new Item("wash_station", 2.1f, 0),
+                return new[] { new Item("medical_cabinet", -2.1f, 0), new Item("bunk_bed", 0f, 0, BedScale, -0.5f), new Item("wash_station", 2.1f, 0),
                                new Item("wardrobe_storage", -2.1f, 1) };
             case ModuleType.Lab:
                 return new[] { new Item("science_bench", -2.0f, 0), new Item("specimen_cabinet", 0f, 0), new Item("workstation_desk", 2.0f, 0),
@@ -217,7 +219,7 @@ public static class RoomBuilder
             if (info == null || info.sprite == null) continue;
             var go = new GameObject("Furniture " + it.name);
             go.transform.SetParent(root, false);
-            go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.9f, w / 2 - 0.9f), 0.1f, it.row == 0 ? backZ : sideZ);
+            go.transform.localPosition = new Vector3(Mathf.Clamp(it.x, -w / 2 + 0.9f, w / 2 - 0.9f), 0.1f, (it.row == 0 ? backZ : sideZ) + it.dz);
             go.transform.localScale = Vector3.one * it.scale; // до Billboard: він запам'ятовує масштаб в Awake
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = info.sprite;
