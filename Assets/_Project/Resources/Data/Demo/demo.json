@@ -5,7 +5,7 @@
   "startHour": 8,
   "realSecondsPerDay": 240,
   "realSecondsPerDay_note": "Demo day is 4 minutes (10 s per game hour); the normal game uses balance.json.",
-  "resources": { "Battery": 30, "Water": 80, "Oxygen": 100, "Food": 40, "Materials": 80, "MedKits": 3 },
+  "resources": { "Battery": 10, "Water": 80, "Oxygen": 100, "Food": 40, "Materials": 80, "MedKits": 3 },
   "stormEventId": "gst-2024-05-10",
   "stormEventId_note": "Real geomagnetic storm of 10 May 2024 (NASA DONKI), id from Nasa/donki_storms.json.",
   "stormInHours": 6

@@ -469,7 +469,7 @@
     { "key": "pause.help", "text": "ЯК ГРАТИ" },
     { "key": "pause.sound_on", "text": "ЗВУК: УВІМКНЕНО" },
     { "key": "pause.sound_off", "text": "ЗВУК: ВИМКНЕНО" },
-    { "key": "pause.lang", "text": "МОВА: УКРАЇНСЬКА > ENGLISH" },
+    { "key": "pause.lang", "text": "МОВА: УКР > EN" },
     { "key": "pause.restart", "text": "ПОЧАТИ РОЗДІЛ СПОЧАТКУ" },
     { "key": "pause.menu", "text": "ГОЛОВНЕ МЕНЮ" },
     { "key": "pause.sure", "text": "ТОЧНО? НАТИСНИ ЩЕ РАЗ" },

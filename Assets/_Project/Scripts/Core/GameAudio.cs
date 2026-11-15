@@ -37,7 +37,7 @@ public class GameAudio : MonoBehaviour
     readonly Dictionary<Sfx, AudioClip> clips = new Dictionary<Sfx, AudioClip>();
     readonly HashSet<VisualElement> hooked = new HashSet<VisualElement>();
     AudioSource effects, ambient, storm;
-    float nextScan;
+    float nextScan, nextAmbientTry;
 
     // стежимо за станом, щоб відрізнити «новий модуль готовий» і «кисень став малий»
     GameState lastState;
@@ -57,10 +57,10 @@ public class GameAudio : MonoBehaviour
     }
 
     /// <summary>Зіграти звук. Нічого не робить, якщо звуку немає (наприклад, у тестах).</summary>
-    public static void Play(Sfx sfx)
+    public static void Play(Sfx sfx, float volume = 1f)
     {
         if (instance == null || Muted) return;
-        instance.PlayOne(sfx);
+        instance.PlayOne(sfx, volume);
     }
 
     /// <summary>Вимкнути звук, якщо він увімкнений, і навпаки.</summary>
@@ -135,7 +135,11 @@ public class GameAudio : MonoBehaviour
         if (keyboard != null && keyboard.mKey.wasPressedThisFrame) ToggleMute();
 
         // фон: стартує після першого кадру (потрібен хоч один клік, щоб браузер дозволив звук — Unity робить це сам)
-        if (!ambient.isPlaying) StartLoop(ambient, Sfx.Ambient);
+        if (!ambient.isPlaying && Time.unscaledTime >= nextAmbientTry)
+        {
+            nextAmbientTry = Time.unscaledTime + 1f; // не частіше разу на секунду (браузер міг ще не дозволити звук)
+            StartLoop(ambient, Sfx.Ambient);
+        }
 
         UpdateStormLoop();
 
@@ -258,10 +262,10 @@ public class GameAudio : MonoBehaviour
 
     // ---------- відтворення ----------
 
-    void PlayOne(Sfx sfx)
+    void PlayOne(Sfx sfx, float volume = 1f)
     {
         if (Muted || effects == null) return;
-        effects.PlayOneShot(ClipFor(sfx));
+        effects.PlayOneShot(ClipFor(sfx), volume);
     }
 
     AudioClip ClipFor(Sfx sfx)

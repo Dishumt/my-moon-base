@@ -469,7 +469,7 @@
     { "key": "pause.help", "text": "HOW TO PLAY" },
     { "key": "pause.sound_on", "text": "SOUND: ON" },
     { "key": "pause.sound_off", "text": "SOUND: OFF" },
-    { "key": "pause.lang", "text": "LANGUAGE: ENGLISH > УКРАЇНСЬКА" },
+    { "key": "pause.lang", "text": "LANGUAGE: EN > UK" },
     { "key": "pause.restart", "text": "RESTART CHAPTER" },
     { "key": "pause.menu", "text": "MAIN MENU" },
     { "key": "pause.sure", "text": "SURE? CLICK AGAIN" },

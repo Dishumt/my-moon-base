@@ -84,8 +84,8 @@
 .mp-dot--Sample { background-color: var(--color-warn); }
 .mp-dot--Fact { background-color: var(--color-energy); }
 .mp-dot--LandingPad { background-color: #FFFFFF; }
-.mp-dot--unknown { background-color: rgba(0, 0, 0, 0.55); border-color: var(--color-muted); }
-.mp-q { position: absolute; left: -1px; top: -4px; width: 13px; font-size: 11px; -unity-font-style: bold; -unity-text-align: middle-center; color: var(--color-text); }
+.mp-dot--unknown { background-color: rgba(0, 0, 0, 0.55); border-color: var(--color-muted); align-items: center; justify-content: center; }
+.mp-q { margin: 0; padding: 0; font-size: 12px; -unity-font-style: bold; -unity-text-align: middle-center; color: var(--color-text); }
 .mp-label { position: absolute; font-size: 11px; color: var(--color-soft); }
 .mp-label--base { color: var(--color-accent); }
 .mp-row { flex-direction: row; align-items: center; margin-bottom: 6px; }

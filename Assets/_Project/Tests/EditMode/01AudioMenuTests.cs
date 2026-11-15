@@ -49,6 +49,32 @@ public class AudioMenuTests
         }
     }
 
+    [Test]
+    public void MapPlacesNorthUpAndBaseInTheMiddle()
+    {
+        var center = MapTabView.ToMap(0f, 0f, 200f);
+        Assert.AreEqual(center.x, center.y, 0.01f, "база — в центрі квадрата");
+
+        var north = MapTabView.ToMap(0f, 100f, 200f);
+        var east = MapTabView.ToMap(100f, 0f, 200f);
+        Assert.Less(north.y, center.y, "північ (+z) — угорі карти");
+        Assert.AreEqual(center.x, north.x, 0.01f);
+        Assert.Greater(east.x, center.x, "схід (+x) — праворуч");
+        Assert.AreEqual(center.y, east.y, 0.01f);
+
+        var edge = MapTabView.ToMap(200f, -200f, 200f);
+        Assert.AreEqual(center.x * 2f, edge.x, 0.01f, "край діапазону — край карти");
+        Assert.AreEqual(center.y * 2f, edge.y, 0.01f);
+    }
+
+    [Test]
+    public void MapShowsAQuestionMarkUntilThePlaceIsDiscovered()
+    {
+        Assert.IsFalse(MapTabView.IsKnown(null));
+        Assert.IsFalse(MapTabView.IsKnown(new PoiState { Id = "ice_01", Type = PoiType.Ice, Discovered = false }));
+        Assert.IsTrue(MapTabView.IsKnown(new PoiState { Id = "ice_01", Type = PoiType.Ice, Discovered = true }));
+    }
+
     static readonly string[] MenuKeys =
     {
         "hud.help", "hud.menu", "hud.sound_on", "hud.sound_off",

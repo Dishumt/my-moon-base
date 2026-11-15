@@ -149,7 +149,7 @@ public class MapTabView
     {
         bool known = IsKnown(place.Poi);
         string classes = known ? "mp-dot mp-dot--poi mp-dot--" + place.Poi.Type : "mp-dot mp-dot--poi mp-dot--unknown";
-        float size = 13f;
+        float size = known ? 13f : 17f; // «?» має вміститися в кружок
         var dot = DrawDot(place.X, place.Z, size, classes, range, known ? Loc.Get("mapv.poi." + place.Poi.Type) : Loc.Get("mapv.unknown"));
         if (!known) UiKit.Label(dot, "mp-q", "?").pickingMode = PickingMode.Ignore;
         var p = ToMap(place.X, place.Z, range);

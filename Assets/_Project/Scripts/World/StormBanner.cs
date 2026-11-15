@@ -90,8 +90,12 @@ public class StormBanner : MonoBehaviour
         if (box == null) return;
 
         bool on = phase != StormPhase.None;
-        box.parent.style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
+        // Планшет, меню й вікна: напис перекривав вкладки планшета (CREW, SUPPLY), саме коли вони потрібні.
+        // Поки вікно відкрите, напис ховаємо (стан не чіпаємо, тож потім він з'явиться з правильним текстом).
+        bool covered = UiKit.Blocked || (TabletController.Instance != null && TabletController.Instance.IsOpen);
+        box.parent.style.display = on && !covered ? DisplayStyle.Flex : DisplayStyle.None;
         if (!on) { shownPhase = phase; return; }
+        if (covered) return;
 
         // Текст міняємо, тільки коли щось змінилось (фаза, години, мова)
         hours = Mathf.Max(1, hours);

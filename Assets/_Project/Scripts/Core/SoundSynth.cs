@@ -5,7 +5,7 @@ using System;
 public enum Sfx
 {
     Click, Toggle, Confirm, Error, Alarm, StormWarning, StormStart,
-    Report, Win, Lose, Launch, LaunchFail, Arrival, Built,
+    Report, Win, Lose, Launch, LaunchFail, Arrival, Built, Step,
     Ambient, StormLoop,   // ці два крутяться по колу
 }
 
@@ -122,6 +122,13 @@ public static class SoundSynth
                 b = Buf(0.65f);
                 Tone(b, 0.00f, 0.22f, 880f, 880f, 0.40f, Wave.Sine, 2f);
                 Tone(b, 0.13f, 0.50f, 1320f, 1320f, 0.40f, Wave.Sine, 2f);
+                break;
+
+            case Sfx.Step:
+                // глухий «туп»: низький тон, що швидко падає, і трішки шуму (реголіт)
+                b = Buf(0.14f);
+                Tone(b, 0f, 0.12f, 120f, 55f, 0.60f, Wave.Sine, 2.2f);
+                Noise(b, 0f, 0.07f, 0.20f, 0.18f, 2f, 3);
                 break;
 
             case Sfx.Ambient:
