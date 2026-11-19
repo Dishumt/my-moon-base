@@ -84,7 +84,8 @@ public class PowerCablesView : MonoBehaviour
         sb.Append(plant != null && plant.HasPositions ? 'H' : '-');
         foreach (var m in s.Modules)
             if (m.IsBuilt) sb.Append(m.SlotId).Append(':').Append((int)m.Type).Append(';');
-        sb.Append(s.IcePlant.ProcessorBuilt ? 'P' : '-').Append(s.IcePlant.DrillBuilt ? 'D' : '-');
+        sb.Append(s.IcePlant.ProcessorBuilt ? 'P' : '-');
+        foreach (var d in s.IcePlant.Drills) if (d.Built) sb.Append('D').Append(d.PoiId);
         return sb.ToString();
     }
 
@@ -125,8 +126,9 @@ public class PowerCablesView : MonoBehaviour
         if (plant != null && s.IcePlant.ProcessorBuilt && plant.HasPositions)
         {
             Add(RouteTo(hub, plant.ProcessorCablePoint, 0.8f), ModuleType.Solar, fromSun: false, toIce: true);
-            if (s.IcePlant.DrillBuilt)
-                Add(WorldPipe.Straight(plant.ProcessorCablePoint, plant.DrillCablePoint, 0.12f), ModuleType.Solar, fromSun: false, toIce: true);
+            foreach (var d in s.IcePlant.Drills)   // до кожного збудованого бура
+                if (d.Built && plant.TryDrillCablePoint(d.PoiId, out Vector3 drillPoint))
+                    Add(WorldPipe.Straight(plant.ProcessorCablePoint, drillPoint, 0.12f), ModuleType.Solar, fromSun: false, toIce: true);
         }
     }
 
