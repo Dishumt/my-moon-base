@@ -5,8 +5,11 @@ using UnityEngine;
 /// Корабель поставки справді прилітає на Місяць (роль 04).
 ///  - Останню ігрову годину перед прибуттям посадковий модуль спускається з неба на посадковий майданчик (pad_01):
 ///    гальмує двигуном (на Місяці немає повітря — парашути не працюють), тінь під ним росте, пил летить прямими лініями.
-///  - Після посадки кілька годин стоїть, поруч — ящики з вантажем. Потім злітає назад
+///  - Після посадки кілька годин стоїть. Потім злітає назад
 ///    (тим самим кораблем летять додому ті, у кого закінчився ліміт дози).
+///  - Поруч з'являються 3 ящики з вантажем. Вільні роботи (без завдання) по одному відвозять їх на базу (RobotView).
+///    Ящики лежать і після зльоту, доки їх не заберуть: зайняті будівництвом роботи приїдуть пізніше.
+///    Хто який ящик везе, рахує LanderCargo.
 ///  - Після першої місії корабель з екіпажем теж спершу стоїть на майданчику.
 /// Коли що відбувається, рахує LanderTimeline. Логіку гри цей скрипт не змінює — тільки малює.
 ///
@@ -46,6 +49,12 @@ public class SupplyLanderView : MonoBehaviour
     GameObject[] crates;
     bool built;
 
+    // ящики з вантажем: лежать окремо від корабля (Cargo), щоб не зникнути, коли він злетить
+    static SupplyLanderView instance;
+    readonly LanderCargo cargo = new LanderCargo(3);
+    Transform cargoRoot;
+    float lastLanding = float.NaN;   // коли сів корабель, чиї ящики зараз лежать
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
     {
@@ -56,8 +65,17 @@ public class SupplyLanderView : MonoBehaviour
         go.AddComponent<SupplyLanderView>();
     }
 
-    void OnEnable() => DebugPanel.ExtraGUI += DebugButtons;
-    void OnDisable() => DebugPanel.ExtraGUI -= DebugButtons;
+    void OnEnable()
+    {
+        instance = this;
+        DebugPanel.ExtraGUI += DebugButtons;
+    }
+
+    void OnDisable()
+    {
+        if (instance == this) instance = null;
+        DebugPanel.ExtraGUI -= DebugButtons;
+    }
 
     /// <summary>Кнопка в DebugPanel: показати спуск, посадку й зліт просто зараз. Вантаж не додається — тільки картинка.</summary>
     void DebugButtons()
@@ -73,22 +91,29 @@ public class SupplyLanderView : MonoBehaviour
         var game = GameBootstrap.Instance;
         if (game == null || game.State == null || game.Clock == null) { Hide(); return; }
         var s = game.State;
-        if (s != seenState) { seenState = s; pad = null; previewStart = -1f; } // нова гра — забуваємо старе
+        if (s != seenState) { seenState = s; pad = null; previewStart = -1f; ClearCargo(); } // нова гра — забуваємо старе
         if (pad == null && !FindPad(s)) { Hide(); return; }                    // pad == null і після перезавантаження сцени
 
         float now = LanderTimeline.Now(s, game.Clock.HourProgress);
-        float t;
+        float t, landedAt;
         LanderPhase phase;
         if (previewStart >= 0f)
         {
             phase = LanderTimeline.Preview(previewStart, now, out t);
+            landedAt = previewStart + LanderTimeline.DescentHours;
             if (phase == LanderPhase.None) previewStart = -1f;
         }
-        else phase = LanderTimeline.Phase(s.Supply, now, out t);
+        else
+        {
+            phase = LanderTimeline.Phase(s.Supply, now, out t);
+            landedAt = s.Supply.LanderLandedAt;
+        }
 
         if (phase == LanderPhase.None) { Hide(); return; }
         if (!built && !Build()) return;
         root.SetActive(true);
+        // щойно сів — поруч з'являються ящики (один раз на кожну посадку)
+        if (phase == LanderPhase.Landed && landedAt != lastLanding) { lastLanding = landedAt; UnloadCargo(); }
         Show(phase, t, game.Clock.IsPaused);
     }
 
@@ -136,6 +161,9 @@ public class SupplyLanderView : MonoBehaviour
         shadow = shadowRenderer.transform;
         glowRenderer = Blob("Engine Glow", root.transform, GlowColor, -1);
         glow = glowRenderer.transform;
+
+        cargoRoot = new GameObject("Cargo").transform;
+        cargoRoot.SetParent(transform, false);
 
         var look = ModuleLook.Instance;
         if (look != null && look.dustMaterial != null) dust = CreateDust(look.dustMaterial);
@@ -198,16 +226,17 @@ public class SupplyLanderView : MonoBehaviour
 
     GameObject[] CreateCrates(Material mat)
     {
-        // три ящики поруч із кораблем (роботи потім заносять вантаж на базу)
+        // три ящики поруч із кораблем (вільні роботи потім відвозять їх на базу)
         var list = new GameObject[3];
         var offsets = new[] { new Vector3(3.6f, 0f, -1.2f), new Vector3(4.5f, 0f, 0.4f), new Vector3(3.3f, 0f, 1.3f) };
         var sizes = new[] { 1.1f, 0.8f, 0.95f };
         for (int i = 0; i < list.Length; i++)
         {
             float k = sizes[i];
-            list[i] = ModuleParts.Box(root.transform, "Crate " + i, mat, offsets[i] + Vector3.up * k * 0.5f,
+            list[i] = ModuleParts.Box(cargoRoot, "Crate " + i, mat, offsets[i] + Vector3.up * k * 0.5f,
                                       new Vector3(k, k, k), collider: false, tint: CrateColors[i]);
             list[i].transform.localRotation = Quaternion.Euler(0f, 17f * i - 10f, 0f);
+            list[i].SetActive(false); // з'являться, коли корабель сяде
         }
         return list;
     }
@@ -215,6 +244,7 @@ public class SupplyLanderView : MonoBehaviour
     void PlaceOnPad()
     {
         root.transform.position = padPos;
+        cargoRoot.position = padPos;
         shadow.rotation = glow.rotation = MoonTerrain.FlatOnGround(padPos);
         shadow.position = padPos + Vector3.up * 0.12f;  // трохи над землею, як тіні персонажів
         glow.position = padPos + Vector3.up * 0.13f;
@@ -279,10 +309,6 @@ public class SupplyLanderView : MonoBehaviour
             else if (!dust.isPlaying) dust.Play();
             dustEmission.rateOverTime = burning && height < DustHeight ? 140f * (1f - height / DustHeight) : 0f;
         }
-
-        // ящики стоять, поки корабель на майданчику
-        if (crates != null)
-            for (int i = 0; i < crates.Length; i++) SetShown(crates[i].transform, phase == LanderPhase.Landed);
     }
 
     /// <summary>Увімкнути/вимкнути тільки якщо змінилося (щоб не смикати Unity щокадру).</summary>
@@ -294,5 +320,72 @@ public class SupplyLanderView : MonoBehaviour
     void Hide()
     {
         if (root != null && root.activeSelf) root.SetActive(false);
+    }
+
+    // ---------- ящики з вантажем ----------
+
+    void UnloadCargo()
+    {
+        cargo.Unload();
+        ShowCrates();
+    }
+
+    void ClearCargo()
+    {
+        cargo.Clear();
+        lastLanding = float.NaN;
+        ShowCrates();
+    }
+
+    void ShowCrates()
+    {
+        if (crates == null) return;
+        for (int i = 0; i < crates.Length; i++) SetShown(crates[i].transform, cargo.OnGround(i));
+    }
+
+    // ---------- для роботів (RobotView): вільний робот везе ящик на базу ----------
+
+    /// <summary>Змінюється, коли з'являються нові ящики або починається нова гра: тоді робот забуває свій старий ящик.</summary>
+    public static int CargoGeneration => instance != null ? instance.cargo.Generation : 0;
+
+    /// <summary>Вільний робот бере собі ящик. -1 — везти нічого.</summary>
+    public static int ClaimCrate(int robot)
+    {
+        var v = instance;
+        return v != null && v.crates != null ? v.cargo.Claim(robot) : -1;
+    }
+
+    /// <summary>Роботу дали справжню роботу — ящик знову вільний для інших.</summary>
+    public static void ReleaseCrate(int crate, int robot)
+    {
+        if (instance != null) instance.cargo.Release(crate, robot);
+    }
+
+    /// <summary>
+    /// Де стати, щоб підняти ящик: за 1,5 м від нього з боку towards (звідки робот їде).
+    /// false — ящик уже не цього робота.
+    /// </summary>
+    public static bool CrateSpot(int crate, int robot, Vector3 towards, out Vector3 spot, out Vector3 cratePos)
+    {
+        spot = cratePos = Vector3.zero;
+        var v = instance;
+        if (v == null || v.crates == null || !v.cargo.IsClaimedBy(crate, robot)) return false;
+        cratePos = v.crates[crate].transform.position;
+        Vector3 d = towards - cratePos;
+        d.y = 0f;
+        d = d.sqrMagnitude > 0.01f ? d.normalized : Vector3.back;
+        spot = cratePos + d * 1.5f;
+        return true;
+    }
+
+    /// <summary>Робот підняв ящик: біля майданчика він зникає, а робот везе ящик такого кольору.</summary>
+    public static bool PickUpCrate(int crate, int robot, out Color color)
+    {
+        color = Color.white;
+        var v = instance;
+        if (v == null || v.crates == null || !v.cargo.PickUp(crate, robot)) return false;
+        color = CrateColors[crate % CrateColors.Length];
+        SetShown(v.crates[crate].transform, false);
+        return true;
     }
 }
