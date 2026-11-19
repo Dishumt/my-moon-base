@@ -90,7 +90,10 @@
         showBanner: unityShowBanner,
       };
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      // iPad pretends to be a Mac, but a Mac has no touch screen
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+                     (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+      if (isMobile) {
         // Mobile device style: fill the whole browser client area with the game canvas:
         var meta = document.createElement('meta');
         meta.name = 'viewport';
@@ -98,7 +101,10 @@
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
-        unityShowBanner("My Moon Base is played with a keyboard (W A S D) and a mouse: please open it on a computer.", "warning");
+        // The game shows touch buttons on phones and tablets (TouchControls), so no "use a computer" warning.
+        // Phone screens are very sharp (up to 3 pixels per point). Drawing all of them is slow and drains the battery,
+        // so we draw at most 1.5: the picture is a little softer, the game runs much smoother.
+        config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
 
 #if SHOW_DIAGNOSTICS
         // position the diagnostics icon in the corner on the canvas

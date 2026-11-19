@@ -518,8 +518,7 @@ public class IcePlantView : MonoBehaviour
         if (nearState != null && !nearState.Built) nearState.EngineerNear = true;
         p.EngineerNearProcessor = nearProcessor && p.ProcessorOrdered && !p.ProcessorBuilt;
 
-        var k = Keyboard.current;
-        bool pressed = canAct && k != null && k.fKey.wasPressedThisFrame;
+        bool pressed = canAct && GameInput.UsePressed; // F або кнопка F на екрані
 
         if (carrying) { Carry(s, p, sys, pos, nearProcessor, pressed); return; }
         if (carryLine != null) carryLine.gameObject.SetActive(false);
