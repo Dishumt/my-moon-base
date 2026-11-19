@@ -322,6 +322,8 @@ public class SupplySystem : ISimSystem
             s.Supply.Cargo.Clear();          // усе вивантажили — наступне замовлення починається з порожнього списку
             s.Supply.FirstMissionDone = true;
             s.Supply.Deliveries = 0; // перша місія — це не поставка
+            s.Supply.LanderLanded = true;      // посадку вже показав екран запуску — у світі корабель одразу стоїть на майданчику
+            s.Supply.LanderLandedAt = Now(s);
             ScheduleFrom(s, Now(s));
         }
         GameEvents.RaiseStateChanged();
@@ -472,6 +474,8 @@ public class SupplySystem : ISimSystem
         sup.Cargo.Clear();
         sup.Passengers.Clear();
         sup.Status = SupplyStatus.Draft;
+        sup.LanderLanded = true;
+        sup.LanderLandedAt = LanderTimeline.TouchdownOf(now); // корабель торкнувся майданчика наприкінці цієї години
         ScheduleFrom(s, now);
         r.Add("report.supply_arrived");
         GameEvents.RaiseSupplyArrived();

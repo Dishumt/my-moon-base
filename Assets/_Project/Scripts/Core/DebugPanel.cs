@@ -63,10 +63,11 @@ public class DebugPanel : MonoBehaviour
         if (GUILayout.Button("Мова: " + Loc.Language)) Loc.SetLanguage(Loc.Language == Loc.English ? Loc.Ukrainian : Loc.English);
         GUILayout.EndHorizontal();
 
+        // Кнопки ролей і стан гри — в одній прокрутці: кнопок багато, і нижні раніше обрізались за краєм екрана
+        scroll = GUILayout.BeginScrollView(scroll);
         ExtraGUI?.Invoke();
 
         // --- Стан гри ---
-        scroll = GUILayout.BeginScrollView(scroll);
         GUILayout.Label(BuildText(s, clock));
         GUILayout.EndScrollView();
 

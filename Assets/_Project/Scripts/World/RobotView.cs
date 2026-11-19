@@ -10,7 +10,9 @@ using UnityEngine;
 ///  - TargetSlot >= 0 → їде до цього модуля (в обхід інших) і стає біля нього;
 ///  - Working = true → «працює»: маніпулятор рухається, лампа блимає жовтим;
 ///  - є завдання, але немає енергії → лампа червона (гравець бачить, що роботам бракує енергії);
-///  - без завдання → повертається в «ангар» перед базою, лампа зелена.
+///  - без завдання → повертається в «ангар» перед базою, лампа зелена;
+///  - без завдання, а біля посадкового майданчика лежать ящики з корабля поставки → їде по ящик
+///    і везе його в ангар (SupplyLanderView). Це тільки картинка: GameState не змінюється.
 /// Створює його CrewView сам — руками в сцену не став.
 /// </summary>
 public class RobotView : MonoBehaviour
@@ -31,6 +33,14 @@ public class RobotView : MonoBehaviour
     List<Vector3> path;
     int pathIndex;
     float workTime;
+
+    // розвантаження корабля поставки
+    Renderer cargoBox;        // ящик спереду, видно тільки коли везе
+    int cargoCrate = -1;      // по який ящик їде (-1 — ні по який)
+    int cargoGen;             // ящики якої посадки (SupplyLanderView.CargoGeneration)
+    Vector3 cratePos;
+    bool carrying;
+    float pickTime;
 
     static readonly Color Yellow = new Color(1f, 0.85f, 0.2f);
     static readonly Color Red = new Color(0.95f, 0.25f, 0.2f);
@@ -93,6 +103,11 @@ public class RobotView : MonoBehaviour
         arm.localPosition = new Vector3(0.3f, 0.7f, 0.55f);
         ModuleParts.Box(arm, "Arm Part", mat, new Vector3(0f, 0f, 0.35f), new Vector3(0.12f, 0.12f, 0.7f), false, metal);
         tool = ModuleParts.Box(arm, "Tool", mat, new Vector3(0f, -0.08f, 0.72f), new Vector3(0.2f, 0.2f, 0.12f), false, dark).transform;
+
+        // ящик з корабля поставки — робот тримає його спереду, як навантажувач
+        cargoBox = ModuleParts.Box(model, "Cargo", mat, new Vector3(0f, 0.62f, 0.95f), new Vector3(0.55f, 0.55f, 0.55f), false, Color.white)
+                              .GetComponent<Renderer>();
+        cargoBox.gameObject.SetActive(false);
     }
 
     void Update()
@@ -106,6 +121,7 @@ public class RobotView : MonoBehaviour
         Vector3 want = HomeSpot();
         var mv = data.TargetSlot >= 0 ? BaseView.Find(data.TargetSlot) : null;
         if (mv != null) want = mv.RobotSpot(index);
+        bool toCrate = CargoTarget(mv == null && data.Task == RobotTask.Idle, ref want);
         if (!hasTarget || (want - target).sqrMagnitude > 0.25f)
         {
             target = want;
@@ -185,6 +201,72 @@ public class RobotView : MonoBehaviour
             model.localPosition = Vector3.zero;
             if (atSite) FaceTowards(mv.transform.position, dt);
         }
+
+        if (!driving && dt > 0f) CargoArrived(toCrate, dt);
+    }
+
+    // ---------- розвантаження корабля поставки (тільки картинка) ----------
+
+    /// <summary>Вільний робот їде по ящик: міняє want на місце біля ящика. true — їде по ящик.</summary>
+    bool CargoTarget(bool free, ref Vector3 want)
+    {
+        if (cargoCrate >= 0 && cargoGen != SupplyLanderView.CargoGeneration) cargoCrate = -1; // нові ящики чи нова гра
+        if (!free)
+        {
+            // дали справжню роботу: ящик, по який їхав, лишається іншим; а той, що віз, уже «на складі»
+            if (cargoCrate >= 0) SupplyLanderView.ReleaseCrate(cargoCrate, index);
+            cargoCrate = -1;
+            if (carrying) SetCargo(false, Color.white);
+            return false;
+        }
+        if (carrying) return false; // везе ящик в ангар (want — HomeSpot)
+        if (cargoCrate < 0)
+        {
+            cargoCrate = SupplyLanderView.ClaimCrate(index);
+            cargoGen = SupplyLanderView.CargoGeneration;
+            pickTime = 0f;
+            if (cargoCrate < 0) return false; // везти нічого
+        }
+        if (!SupplyLanderView.CrateSpot(cargoCrate, index, want, out Vector3 spot, out cratePos))
+        {
+            cargoCrate = -1;
+            return false;
+        }
+        want = spot;
+        return true;
+    }
+
+    /// <summary>Доїхав: біля ящика — підіймає його маніпулятором; в ангарі — ящик на складі.</summary>
+    void CargoArrived(bool toCrate, float dt)
+    {
+        if (carrying)
+        {
+            SetCargo(false, Color.white);
+            return;
+        }
+        if (!toCrate) return;
+
+        FaceTowards(cratePos, dt);
+        pickTime += dt;
+        arm.localRotation = Quaternion.Euler(Mathf.PingPong(pickTime * 110f, 45f), 0f, 0f); // опускає й підіймає
+        if (pickTime < 0.8f) return;
+
+        if (SupplyLanderView.PickUpCrate(cargoCrate, index, out Color color)) SetCargo(true, color);
+        cargoCrate = -1;
+        pickTime = 0f;
+    }
+
+    void SetCargo(bool on, Color color)
+    {
+        carrying = on;
+        if (cargoBox == null) return;
+        cargoBox.gameObject.SetActive(on);
+        if (on) ModuleParts.SetColor(cargoBox, color);
+    }
+
+    void OnDestroy()
+    {
+        if (cargoCrate >= 0) SupplyLanderView.ReleaseCrate(cargoCrate, index); // робота прибрали — ящик іншим
     }
 
     /// <summary>Їхати до точки. true — приїхали.</summary>
