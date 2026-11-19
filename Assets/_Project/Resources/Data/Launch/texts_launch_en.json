@@ -216,11 +216,11 @@
     },
     {
       "key": "report.ice_empty",
-      "text": "No more ice in crater {0}."
+      "text": "One ice crater is empty. Send someone to another crater."
     },
     {
       "key": "report.samples_empty",
-      "text": "No more samples at {0}."
+      "text": "One sample site is empty. Send someone to another site."
     },
     {
       "key": "report.science_gained",

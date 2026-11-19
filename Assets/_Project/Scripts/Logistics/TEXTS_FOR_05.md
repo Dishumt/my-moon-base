@@ -64,8 +64,8 @@
 { "key": "report.went_home", "text": "{0} flew home to Earth." },
 { "key": "report.crew_arrived", "text": "{0} arrived from Earth." },
 { "key": "report.ice_mined", "text": "Water from mined ice" },
-{ "key": "report.ice_empty", "text": "No more ice in crater {0}." },
-{ "key": "report.samples_empty", "text": "No more samples at {0}." },
+{ "key": "report.ice_empty", "text": "One ice crater is empty. Send someone to another crater." },
+{ "key": "report.samples_empty", "text": "One sample site is empty. Send someone to another site." },
 { "key": "report.science_gained", "text": "Science from samples and the lab" }
 ```
 
@@ -124,8 +124,8 @@
 { "key": "report.went_home", "text": "{0} полетів(-ла) додому на Землю." },
 { "key": "report.crew_arrived", "text": "{0} прилетів(-ла) із Землі." },
 { "key": "report.ice_mined", "text": "Вода з видобутого льоду" },
-{ "key": "report.ice_empty", "text": "У кратері {0} лід скінчився." },
-{ "key": "report.samples_empty", "text": "На точці {0} зразки скінчились." },
+{ "key": "report.ice_empty", "text": "Один кратер з льодом спорожнів. Відправ людину до іншого кратера." },
+{ "key": "report.samples_empty", "text": "На одній точці зразки скінчились. Відправ людину на іншу точку." },
 { "key": "report.science_gained", "text": "Наука зі зразків і лабораторії" }
 ```
 
