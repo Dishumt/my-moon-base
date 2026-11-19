@@ -38,6 +38,10 @@ public class SupplyState
     public float TripFood;          // перша місія: скільки їжі екіпаж з'їв у дорозі (для звіту)
     public float TripOxygen;        // перша місія: скільки кисню вдихнув у дорозі
 
+    // Для світу (SupplyLanderView): корабель на майданчику Місяця. Час — у годинах від початку гри.
+    public bool LanderLanded;       // корабель уже хоч раз сідав на майданчик
+    public int LanderLandedAt;      // коли востаннє торкнувся майданчика (далі стоїть, потім злітає — LanderTimeline)
+
     // Набори, які приїхали і чекають на будівництво (03 може їх використати)
     public int SolarPanelKits;
     public int BatteryKits;
