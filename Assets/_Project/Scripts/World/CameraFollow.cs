@@ -86,25 +86,21 @@ public class CameraFollow : MonoBehaviour
         ApplyPosition();
     }
 
-    /// <summary>Q повертає камеру проти годинникової стрілки на крок, E — за. Не працює, поки відкрите меню чи планшет.</summary>
+    /// <summary>Q (або кнопка &lt; на телефоні) повертає камеру проти годинникової стрілки на крок, E (&gt;) — за.
+    /// Не працює, поки відкрите меню чи планшет.</summary>
     void ReadRotate()
     {
-        var keyboard = Keyboard.current;
-        if (keyboard == null || UiKit.Blocked) return;
+        if (UiKit.Blocked) return;
         if (TabletController.Instance != null && TabletController.Instance.IsOpen) return;
-        if (keyboard.qKey.wasPressedThisFrame) targetYaw -= rotateStep;
-        else if (keyboard.eKey.wasPressedThisFrame) targetYaw += rotateStep;
+        targetYaw += GameInput.Turn * rotateStep;
     }
 
+    /// <summary>Коліщатко мишки (або кнопки + і - на телефоні): наблизити чи віддалити на крок.</summary>
     void ReadZoom()
     {
-        var mouse = Mouse.current;
-        if (mouse == null) return;
-
-        // Різні браузери й миші дають різні числа, тому беремо тільки напрямок: +1 або -1.
-        float scroll = mouse.scroll.ReadValue().y;
-        if (Mathf.Abs(scroll) < 0.01f) return;
-        targetDistance = Mathf.Clamp(targetDistance - Mathf.Sign(scroll) * zoomStep, minDistance, maxDistance);
+        int zoom = GameInput.Zoom;
+        if (zoom == 0) return;
+        targetDistance = Mathf.Clamp(targetDistance - zoom * zoomStep, minDistance, maxDistance);
     }
 
     static float shakeLeft, shakeTotal, shakeAmp;

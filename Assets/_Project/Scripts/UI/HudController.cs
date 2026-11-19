@@ -207,12 +207,12 @@ public class HudController : MonoBehaviour
             hint.EnableInClassList("hud-hint--urgent", next.Value.Urgent);
         }
 
-        UiKit.SetText(tablet, Loc.Get("hud.tablet") + "  [TAB]");
+        UiKit.SetText(tablet, Loc.Get("hud.tablet") + (GameInput.TouchActive ? "" : "  [TAB]")); // на телефоні клавіші TAB немає
         UiKit.SetText(helpButton, Loc.Get("hud.help"));
         UiKit.SetText(soundButton, Loc.Get(GameAudio.Muted ? "hud.sound_off" : "hud.sound_on"));
         soundButton?.EnableInClassList("hud-tool--off", GameAudio.Muted);
         UiKit.SetText(menuButton, Loc.Get("hud.menu"));
-        UiKit.SetText(walk, Loc.Get("hud.walk"));
+        UiKit.SetText(walk, Loc.Get(GameInput.TouchActive ? "hud.walk_touch" : "hud.walk"));
         UiKit.Show(demo, game.IsDemo);
         if (game.IsDemo) UiKit.SetText(demo, Loc.Get("hud.demo"));
     }
