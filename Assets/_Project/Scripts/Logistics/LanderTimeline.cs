@@ -42,7 +42,8 @@ public static class LanderTimeline
     public static LanderPhase Preview(float start, float now, out float t)
     {
         float touch = start + DescentHours;
-        return Phase(touch, true, touch, now, out t);
+        // після посадки він уже не «летить сюди», інакше стояв би на землі вічно (як справжній, що чекає вивантаження)
+        return Phase(now < touch ? touch : float.NaN, true, touch, now, out t);
     }
 
     /// <summary>incomingTouch — коли сяде той, що летить (NaN — нічого не летить).</summary>
