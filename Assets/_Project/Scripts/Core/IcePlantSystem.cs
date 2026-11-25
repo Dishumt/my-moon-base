@@ -1,15 +1,18 @@
 // AI-assisted: written with Claude. See docs/AI_USE.md
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// Лід → вода і кисень, як планує NASA для бази біля південного полюса (ISRU — «жити з того, що є на місці»):
-///  1) БУР стоїть на кратері з льодом і добуває крижаний ґрунт (з геологом поруч — удвічі швидше);
+///  1) БУРИ стоять на кратерах з льодом (на кожному кратері можна поставити свій) і добувають крижаний ґрунт
+///     (з геологом поруч — удвічі швидше). Лід з усіх бурів іде в один бункер;
 ///  2) сіра труба несе лід до ПЕРЕРОБНИКА біля бази, там лід гріють → вода;
 ///  3) з переробника виходять ДВІ ТРУБИ: синя (вода) і блакитна (кисень). Частину води переробник
 ///     розщеплює струмом на кисень (електроліз). Гравець сам тягне кожну трубу інженером до модуля:
 ///     вода — у житловий, теплицю чи медмодуль; кисень — у житловий, укриття, медмодуль чи лабораторію.
 ///     Без жодної підключеної труби переробник стоїть.
-/// Ціна: будматеріали на бур, переробник і кожну трубу (довша труба — дорожча), і заряд батареї, поки вони працюють.
+/// Ціна: будматеріали на кожен бур, переробник і кожну трубу (довша труба — дорожча), і заряд батареї, поки вони працюють.
+/// Багато бурів не робить воду безкінечною: переробник за годину переробляє лише processIcePerHour, а бункер обмежений.
 /// Числа — Resources/Data/IcePlant/ice_plant.json, тексти — texts_iceplant_en/uk.json там само.
 /// Світ (IcePlantView) малює все в 3D, пише EngineerNear* і викликає Order*/ConnectPipe.
 /// </summary>
@@ -25,7 +28,7 @@ public class IcePlantSystem : ISimSystem
     float waterToday, oxygenToday, iceToday;
     bool noPowerToday, noPipesToday, fullToday;
 
-    /// <summary>Чи бур зараз копає (для анімації у Світі).</summary>
+    /// <summary>Чи хоч один бур зараз копає (для анімації у Світі). Кожен окремо — DrillState.Working.</summary>
     public bool DrillWorking { get; private set; }
     /// <summary>Чи переробник зараз працює (для анімації у Світі).</summary>
     public bool ProcessorWorking { get; private set; }
@@ -37,20 +40,34 @@ public class IcePlantSystem : ISimSystem
 
     // ---------- дії гравця (null = добре, інакше ключ тексту з причиною) ----------
 
-    /// <summary>Замовити бур на кратері з льодом poiId. Ціна — будматеріали.</summary>
+    /// <summary>Замовити бур на кратері з льодом poiId (на кожному кратері — один бур). Ціна — будматеріали.</summary>
     public string OrderDrill(GameState s, string poiId)
     {
         var p = s.IcePlant;
-        if (p.DrillOrdered) return "iceplant.err_already";
+        Migrate(p);
         var poi = s.FindPoi(poiId);
         if (poi == null || poi.Type != PoiType.Ice) return "iceplant.err_no_ice";
+        if (p.FindDrill(poiId) != null) return "iceplant.err_already";
         if (s.Res.Materials < B.drillMaterials) return "iceplant.err_materials";
         s.Res.Materials -= B.drillMaterials;
-        p.DrillOrdered = true;
-        p.DrillPoiId = poiId;
-        p.DrillHoursLeft = B.drillBuildHours;
+        p.Drills.Add(new DrillState { PoiId = poiId, HoursLeft = B.drillBuildHours });
         GameEvents.RaiseStateChanged();
         return null;
+    }
+
+    /// <summary>
+    /// Старе збереження (до кількох бурів) мало один бур у полях DrillOrdered/DrillBuilt/DrillPoiId.
+    /// Переносимо його в список Drills, щоб гравець не втратив свій бур. Безпечно викликати будь-коли.
+    /// </summary>
+    public static void Migrate(IcePlantState p)
+    {
+        if (p.Drills == null) p.Drills = new List<DrillState>();
+        if (!p.DrillOrdered) return;
+        if (!string.IsNullOrEmpty(p.DrillPoiId) && p.FindDrill(p.DrillPoiId) == null)
+            p.Drills.Add(new DrillState { PoiId = p.DrillPoiId, Built = p.DrillBuilt, HoursLeft = p.DrillBuilt ? 0f : p.DrillHoursLeft });
+        p.DrillOrdered = p.DrillBuilt = false;
+        p.DrillPoiId = "";
+        p.DrillHoursLeft = 0f;
     }
 
     /// <summary>Замовити переробник біля бази. Ціна — будматеріали.</summary>
@@ -94,14 +111,17 @@ public class IcePlantSystem : ISimSystem
     public void Tick(GameState s, float hours, DayReport r)
     {
         var p = s.IcePlant;
+        Migrate(p);
         DrillWorking = false;
         ProcessorWorking = false;
 
         // Будівництво: з інженером поруч — удвічі швидше (як у модулів)
-        if (p.DrillOrdered && !p.DrillBuilt)
+        foreach (var d in p.Drills)
         {
-            p.DrillHoursLeft -= hours * (p.EngineerNearDrill ? 2f : 1f);
-            if (p.DrillHoursLeft <= 0f) { p.DrillHoursLeft = 0f; p.DrillBuilt = true; r.Add("iceplant.report_drill_built"); }
+            d.Working = false;
+            if (d.Built) continue;
+            d.HoursLeft -= hours * (d.EngineerNear ? 2f : 1f);
+            if (d.HoursLeft <= 0f) { d.HoursLeft = 0f; d.Built = true; r.Add("iceplant.report_drill_built"); }
         }
         if (p.ProcessorOrdered && !p.ProcessorBuilt)
         {
@@ -113,23 +133,22 @@ public class IcePlantSystem : ISimSystem
         if (p.WaterSlot >= 0 && !Fits(s, PipeKind.Water, p.WaterSlot)) p.WaterSlot = -1;
         if (p.OxygenSlot >= 0 && !Fits(s, PipeKind.Oxygen, p.OxygenSlot)) p.OxygenSlot = -1;
 
-        // 1) Бур копає лід у бункер (бункер обмежений)
-        if (p.DrillBuilt)
+        // 1) Кожен бур копає лід у спільний бункер (бункер обмежений), кожен бере свій заряд батареї
+        foreach (var d in p.Drills)
         {
-            if (p.Ice >= B.iceStorageMax - 0.01f) fullToday = true;
-            else if (!TakeBattery(s, B.drillBatteryPerHour * hours)) noPowerToday = true;
-            else
-            {
-                float rate = B.icePerHour * (CrewAtDrill(s) ? B.crewBonus : 1f);
-                float mined = Math.Min(rate * hours, B.iceStorageMax - p.Ice);
-                p.Ice += mined;
-                iceToday += mined;
-                DrillWorking = mined > 0f;
-            }
+            if (!d.Built) continue;
+            if (p.Ice >= B.iceStorageMax - 0.01f) { fullToday = true; continue; }
+            if (!TakeBattery(s, B.drillBatteryPerHour * hours)) { noPowerToday = true; continue; }
+            float rate = B.icePerHour * (CrewAtDrill(s, d.PoiId) ? B.crewBonus : 1f);
+            float mined = Math.Min(rate * hours, B.iceStorageMax - p.Ice);
+            p.Ice += mined;
+            iceToday += mined;
+            d.Working = mined > 0f;
+            if (d.Working) DrillWorking = true;
         }
 
         // 2) Переробник: лід → вода; якщо підключено трубу кисню — частину води розщеплює на кисень
-        if (p.ProcessorBuilt && p.DrillBuilt && p.Ice > 0f)
+        if (p.ProcessorBuilt && p.AnyDrillBuilt && p.Ice > 0f)
         {
             bool water = p.WaterSlot >= 0, oxygen = p.OxygenSlot >= 0;
             if (!water && !oxygen) noPipesToday = true;
@@ -171,11 +190,11 @@ public class IcePlantSystem : ISimSystem
         return m != null && m.IsBuilt && CanFeed(kind, m.Type);
     }
 
-    /// <summary>Хтось із завданням «Лід» дійшов до кратера (геолог обслуговує бур).</summary>
-    static bool CrewAtDrill(GameState s)
+    /// <summary>Хтось із завданням «Лід» дійшов саме до цього кратера (геолог обслуговує бур).</summary>
+    static bool CrewAtDrill(GameState s, string poiId)
     {
         foreach (var a in s.Crew)
-            if (a.Task == CrewTask.MineIce && a.AtTaskSite) return true;
+            if (a.Task == CrewTask.MineIce && a.AtTaskSite && a.TaskTarget == poiId) return true;
         return false;
     }
 
@@ -193,20 +212,54 @@ public class IcePlantSystem : ISimSystem
 /// <summary>Яка труба: вода чи кисень.</summary>
 public enum PipeKind { Water, Oxygen }
 
-/// <summary>Стан бура, переробника і труб. Зберігається разом з грою (GameState.IcePlant).</summary>
+/// <summary>Один бур на кратері з льодом.</summary>
+[Serializable]
+public class DrillState
+{
+    public string PoiId = "";       // на якому кратері (PoiState.Id)
+    public bool Built;
+    public float HoursLeft;         // скільки ще будувати
+    public bool EngineerNear;       // пише Світ (01): інженер біля цієї будови
+    [NonSerialized] public bool Working; // копає зараз (для анімації; не зберігається)
+}
+
+/// <summary>Стан бурів, переробника і труб. Зберігається разом з грою (GameState.IcePlant).</summary>
 [Serializable]
 public class IcePlantState
 {
+    public List<DrillState> Drills = new List<DrillState>();   // бури: по одному на кратер
+
+    // Старий формат збереження (тоді бур був тільки один). Не використовуй: IcePlantSystem.Migrate переносить їх у Drills.
     public bool DrillOrdered, DrillBuilt;
     public string DrillPoiId = "";
     public float DrillHoursLeft;
+    public bool EngineerNearDrill;
+
     public bool ProcessorOrdered, ProcessorBuilt;
     public float ProcessorHoursLeft;
     public float Ice;               // лід у бункері, чекає на переробку
     public int WaterSlot = -1;      // куди підключена труба води (-1 = нікуди)
     public int OxygenSlot = -1;     // куди підключена труба кисню
-    public bool EngineerNearDrill;      // пише Світ (01): інженер біля будови бура
     public bool EngineerNearProcessor;  // пише Світ (01): інженер біля будови переробника
+
+    /// <summary>Бур на цьому кратері або null.</summary>
+    public DrillState FindDrill(string poiId)
+    {
+        if (Drills == null) return null;
+        foreach (var d in Drills) if (d.PoiId == poiId) return d;
+        return null;
+    }
+
+    /// <summary>Чи збудовано хоч один бур.</summary>
+    public bool AnyDrillBuilt
+    {
+        get
+        {
+            if (Drills == null) return false;
+            foreach (var d in Drills) if (d.Built) return true;
+            return false;
+        }
+    }
 }
 
 /// <summary>Файл Resources/Data/IcePlant/ice_plant.json.</summary>

@@ -223,11 +223,7 @@ public class EngineerController : MonoBehaviour
 
     // ---------- Стрибок ----------
 
-    static bool JumpPressed()
-    {
-        var k = Keyboard.current;
-        return k != null && k.spaceKey.wasPressedThisFrame;
-    }
+    static bool JumpPressed() => GameInput.JumpPressed; // пробіл або кнопка на екрані телефона
 
     /// <summary>Злетіти: швидкість угору така, щоб піднятися на jumpHeight і пробути в повітрі jumpAirSeconds.</summary>
     void StartJump()
@@ -312,19 +308,8 @@ public class EngineerController : MonoBehaviour
         return MoonTerrain.CanWalk(p, ahead);
     }
 
-    /// <summary>WASD або стрілки → вектор від (-1,-1) до (1,1).</summary>
-    static Vector2 ReadInput()
-    {
-        var k = Keyboard.current;
-        if (k == null) return Vector2.zero;
-
-        Vector2 v = Vector2.zero;
-        if (k.wKey.isPressed || k.upArrowKey.isPressed) v.y += 1f;
-        if (k.sKey.isPressed || k.downArrowKey.isPressed) v.y -= 1f;
-        if (k.dKey.isPressed || k.rightArrowKey.isPressed) v.x += 1f;
-        if (k.aKey.isPressed || k.leftArrowKey.isPressed) v.x -= 1f;
-        return v.sqrMagnitude > 1f ? v.normalized : v; // по діагоналі не швидше
-    }
+    /// <summary>WASD, стрілки або джойстик на екрані телефона → вектор від (-1,-1) до (1,1).</summary>
+    static Vector2 ReadInput() => GameInput.Move;
 
     static bool IsGamePaused()
     {

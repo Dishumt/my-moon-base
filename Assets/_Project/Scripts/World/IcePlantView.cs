@@ -6,12 +6,14 @@ using UnityEngine.UIElements;
 
 /// <summary>
 /// 3D-світ для «лід → вода і кисень» (IcePlantSystem):
-///  - на кратері з льодом — БУР (вежа, двигун, шнек крутиться, коли копає; бункер з льодом наповнюється);
+///  - на кожному кратері з льодом можна поставити свій БУР (вежа, двигун, шнек крутиться, коли копає;
+///    бункер з льодом наповнюється). Напівпрозорий бур-привид видно на першому кратері й на кожному знайденому;
 ///  - біля бази, з боку кратера, — ПЕРЕРОБНИК (віконце нагрівача світиться, з труби йде пара);
-///  - сіра труба від бура до переробника, синя (вода) і біло-блакитна (кисень) — до модулів, які вибрав гравець;
+///  - сіра труба від кожного бура до переробника, синя (вода) і біло-блакитна (кисень) — до модулів, які вибрав гравець;
 ///    по трубах біжать кульки, коли щось тече.
 /// Як грати (усе клавішею F, підказка внизу екрана):
-///  1) підійди до напівпрозорого бура на кратері → F → будується (з тобою поруч — удвічі швидше);
+///  1) підійди до напівпрозорого бура на кратері → F → будується (з тобою поруч — удвічі швидше).
+///     Так само можна поставити бур і на інших кратерах;
 ///  2) так само переробник біля бази;
 ///  3) біля переробника F → береш кінець труби, ідеш у потрібний модуль → F → труба прокладається
 ///     (кожні 10 м труби = 1 будматеріал). Біля переробника F ще раз — покласти трубу назад.
@@ -41,20 +43,37 @@ public class IcePlantView : MonoBehaviour
 
     enum Shown { None, Ghost, Building, Built }
 
+    /// <summary>Бур на одному кратері: де стоїть і що зараз намальовано.</summary>
+    class DrillView
+    {
+        public string PoiId;
+        public Vector3 Pos;
+        public GameObject Root;
+        public Shown Shown;
+        public Transform Scaffold, Spinner, HopperFill, Lamp;
+        public float TotalHours;
+        public WorldPipe IcePipe;
+        public bool IcePipeShown;
+
+        public Vector3 Outlet => Pos + new Vector3(1.9f, 0f, 0f);
+        public Vector3 CablePoint => Pos + new Vector3(0f, 0f, 1.7f);
+    }
+
     // ---------- що зараз намальовано ----------
     GameState seenState;
-    Vector3 drillPos, processorPos;
+    Vector3 processorPos;
     bool havePositions;
-    string drillPoi;
+    int seenPoiCount = -1;          // новий розділ додав кратери — шукаємо місця заново
+    float quietUntil;               // після перемальовування вже готові будівлі не «дзенькають»
+    readonly List<DrillView> drills = new List<DrillView>();
 
-    GameObject drillRoot, processorRoot;
-    Shown drillShown, processorShown;
-    Transform drillScaffold, processorScaffold, drillSpinner, hopperFill, drillLamp, processorLamp, heater, puff;
-    float drillTotalHours, processorTotalHours;
+    GameObject processorRoot;
+    Shown processorShown;
+    Transform processorScaffold, processorLamp, heater, puff;
+    float processorTotalHours;
 
-    WorldPipe icePipe, waterPipe, oxygenPipe;
+    WorldPipe waterPipe, oxygenPipe;
     int waterPipeSlot = -2, oxygenPipeSlot = -2;
-    bool icePipeShown;
 
     // ---------- труба в руках ----------
     bool carrying;
@@ -93,12 +112,14 @@ public class IcePlantView : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Лід: бур + переробник одразу"))
         {
+            // бур на першому кратері, де його ще немає (натисни ще раз — буде бур і на наступному)
             s.Res.Materials += sys.B.drillMaterials + sys.B.processorMaterials;
-            if (!p.DrillOrdered && drillPoi != null) sys.OrderDrill(s, drillPoi);
+            foreach (var d in drills)
+                if (p.FindDrill(d.PoiId) == null) { sys.OrderDrill(s, d.PoiId); break; }
             if (!p.ProcessorOrdered) sys.OrderProcessor(s);
-            p.DrillBuilt = p.DrillOrdered;
+            foreach (var d in p.Drills) { d.Built = true; d.HoursLeft = 0f; }
             p.ProcessorBuilt = p.ProcessorOrdered;
-            p.DrillHoursLeft = p.ProcessorHoursLeft = 0f;
+            p.ProcessorHoursLeft = 0f;
         }
         GUILayout.Label("лід у коробі: " + UiKit.Num(p.Ice) + ", вода→" + p.WaterSlot + ", кисень→" + p.OxygenSlot);
         GUILayout.EndHorizontal();
@@ -114,30 +135,49 @@ public class IcePlantView : MonoBehaviour
         if (game == null || game.State == null || sys == null || ModuleLook.Instance == null) { SetPrompt(null); return; }
         var s = game.State;
 
-        // Нова гра або перезавантажена сцена — малюємо все заново
-        if (s != seenState || (drillRoot == null && drillShown != Shown.None) || (processorRoot == null && processorShown != Shown.None))
-            ResetAll(s);
+        // Нова гра, перезавантажена сцена чи новий розділ з новими кратерами — малюємо все заново
+        if (s != seenState || s.Pois.Count != seenPoiCount || SceneObjectsLost()) ResetAll(s);
 
         if (!havePositions && !FindPositions(s)) { SetPrompt(null); return; }
 
         var p = s.IcePlant;
-        UpdateDrill(p, sys);
+        IcePlantSystem.Migrate(p);
+        foreach (var d in drills) UpdateDrill(s, p, sys, d);
         UpdateProcessor(s, p, sys);
         UpdatePipes(s, p, sys);
         Interact(game, s, p, sys);
     }
 
+    /// <summary>Сцену перезавантажили — будівлі, що жили в ній, зникли.</summary>
+    bool SceneObjectsLost()
+    {
+        if (processorRoot == null && processorShown != Shown.None) return true;
+        foreach (var d in drills) if (d.Root == null && d.Shown != Shown.None) return true;
+        return false;
+    }
+
+    void DestroyDrills()
+    {
+        foreach (var d in drills)
+        {
+            if (d.Root != null) Destroy(d.Root);
+            d.IcePipe?.Destroy();
+        }
+        drills.Clear();
+    }
+
     void ResetAll(GameState s)
     {
-        if (drillRoot != null) Destroy(drillRoot);
+        DestroyDrills();
         if (processorRoot != null) Destroy(processorRoot);
-        icePipe?.Destroy(); waterPipe?.Destroy(); oxygenPipe?.Destroy();
-        icePipe = waterPipe = oxygenPipe = null;
+        waterPipe?.Destroy(); oxygenPipe?.Destroy();
+        waterPipe = oxygenPipe = null;
         waterPipeSlot = oxygenPipeSlot = -2;
-        icePipeShown = false;
-        drillRoot = processorRoot = null;
-        drillShown = processorShown = Shown.None;
+        processorRoot = null;
+        processorShown = Shown.None;
         havePositions = false;
+        seenPoiCount = s.Pois.Count;
+        quietUntil = Time.time + 1f;
         carrying = false;
         if (carryLine != null) Destroy(carryLine.gameObject);
         carryLine = null;
@@ -155,28 +195,27 @@ public class IcePlantView : MonoBehaviour
 
     bool FindPositions(GameState s)
     {
-        // Бур: на вже вибраному кратері або на першому кратері з льодом цього розділу
-        PoiMarker marker = null;
-        if (s.IcePlant.DrillOrdered) marker = PoiMarker.Find(s.IcePlant.DrillPoiId);
-        if (marker == null)
-            foreach (var poi in s.Pois)
-            {
-                if (poi.Type != PoiType.Ice) continue;
-                marker = PoiMarker.Find(poi.Id);
-                if (marker != null) break;
-            }
-        if (marker == null) return false;
-        drillPoi = marker.poiId;
-
+        // Бур — на кожному кратері з льодом. Перший кратер розділу задає, з якого боку бази стоїть переробник.
+        DestroyDrills();
         Vector3 c = BaseCenter();
-        Vector3 m = marker.transform.position;
-        Vector3 toBase = c - m; toBase.y = 0f;
-        if (toBase.sqrMagnitude < 1f) return false;
-        drillPos = m + toBase.normalized * DrillOffset;
-        drillPos.y = MoonTerrain.HeightAt(drillPos);
+        Vector3 firstToBase = Vector3.zero;
+        foreach (var poi in s.Pois)
+        {
+            if (poi.Type != PoiType.Ice) continue;
+            var marker = PoiMarker.Find(poi.Id);
+            if (marker == null) continue;
+            Vector3 m = marker.transform.position;
+            Vector3 toBase = c - m; toBase.y = 0f;
+            if (toBase.sqrMagnitude < 1f) continue;
+            Vector3 pos = m + toBase.normalized * DrillOffset;
+            pos.y = MoonTerrain.HeightAt(pos);
+            drills.Add(new DrillView { PoiId = poi.Id, Pos = pos });
+            if (firstToBase == Vector3.zero) firstToBase = toBase;
+        }
+        if (drills.Count == 0) return false;
 
-        // Переробник: за краєм бази, з боку кратера
-        Vector3 dir = -toBase.normalized;
+        // Переробник: за краєм бази, з боку першого кратера
+        Vector3 dir = -firstToBase.normalized;
         float half = Mathf.Max(BaseGrid.Width, BaseGrid.Depth) * BaseGrid.CellSize * 0.5f;
         float t = (half + 5f) / Mathf.Max(0.3f, Mathf.Max(Mathf.Abs(dir.x), Mathf.Abs(dir.z)));
         processorPos = c + dir * t;
@@ -187,51 +226,66 @@ public class IcePlantView : MonoBehaviour
 
     // ---------- бур ----------
 
-    void UpdateDrill(IcePlantState p, IcePlantSystem sys)
+    void UpdateDrill(GameState s, IcePlantState p, IcePlantSystem sys, DrillView v)
     {
-        Shown want = p.DrillBuilt ? Shown.Built : p.DrillOrdered ? Shown.Building : Shown.Ghost;
-        if (want != drillShown || drillRoot == null)
+        var state = p.FindDrill(v.PoiId);
+        // Привид (де можна поставити бур) — на першому кратері і на кожному, який інженер уже знайшов
+        Shown want = state != null ? (state.Built ? Shown.Built : Shown.Building)
+                   : (v == drills[0] || IsDiscovered(s, v.PoiId)) ? Shown.Ghost : Shown.None;
+        if (want != v.Shown || (v.Root == null && want != Shown.None))
         {
-            if (drillRoot != null) Destroy(drillRoot);
-            drillRoot = new GameObject("Ice Drill");
-            drillRoot.transform.position = drillPos;
-            drillShown = want;
-            drillScaffold = null;
-            if (want == Shown.Ghost) Blueprint(drillRoot.transform, new Vector3(3f, 5f, 3f));
-            else if (want == Shown.Building) { drillScaffold = Scaffold(drillRoot.transform); drillTotalHours = Mathf.Max(1f, p.DrillHoursLeft); }
-            else { BuildDrill(drillRoot.transform); if (Time.timeSinceLevelLoad > 2f) GameAudio.Play(Sfx.Built); }
+            if (v.Root != null) Destroy(v.Root);
+            v.Root = null;
+            v.Shown = want;
+            v.Scaffold = v.Spinner = v.HopperFill = v.Lamp = null;
+            if (want != Shown.None)
+            {
+                v.Root = new GameObject("Ice Drill " + v.PoiId);
+                v.Root.transform.position = v.Pos;
+                if (want == Shown.Ghost) Blueprint(v.Root.transform, new Vector3(3f, 5f, 3f));
+                else if (want == Shown.Building) { v.Scaffold = Scaffold(v.Root.transform); v.TotalHours = Mathf.Max(1f, state.HoursLeft); }
+                else { BuildDrill(v); if (Time.timeSinceLevelLoad > 2f && Time.time > quietUntil) GameAudio.Play(Sfx.Built); }
+            }
         }
+        if (v.Root == null) return;
 
         float time = Time.time;
-        if (want == Shown.Ghost) Breathe(drillRoot.transform, time);
-        if (want == Shown.Building) GrowScaffold(drillScaffold, new Vector2(3f, 3f), 5f, p.DrillHoursLeft, ref drillTotalHours);
+        if (want == Shown.Ghost) Breathe(v.Root.transform, time);
+        if (want == Shown.Building) GrowScaffold(v.Scaffold, new Vector2(3f, 3f), 5f, state.HoursLeft, ref v.TotalHours);
         if (want != Shown.Built) return;
 
-        bool working = sys.DrillWorking && !(GameBootstrap.Instance.Clock.IsPaused);
-        if (drillSpinner != null)
+        bool working = state.Working && !(GameBootstrap.Instance.Clock.IsPaused);
+        if (v.Spinner != null)
         {
-            if (working) drillSpinner.Rotate(0f, 360f * Time.deltaTime, 0f, Space.Self);
-            Vector3 lp = drillSpinner.localPosition;
+            if (working) v.Spinner.Rotate(0f, 360f * Time.deltaTime, 0f, Space.Self);
+            Vector3 lp = v.Spinner.localPosition;
             lp.y = working ? -0.25f + 0.25f * Mathf.Sin(time * 5f) : 0f; // стукає вгору-вниз, коли копає
-            drillSpinner.localPosition = lp;
+            v.Spinner.localPosition = lp;
         }
-        if (hopperFill != null)
+        if (v.HopperFill != null)
         {
             float k = Mathf.Clamp01(p.Ice / Mathf.Max(0.1f, sys.B.iceStorageMax));
-            hopperFill.localScale = new Vector3(0.8f, Mathf.Max(0.02f, 0.85f * k), 0.8f);
-            hopperFill.localPosition = new Vector3(1.9f, 0.15f + 0.85f * k * 0.5f, 0f);
+            v.HopperFill.localScale = new Vector3(0.8f, Mathf.Max(0.02f, 0.85f * k), 0.8f);
+            v.HopperFill.localPosition = new Vector3(1.9f, 0.15f + 0.85f * k * 0.5f, 0f);
         }
-        if (drillLamp != null)
+        if (v.Lamp != null)
         {
             bool full = p.Ice >= sys.B.iceStorageMax - 0.01f;
             bool blink = Mathf.Repeat(time, 1f) < 0.5f;
             Color c = working ? LampGreen : full ? LampYellow : (blink ? LampRed : DarkMetal);
-            ModuleParts.SetColor(drillLamp.GetComponent<Renderer>(), c);
+            ModuleParts.SetColor(v.Lamp.GetComponent<Renderer>(), c);
         }
     }
 
-    void BuildDrill(Transform root)
+    static bool IsDiscovered(GameState s, string poiId)
     {
+        var poi = s.FindPoi(poiId);
+        return poi != null && poi.Discovered;
+    }
+
+    void BuildDrill(DrillView v)
+    {
+        Transform root = v.Root.transform;
         var mat = ModuleLook.Instance.wallMaterial;
         ModuleParts.Box(root, "Pad", mat, new Vector3(0f, 0.06f, 0f), new Vector3(3.2f, 0.12f, 3.2f), collider: false, tint: DarkMetal);
         for (int i = -1; i <= 1; i += 2)
@@ -247,8 +301,9 @@ public class IcePlantView : MonoBehaviour
         ModuleParts.Box(root, "Motor", mat, new Vector3(0f, 5.05f, 0f), new Vector3(1.4f, 1f, 1.4f), collider: false, tint: Orange);
 
         // Шнек: окремий порожній об'єкт, який крутиться; на ньому вал і витки
-        drillSpinner = new GameObject("Spinner").transform;
+        var drillSpinner = new GameObject("Spinner").transform;
         drillSpinner.SetParent(root, false);
+        v.Spinner = drillSpinner;
         ModuleParts.Cylinder(drillSpinner, "Shaft", mat, new Vector3(0f, 2.3f, 0f), new Vector3(0.3f, 2.3f, 0.3f), collider: false, tint: Metal);
         for (int k = 0; k < 7; k++)
         {
@@ -261,9 +316,9 @@ public class IcePlantView : MonoBehaviour
         // Бункер з льодом (прозорий бокс, усередині росте біла «гора» льоду)
         ModuleParts.Box(root, "Hopper", ModuleLook.Instance.roofMaterial, new Vector3(1.9f, 0.6f, 0f), new Vector3(1f, 1f, 1f),
                         collider: false, tint: new Color(0.7f, 0.85f, 1f, 0.35f));
-        hopperFill = ModuleParts.Box(root, "Ice", mat, new Vector3(1.9f, 0.16f, 0f), new Vector3(0.8f, 0.02f, 0.8f), collider: false, tint: IceColor).transform;
+        v.HopperFill = ModuleParts.Box(root, "Ice", mat, new Vector3(1.9f, 0.16f, 0f), new Vector3(0.8f, 0.02f, 0.8f), collider: false, tint: IceColor).transform;
 
-        drillLamp = ModuleParts.Sphere(root, "Lamp", mat, new Vector3(0f, 5.75f, 0f), Vector3.one * 0.35f, collider: false, tint: LampGreen).transform;
+        v.Lamp = ModuleParts.Sphere(root, "Lamp", mat, new Vector3(0f, 5.75f, 0f), Vector3.one * 0.35f, collider: false, tint: LampGreen).transform;
     }
 
     // ---------- переробник ----------
@@ -284,7 +339,7 @@ public class IcePlantView : MonoBehaviour
                 processorRoot.transform.position = processorPos;
                 if (want == Shown.Ghost) Blueprint(processorRoot.transform, new Vector3(4f, 3f, 3f));
                 else if (want == Shown.Building) { processorScaffold = Scaffold(processorRoot.transform); processorTotalHours = Mathf.Max(1f, p.ProcessorHoursLeft); }
-                else { BuildProcessor(processorRoot.transform); if (Time.timeSinceLevelLoad > 2f) GameAudio.Play(Sfx.Built); }
+                else { BuildProcessor(processorRoot.transform); if (Time.timeSinceLevelLoad > 2f && Time.time > quietUntil) GameAudio.Play(Sfx.Built); }
             }
         }
         if (processorRoot == null) return;
@@ -333,13 +388,20 @@ public class IcePlantView : MonoBehaviour
 
     /// <summary>Чи вже відомо, де стоять бур і переробник (PowerCablesView веде до них кабель).</summary>
     public bool HasPositions => havePositions;
-    /// <summary>Куди підходить кабель енергії до переробника і до бура.</summary>
+    /// <summary>Куди підходить кабель енергії до переробника.</summary>
     public Vector3 ProcessorCablePoint => processorPos + new Vector3(-0.3f, 0f, 1.6f);
-    public Vector3 DrillCablePoint => drillPos + new Vector3(0f, 0f, 1.7f);
+
+    /// <summary>Куди підходить кабель енергії до бура на цьому кратері. false — такого кратера не знайшли.</summary>
+    public bool TryDrillCablePoint(string poiId, out Vector3 point)
+    {
+        foreach (var d in drills)
+            if (d.PoiId == poiId) { point = d.CablePoint; return true; }
+        point = Vector3.zero;
+        return false;
+    }
 
     Vector3 Outlet(PipeKind kind) => processorPos + new Vector3(2.2f, 0f, kind == PipeKind.Water ? -0.75f : 0.75f);
     Vector3 IceInlet => processorPos + new Vector3(-1.9f, 0f, 0f);
-    Vector3 DrillOutlet => drillPos + new Vector3(1.9f, 0f, 0f);
 
     // ---------- будова: привид, риштування ----------
 
@@ -373,14 +435,19 @@ public class IcePlantView : MonoBehaviour
 
     void UpdatePipes(GameState s, IcePlantState p, IcePlantSystem sys)
     {
-        bool showIce = p.DrillBuilt && p.ProcessorBuilt;
-        if (showIce != icePipeShown || (showIce && (icePipe == null || icePipe.Root == null)))
+        // Сіра труба льоду — від кожного збудованого бура до переробника
+        foreach (var d in drills)
         {
-            icePipe?.Destroy();
-            icePipe = showIce ? new WorldPipe("Ice Pipe", WorldPipe.Straight(DrillOutlet, IceInlet), 0.16f, IcePipeColor, IceColor) : null;
-            icePipeShown = showIce;
+            var state = p.FindDrill(d.PoiId);
+            bool showIce = state != null && state.Built && p.ProcessorBuilt;
+            if (showIce != d.IcePipeShown || (showIce && (d.IcePipe == null || d.IcePipe.Root == null)))
+            {
+                d.IcePipe?.Destroy();
+                d.IcePipe = showIce ? new WorldPipe("Ice Pipe " + d.PoiId, WorldPipe.Straight(d.Outlet, IceInlet), 0.16f, IcePipeColor, IceColor) : null;
+                d.IcePipeShown = showIce;
+            }
+            d.IcePipe?.Animate(sys.ProcessorWorking, 1.5f);
         }
-        icePipe?.Animate(sys.ProcessorWorking, 1.5f);
 
         if (p.WaterSlot != waterPipeSlot || (waterPipe != null && waterPipe.Root == null))
         {
@@ -432,16 +499,26 @@ public class IcePlantView : MonoBehaviour
     {
         var eng = EngineerController.Instance;
         bool canAct = !game.Clock.IsPaused && !UiKit.Blocked && (TabletController.Instance == null || !TabletController.Instance.IsOpen);
-        if (eng == null) { p.EngineerNearDrill = p.EngineerNearProcessor = false; SetPrompt(null); return; }
+        foreach (var d in p.Drills) d.EngineerNear = false;
+        if (eng == null) { p.EngineerNearProcessor = false; SetPrompt(null); return; }
 
         Vector3 pos = eng.transform.position;
-        bool nearDrill = FlatDistance(pos, drillPos) < Reach;
+        // найближчий бур (чи привид бура) у межах досяжності
+        DrillView near = null;
+        float best = Reach;
+        foreach (var d in drills)
+        {
+            if (d.Shown == Shown.None) continue;
+            float dist = FlatDistance(pos, d.Pos);
+            if (dist < best) { best = dist; near = d; }
+        }
+        var nearState = near != null ? p.FindDrill(near.PoiId) : null;
+        bool nearDrill = near != null;
         bool nearProcessor = processorShown != Shown.None && FlatDistance(pos, processorPos) < Reach;
-        p.EngineerNearDrill = nearDrill && p.DrillOrdered && !p.DrillBuilt;
+        if (nearState != null && !nearState.Built) nearState.EngineerNear = true;
         p.EngineerNearProcessor = nearProcessor && p.ProcessorOrdered && !p.ProcessorBuilt;
 
-        var k = Keyboard.current;
-        bool pressed = canAct && k != null && k.fKey.wasPressedThisFrame;
+        bool pressed = canAct && GameInput.UsePressed; // F або кнопка F на екрані
 
         if (carrying) { Carry(s, p, sys, pos, nearProcessor, pressed); return; }
         if (carryLine != null) carryLine.gameObject.SetActive(false);
@@ -449,12 +526,12 @@ public class IcePlantView : MonoBehaviour
         string text = null;
         if (nearDrill)
         {
-            if (!p.DrillOrdered)
+            if (nearState == null)
             {
                 text = Loc.Get("iceplant.prompt_build_drill", sys.B.drillMaterials);
-                if (pressed) Result(sys.OrderDrill(s, drillPoi));
+                if (pressed) Result(sys.OrderDrill(s, near.PoiId));
             }
-            else if (!p.DrillBuilt) text = Loc.Get("iceplant.prompt_building_drill", Percent(p.DrillHoursLeft, drillTotalHours));
+            else if (!nearState.Built) text = Loc.Get("iceplant.prompt_building_drill", Percent(nearState.HoursLeft, near.TotalHours));
             else text = Loc.Get("iceplant.status_drill", UiKit.Num(p.Ice), UiKit.Num(sys.B.iceStorageMax)) + "\n" + Loc.Get("iceplant.fact_drill");
         }
         else if (nearProcessor)
@@ -642,9 +719,9 @@ public class IcePlantView : MonoBehaviour
 
     void OnDestroy()
     {
-        if (drillRoot != null) Destroy(drillRoot);
+        DestroyDrills();
         if (processorRoot != null) Destroy(processorRoot);
-        icePipe?.Destroy(); waterPipe?.Destroy(); oxygenPipe?.Destroy();
+        waterPipe?.Destroy(); oxygenPipe?.Destroy();
         if (carryLine != null) Destroy(carryLine.gameObject);
     }
 }
