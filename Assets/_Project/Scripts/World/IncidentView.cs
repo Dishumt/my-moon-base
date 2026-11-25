@@ -101,11 +101,7 @@ public class IncidentView : MonoBehaviour
         return TabletController.Instance == null || !TabletController.Instance.IsOpen;
     }
 
-    static bool FixHeld()
-    {
-        var k = Keyboard.current;
-        return k != null && k.fKey.isPressed;
-    }
+    static bool FixHeld() => GameInput.UseHeld; // тримати F або кнопку F на екрані
 
     /// <summary>Кімната: інженер усередині (у кімнаті чи шлюзі). Обладнання надворі: інженер поруч.</summary>
     static bool EngineerInRange(ModuleView view)
